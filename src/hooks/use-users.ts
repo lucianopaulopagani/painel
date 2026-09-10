@@ -11,6 +11,22 @@ interface FunctionResponse {
   error?: string;
 }
 
+/** Verifica se já existe pelo menos um administrador no sistema (bootstrap do primeiro admin). */
+export function useHasAdmin() {
+  return useQuery({
+    queryKey: ["has-admin"] as const,
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke<
+        FunctionResponse & { has_admin?: boolean }
+      >("manage-users", { body: { action: "has-admin" } });
+      // Se a função não responder, esconde o fluxo de setup.
+      if (error || !data?.ok) return true;
+      return data.has_admin ?? true;
+    },
+    staleTime: 30_000,
+  });
+}
+
 export function useUsers() {
   return useQuery({
     queryKey: profilesKeys.all,

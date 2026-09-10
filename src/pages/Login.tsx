@@ -3,7 +3,6 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   AlertCircle,
   ArrowLeft,
-  Building2,
   Loader2,
   LogIn,
 } from "lucide-react";
@@ -12,6 +11,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
+import { BrandLogo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -101,15 +101,9 @@ export default function Login() {
   return (
     <div className="auth-page flex min-h-screen flex-col overflow-hidden">
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-5 py-8 sm:px-8">
-        <header className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20">
-            <Building2 className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <div className="text-base font-semibold text-white">
-              Portal de Departamentos
-            </div>
-            <div className="text-xs text-white/60">Acesso por departamento</div>
+        <header className="flex items-center">
+          <div className="flex items-center rounded-xl bg-white p-1.5 pr-4 shadow-lg shadow-black/20">
+            <BrandLogo variant="horizontal" className="h-9 w-auto" />
           </div>
         </header>
 

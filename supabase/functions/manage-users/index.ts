@@ -1,21 +1,19 @@
 // =============================================================================
-// Edge Function "manage-users" — administração de usuários do sistema.
+// Backend Function "manage-users" — administração de usuários do sistema.
 //
 // Por que existe: criar/alterar/excluir usuários de autenticação e redefinir
 // senhas exige a chave "service_role", que NUNCA pode ficar no frontend.
-// Esta função roda no próprio projeto Supabase, onde a chave é injetada
+// Esta função roda no backend do Enter Cloud, onde a chave é injetada
 // automaticamente como variável de ambiente.
 //
-// COMO IMPLANTAR (uma única vez, no seu projeto Supabase):
-//  1) Abra o dashboard do seu projeto -> "Edge Functions" -> "Create a new function".
-//  2) Dê o nome exato:  manage-users
-//  3) Substitua o conteúdo pelo código deste arquivo e clique em "Deploy".
-//  4) Pronto: o app já encontrará a função em
-//     https://<seu-projeto-ref>.functions.supabase.co/manage-users
+// Ações:
+//  - has-admin      (pública) retorna se já existe ao menos um administrador.
+//  - create-user    cria usuário; sem admin existente, permite criar o
+//                   primeiro administrador (bootstrap).
+//  - update-user / reset-password / delete-user — somente admins.
 //
 // As rotas são chamadas pelo frontend com supabase.functions.invoke(...) e o
 // token do usuário logado é enviado automaticamente no header Authorization.
-// Somente perfis com papel "admin" têm permissão de executar as ações.
 // =============================================================================
 
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -58,6 +56,16 @@ async function isAdmin(authorization: string | null): Promise<boolean> {
   return data.role === "admin";
 }
 
+// Quantidade atual de administradores (usado no bootstrap do primeiro admin).
+async function adminCount(): Promise<number> {
+  const { count, error } = await admin
+    .from("profiles")
+    .select("id", { count: "exact", head: true })
+    .eq("role", "admin");
+  if (error) throw error;
+  return count ?? 0;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -66,15 +74,29 @@ Deno.serve(async (req) => {
     return json({ ok: false, error: "Método não permitido." }, 405);
   }
 
-  if (!(await isAdmin(req.headers.get("Authorization")))) {
-    return json(
-      { ok: false, error: "Somente administradores podem executar esta ação." },
-      401
-    );
-  }
-
   try {
     const { action, ...payload } = await req.json();
+
+    // Consulta pública de bootstrap: existe algum admin? (sem exigir login)
+    if (action === "has-admin") {
+      return json({ ok: true, has_admin: (await adminCount()) > 0 });
+    }
+
+    const isAdm = await isAdmin(req.headers.get("Authorization"));
+
+    // Bootstrap: permite criar o PRIMEIRO administrador quando ainda não
+    // existe nenhum. Com um admin existente, só administradores criam usuários.
+    const canBootstrap =
+      action === "create-user" &&
+      payload.role === "admin" &&
+      (await adminCount()) === 0;
+
+    if (!isAdm && !canBootstrap) {
+      return json(
+        { ok: false, error: "Somente administradores podem executar esta ação." },
+        401
+      );
+    }
 
     switch (action) {
       case "create-user": {

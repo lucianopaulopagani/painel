@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Building2, LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/brand/logo";
 import { useAuth } from "@/context/auth";
 import { getInitials } from "@/lib/utils";
 
@@ -25,8 +26,8 @@ export function PanelHeader({ title, subtitle, children }: PanelHeaderProps) {
     <header className="sticky top-0 z-20 border-b bg-card/80 backdrop-blur">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Building2 className="h-5 w-5" />
+          <div className="shrink-0 overflow-hidden rounded-lg bg-white ring-1 ring-border">
+            <BrandLogo variant="horizontal" className="h-9 w-auto" />
           </div>
           <div className="min-w-0">
             <div className="truncate text-sm font-semibold">{title}</div>

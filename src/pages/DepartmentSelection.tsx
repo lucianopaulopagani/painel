@@ -1,39 +1,40 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  AlertCircle,
-  ArrowRight,
-  Building2,
-  ShieldCheck,
-} from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { AlertCircle, ArrowRight, Building2, ShieldCheck, UserPlus } from "lucide-react";
 import {
   Alert,
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BrandLogo } from "@/components/brand/logo";
+import InitialAdminDialog from "@/components/admin/InitialAdminDialog";
 import { useDepartments } from "@/hooks/use-departments";
+import { useHasAdmin } from "@/hooks/use-users";
 
 export default function DepartmentSelection() {
+  const queryClient = useQueryClient();
   const { data: departments, isLoading, isError } = useDepartments();
+  const { data: hasAdmin } = useHasAdmin();
+  const [setupOpen, setSetupOpen] = useState(false);
 
   return (
     <div className="auth-page flex min-h-screen flex-col overflow-hidden">
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-5 py-8 sm:px-8">
-        <header className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20">
-            <Building2 className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <div className="text-base font-semibold text-white">
-              Portal de Departamentos
-            </div>
-            <div className="text-xs text-white/60">Acesso por departamento</div>
+        <header className="flex items-center">
+          <div className="flex items-center rounded-xl bg-white p-1.5 pr-4 shadow-lg shadow-black/20">
+            <BrandLogo variant="horizontal" className="h-9 w-auto" />
           </div>
         </header>
 
         <main className="flex flex-1 flex-col items-center justify-center py-12">
-          <div className="mb-10 max-w-xl text-center">
+          <div className="mb-10 flex max-w-xl flex-col items-center text-center">
+            <div className="mb-6 rounded-2xl bg-white p-4 shadow-xl shadow-black/25">
+              <BrandLogo variant="vertical" className="h-24 w-auto sm:h-28" />
+            </div>
             <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
               Selecione seu departamento
             </h1>
@@ -59,7 +60,8 @@ export default function DepartmentSelection() {
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Não foi possível carregar os departamentos</AlertTitle>
               <AlertDescription>
-                Verifique se o backend (Supabase) está configurado e conectado.
+                Verifique se o backend (Enter Cloud) está configurado e
+                conectado.
               </AlertDescription>
             </Alert>
           )}
@@ -103,6 +105,27 @@ export default function DepartmentSelection() {
               )}
             </>
           )}
+
+          {hasAdmin === false && (
+            <div className="mt-10 w-full max-w-xl rounded-xl border border-white/25 bg-white/10 p-6 text-center backdrop-blur">
+              <div className="flex items-center justify-center gap-2 text-lg font-semibold text-white">
+                <UserPlus className="h-5 w-5 text-brand-cyan" />
+                Configuração inicial
+              </div>
+              <p className="mt-1 text-sm text-white/70">
+                Nenhum administrador cadastrado ainda. Crie o primeiro
+                administrador para gerenciar os departamentos e os usuários do
+                sistema.
+              </p>
+              <Button
+                onClick={() => setSetupOpen(true)}
+                className="mt-4 bg-white text-slate-900 hover:bg-white/90"
+              >
+                <UserPlus className="h-4 w-4" />
+                Criar administrador
+              </Button>
+            </div>
+          )}
         </main>
 
         <footer className="flex items-center justify-center gap-2 pb-2 text-xs text-white/50">
@@ -110,6 +133,14 @@ export default function DepartmentSelection() {
           Acesso restrito aos usuários autorizados
         </footer>
       </div>
+
+      <InitialAdminDialog
+        open={setupOpen}
+        onOpenChange={setSetupOpen}
+        onCreated={() =>
+          queryClient.invalidateQueries({ queryKey: ["has-admin"] })
+        }
+      />
     </div>
   );
 }
