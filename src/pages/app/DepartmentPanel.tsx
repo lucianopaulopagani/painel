@@ -19,9 +19,14 @@ export default function DepartmentPanel() {
   const firstName =
     profile.full_name.trim().split(/\s+/)[0] || profile.full_name;
 
+  const departmentLabel =
+    profile.role === "admin" && !profile.departments?.name
+      ? "Todos os departamentos"
+      : profile.departments?.name ?? "Sem departamento";
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <PanelHeader title="Meu Departamento" subtitle={profile.departments?.name} />
+      <PanelHeader title="Meu Departamento" subtitle={departmentLabel} />
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
         <div className="mb-8">
@@ -30,7 +35,7 @@ export default function DepartmentPanel() {
               Bem-vindo(a), {firstName}
             </h1>
             <Badge variant="secondary" className="text-xs">
-              {profile.departments?.name ?? "Sem departamento"}
+              {departmentLabel}
             </Badge>
             {profile.role === "admin" && (
               <Link to="/admin">
@@ -39,8 +44,11 @@ export default function DepartmentPanel() {
             )}
           </div>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Você está autenticado(a) no sistema com acesso ao departamento{" "}
-            {profile.departments?.name ?? "não definido"}.
+            {profile.role === "admin" && !profile.departments?.name
+              ? "Você está autenticado(a) como administrador com acesso a todos os departamentos do sistema."
+              : `Você está autenticado(a) no sistema com acesso ao departamento ${
+                  profile.departments?.name ?? "não definido"
+                }.`}
           </p>
         </div>
 

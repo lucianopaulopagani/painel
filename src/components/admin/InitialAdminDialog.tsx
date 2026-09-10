@@ -39,14 +39,14 @@ export default function InitialAdminDialog({
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [departmentId, setDepartmentId] = useState<string>("");
+  const [departmentId, setDepartmentId] = useState<string>("none");
 
   useEffect(() => {
     if (open) {
       setFullName("");
       setEmail("");
       setPassword("");
-      setDepartmentId("");
+      setDepartmentId("none");
     }
   }, [open]);
 
@@ -60,17 +60,13 @@ export default function InitialAdminDialog({
       toast.error("A senha deve ter pelo menos 6 caracteres.");
       return;
     }
-    if (!departmentId) {
-      toast.error("Selecione o departamento do administrador.");
-      return;
-    }
     try {
       await createMutation.mutateAsync({
         full_name: fullName.trim(),
         email: email.trim(),
         password,
         role: "admin",
-        department_id: departmentId,
+        department_id: departmentId === "none" ? null : departmentId,
       });
       toast.success("Administrador criado com sucesso.");
       onOpenChange(false);
@@ -126,16 +122,19 @@ export default function InitialAdminDialog({
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label>Departamento</Label>
+            <Label>Departamento (opcional)</Label>
             <Select
               value={departmentId}
               onValueChange={(v) => setDepartmentId(v)}
               disabled={departmentsLoading}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o departamento" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="none">
+                  Sem vínculo (acesso a todos)
+                </SelectItem>
                 {departments?.map((d) => (
                   <SelectItem key={d.id} value={d.id}>
                     {d.name}
@@ -143,6 +142,10 @@ export default function InitialAdminDialog({
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              Sem vínculo, o administrador pode acessar todos os
+              departamentos.
+            </p>
           </div>
           <DialogFooter>
             <Button

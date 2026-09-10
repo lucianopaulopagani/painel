@@ -57,7 +57,7 @@ export default function Login() {
   useEffect(() => {
     if (startedLoggedIn !== true) return;
     if (!session) return;
-    if (profile?.department_id === departmentId) {
+    if (profile?.role === "admin" || profile?.department_id === departmentId) {
       navigate("/app", { replace: true });
     } else if (profile?.departments) {
       navigate(`/login/${profile.departments.id}`, { replace: true });
@@ -84,7 +84,8 @@ export default function Login() {
     }
 
     const pWithDept = p as ProfileWithDepartment;
-    if (pWithDept.department_id === departmentId) {
+    // Admin pode acessar por qualquer departamento (mesmo sem vínculo).
+    if (pWithDept.role === "admin" || pWithDept.department_id === departmentId) {
       navigate("/app", { replace: true });
       return;
     }
