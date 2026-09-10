@@ -30,7 +30,7 @@ export default function DepartmentSelection() {
               <BrandLogo
                 variant="vertical"
                 theme="transparent-light"
-                className="h-72 w-auto drop-shadow-[0_8px_28px_rgba(0,0,0,0.35)] sm:h-80"
+                className="h-36 w-auto drop-shadow-[0_8px_28px_rgba(0,0,0,0.35)] sm:h-40"
               />
             </div>
             <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
