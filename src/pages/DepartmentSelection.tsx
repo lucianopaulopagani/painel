@@ -24,16 +24,14 @@ export default function DepartmentSelection() {
   return (
     <div className="auth-page flex min-h-screen flex-col overflow-hidden">
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-5 py-8 sm:px-8">
-        <header className="flex items-center">
-          <div className="flex items-center rounded-xl bg-white p-1.5 pr-4 shadow-lg shadow-black/20">
-            <BrandLogo variant="horizontal" className="h-9 w-auto" />
-          </div>
-        </header>
-
         <main className="flex flex-1 flex-col items-center justify-center py-12">
           <div className="mb-10 flex max-w-xl flex-col items-center text-center">
-            <div className="mb-6 rounded-2xl bg-white p-4 shadow-xl shadow-black/25">
-              <BrandLogo variant="vertical" className="h-24 w-auto sm:h-28" />
+            <div className="mb-8 flex justify-center">
+              <BrandLogo
+                variant="vertical"
+                theme="transparent-light"
+                className="h-72 w-auto drop-shadow-[0_8px_28px_rgba(0,0,0,0.35)] sm:h-80"
+              />
             </div>
             <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
               Selecione seu departamento

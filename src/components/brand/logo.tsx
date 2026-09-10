@@ -1,8 +1,13 @@
+import type { CSSProperties } from "react";
+
 interface BrandLogoProps {
   /** horizontal = ícone + texto lado a lado; vertical = ícone acima do texto */
   variant?: "horizontal" | "vertical";
-  /** light = versão com fundo branco; dark = versão com fundo azul */
-  theme?: "light" | "dark";
+  /**
+   * light = versão com fundo branco; dark = versão com fundo azul;
+   * transparent = logo azul-escura sem fundo; transparent-light = logo clara sem fundo
+   */
+  theme?: "light" | "dark" | "transparent" | "transparent-light";
   className?: string;
 }
 
@@ -14,6 +19,8 @@ const LOGO_SOURCES = {
   vertical: {
     light: "/brand/logo-white-vertical.png",
     dark: "/brand/logo-blue-vertical.png",
+    transparent: "/brand/logo-white-vertical-transparent.png",
+    "transparent-light": "/brand/logo-transparent-vertical.png",
   },
 } as const;
 
@@ -22,9 +29,14 @@ export function BrandLogo({
   theme = "light",
   className,
 }: BrandLogoProps) {
+  const src =
+    theme === "transparent" || theme === "transparent-light"
+      ? LOGO_SOURCES.vertical[theme]
+      : LOGO_SOURCES[variant][theme];
+
   return (
     <img
-      src={LOGO_SOURCES[variant][theme]}
+      src={src}
       alt="P4 Contabilidade"
       className={className}
     />
