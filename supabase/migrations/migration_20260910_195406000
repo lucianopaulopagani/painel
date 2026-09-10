@@ -1,0 +1,55 @@
+-- Tabela de departamentos (leitura pública na tela de seleção)
+create table if not exists public.departments (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  description text,
+  created_at timestamptz not null default now()
+);
+
+-- Tabela de perfis: vincula auth.users ao departamento e ao papel
+create table if not exists public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text not null,
+  full_name text not null,
+  role text not null default 'member' check (role in ('admin', 'member')),
+  department_id uuid references public.departments(id) on delete set null,
+  created_at timestamptz not null default now()
+);
+
+-- Helper que verifica se o usuário autenticado é administrador (security definer evita recursão de RLS)
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.profiles
+    where id = auth.uid() and role = 'admin'
+  );
+$$;
+
+alter table public.departments enable row level security;
+
+drop policy if exists "departments_read" on public.departments;
+create policy "departments_read" on public.departments
+  for select using (true);
+
+drop policy if exists "departments_admin_all" on public.departments;
+create policy "departments_admin_all" on public.departments
+  for all using (public.is_admin()) with check (public.is_admin());
+
+alter table public.profiles enable row level security;
+
+drop policy if exists "profiles_read_own" on public.profiles;
+create policy "profiles_read_own" on public.profiles
+  for select using (auth.uid() = id);
+
+drop policy if exists "profiles_read_admin" on public.profiles;
+create policy "profiles_read_admin" on public.profiles
+  for select using (public.is_admin());
+
+drop policy if exists "profiles_admin_all" on public.profiles;
+create policy "profiles_admin_all" on public.profiles
+  for all using (public.is_admin()) with check (public.is_admin());
