@@ -328,7 +328,7 @@ export function MovimentoFiscal() {
                               })
                             }
                           >
-                            <SelectTrigger className="h-8 w-36">
+                            <SelectTrigger className="h-8 w-24">
                               <SelectValue placeholder="—" />
                             </SelectTrigger>
                             <SelectContent>
@@ -391,7 +391,7 @@ export function MovimentoFiscal() {
                                 })
                               }
                             >
-                              <SelectTrigger className="h-8 w-28">
+                              <SelectTrigger className="h-8 w-16">
                                 <SelectValue placeholder="—" />
                               </SelectTrigger>
                               <SelectContent>
