@@ -1,5 +1,5 @@
 /** Opções da coluna SITUAÇÃO (vazio = Em branco). */
-export const SITUACAO_OPTIONS = ["OK", "OK-ENT", "OK-SM"] as const;
+export const SITUACAO_OPTIONS = ["OK", "OK-ENT", "OK-SM", "FAZENDO"] as const;
 
 /** Opções dos campos de menu suspenso (vazio = sem marcação). */
 export const OK_SM_OPTIONS = ["OK", "OK-SM"] as const;
