@@ -3491,12 +3491,12 @@ export type Database = {
           company_id: string
           created_at: string
           das: string | null
-          destda: boolean | null
+          destda: string | null
           dif_aliq: string | null
           dif_aliq_st: string | null
           envio_icms: string | null
           envio_sn: string | null
-          guia: boolean | null
+          guia: string | null
           id: string
           mes_referencia: string
           observacoes: string | null
@@ -3509,12 +3509,12 @@ export type Database = {
           company_id: string
           created_at?: string
           das?: string | null
-          destda?: boolean | null
+          destda?: string | null
           dif_aliq?: string | null
           dif_aliq_st?: string | null
           envio_icms?: string | null
           envio_sn?: string | null
-          guia?: boolean | null
+          guia?: string | null
           id?: string
           mes_referencia: string
           observacoes?: string | null
@@ -3527,12 +3527,12 @@ export type Database = {
           company_id?: string
           created_at?: string
           das?: string | null
-          destda?: boolean | null
+          destda?: string | null
           dif_aliq?: string | null
           dif_aliq_st?: string | null
           envio_icms?: string | null
           envio_sn?: string | null
-          guia?: boolean | null
+          guia?: string | null
           id?: string
           mes_referencia?: string
           observacoes?: string | null

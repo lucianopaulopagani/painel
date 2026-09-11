@@ -90,8 +90,8 @@ export interface MovementFiscalRecord {
   st: string | null;
   dif_aliq: string | null;
   dif_aliq_st: string | null;
-  guia: boolean | null;
-  destda: boolean | null;
+  guia: string | null;
+  destda: string | null;
   envio_sn: string | null;
   envio_icms: string | null;
   observacoes: string | null;

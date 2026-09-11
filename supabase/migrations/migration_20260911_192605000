@@ -1,0 +1,2 @@
+alter table public.movimento_fiscal alter column guia type text using (case when guia then 'OK' else null end);
+alter table public.movimento_fiscal alter column destda type text using (case when destda then 'OK' else null end);
