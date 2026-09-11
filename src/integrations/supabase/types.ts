@@ -3613,6 +3613,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      month_is_released: {
+        Args: { mes: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

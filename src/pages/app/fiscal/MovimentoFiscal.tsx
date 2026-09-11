@@ -136,12 +136,21 @@ export function MovimentoFiscal() {
       updated_at: _updatedAt,
       ...fields
     } = base;
-    saveMutation.mutate({
-      company_id: companyId,
-      mes_referencia: mes,
-      ...fields,
-      ...patch,
-    } as unknown as MovementFiscalInput);
+    saveMutation.mutate(
+      {
+        company_id: companyId,
+        mes_referencia: mes,
+        ...fields,
+        ...patch,
+      } as unknown as MovementFiscalInput,
+      {
+        onError: (error) => {
+          toast.error(
+            error instanceof Error ? error.message : "Erro ao salvar o registro."
+          );
+        },
+      }
+    );
   };
 
   const handleMonthChange = (value: string) => {
