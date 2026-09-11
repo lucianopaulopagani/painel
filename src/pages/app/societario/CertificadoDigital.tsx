@@ -44,6 +44,11 @@ const STATUS_CLASS: Record<CertificateStatusLevel, string> = {
     "bg-status-neutral text-status-neutral-foreground hover:bg-status-neutral",
 };
 
+const PRODUCT_CLASS: Record<string, string> = {
+  "e-CNPJ A1 12 meses": "bg-zinc-800 text-zinc-100 hover:bg-zinc-800",
+  "e-CPF A1 12 meses": "bg-zinc-200 text-zinc-800 hover:bg-zinc-200",
+};
+
 const agendamentoDateOf = (row: CertificateRow): string =>
   row.certificate?.agendamento_at
     ? splitDateTimeLocal(row.certificate.agendamento_at).date
@@ -285,7 +290,13 @@ export default function CertificadoDigital() {
                         {row.certificate && row.certificate.produtos.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
                             {row.certificate.produtos.map((produto) => (
-                              <Badge key={produto} variant="outline">
+                              <Badge
+                                key={produto}
+                                className={PRODUCT_CLASS[produto] ?? undefined}
+                                variant={
+                                  PRODUCT_CLASS[produto] ? "default" : "outline"
+                                }
+                              >
                                 {produto}
                               </Badge>
                             ))}
