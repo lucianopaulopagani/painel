@@ -360,7 +360,7 @@ export function MovimentoFiscal() {
                             />
                           ) : field.type === "input" ? (
                             <Input
-                              key={company.id}
+                              key={`${company.id}:${mes}`}
                               defaultValue={
                                 (record?.[field.key] as string) ?? ""
                               }
@@ -404,7 +404,7 @@ export function MovimentoFiscal() {
                           </span>
                         ) : (
                           <Input
-                            key={company.id}
+                            key={`${company.id}:${mes}`}
                             defaultValue={record?.observacoes ?? ""}
                             onBlur={(event) =>
                               save(company.id, {
