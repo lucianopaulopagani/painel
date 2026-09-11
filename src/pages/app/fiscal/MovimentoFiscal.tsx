@@ -1,8 +1,20 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Check, FilePlus2, Loader2 } from "lucide-react";
+import { toast } from "@/components/ui/sonner";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Select,
   SelectContent,
@@ -18,9 +30,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useMovimentoFiscal, useSaveMovimentoFiscal } from "@/hooks/use-movimento-fiscal";
+import {
+  useGenerateMovimentoFiscal,
+  useLatestMovimentoFiscal,
+  useMovimentoFiscal,
+  useMovimentoFiscalMonthExists,
+  useSaveMovimentoFiscal,
+} from "@/hooks/use-movimento-fiscal";
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
+import { useAuth } from "@/context/auth";
 import { FISCAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import {
   MOVIMENTO_FISCAL_FIELDS,
@@ -38,6 +57,17 @@ function currentMonth(): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
+function addMonths(mes: string, amount: number): string {
+  const [year, month] = mes.split("-").map(Number);
+  const date = new Date(year, month - 1 + amount, 1);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function formatMonthLabel(mes: string): string {
+  const [year, month] = mes.split("-");
+  return `${month}/${year}`;
+}
+
 function readStoredMonth(): string {
   try {
     return localStorage.getItem(STORAGE_KEY) ?? currentMonth();
@@ -47,12 +77,21 @@ function readStoredMonth(): string {
 }
 
 export function MovimentoFiscal() {
+  const { profile } = useAuth();
   const [mes, setMes] = useState<string>(readStoredMonth);
 
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: records } = useMovimentoFiscal(mes);
   const saveMutation = useSaveMovimentoFiscal(mes);
+  const { data: latestRecords } = useLatestMovimentoFiscal();
+  const mesAtual = currentMonth();
+  const mesSeguinte = addMonths(mesAtual, 1);
+  const { data: nextMonthExists } = useMovimentoFiscalMonthExists(mesSeguinte);
+  const generateMutation = useGenerateMovimentoFiscal(mesSeguinte);
+
+  const isAdmin = profile?.role === "admin";
+  const canEdit = isAdmin || mes <= mesAtual;
 
   const fiscal = findDepartmentByName(departments, FISCAL_DEPARTMENT_NAME);
 
@@ -103,6 +142,20 @@ export function MovimentoFiscal() {
     }
   };
 
+  const handleGenerate = async () => {
+    try {
+      await generateMutation.mutateAsync({
+        companyIds: rows.map((company) => company.id),
+        sourceRecords: latestRecords ?? [],
+      });
+      toast.success(`Mês ${formatMonthLabel(mesSeguinte)} gerado e liberado.`);
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao gerar o próximo mês."
+      );
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -112,18 +165,82 @@ export function MovimentoFiscal() {
         </p>
       </div>
 
-      <div className="max-w-xs">
-        <Label htmlFor="mes-referencia">Mês de referência</Label>
-        <Input
-          id="mes-referencia"
-          type="month"
-          value={mes}
-          onChange={(e) => handleMonthChange(e.target.value)}
-          className="mt-1.5"
-        />
-        <p className="mt-1.5 text-xs text-muted-foreground">
-          Pode ser digitado ou escolhido. O último mês informado fica fixo
-          (salvo neste dispositivo).
+      <div className="max-w-md space-y-3">
+        <div>
+          <Label htmlFor="mes-referencia">Mês de referência</Label>
+          <Input
+            id="mes-referencia"
+            type="month"
+            value={mes}
+            onChange={(e) => handleMonthChange(e.target.value)}
+            className="mt-1.5"
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant={mes === mesAtual ? "secondary" : "outline"}
+            onClick={() => handleMonthChange(mesAtual)}
+          >
+            Atual ({formatMonthLabel(mesAtual)})
+          </Button>
+          {(isAdmin || nextMonthExists) && (
+            <Button
+              type="button"
+              size="sm"
+              variant={mes === mesSeguinte ? "secondary" : "outline"}
+              onClick={() => handleMonthChange(mesSeguinte)}
+            >
+              Próximo ({formatMonthLabel(mesSeguinte)})
+            </Button>
+          )}
+          {isAdmin && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={!!nextMonthExists}
+                >
+                  <FilePlus2 className="h-4 w-4" />
+                  {nextMonthExists
+                    ? `Próximo mês liberado (${formatMonthLabel(mesSeguinte)})`
+                    : `Gerar e liberar próximo mês (${formatMonthLabel(mesSeguinte)})`}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Gerar e liberar {formatMonthLabel(mesSeguinte)}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Serão criados os registros do próximo mês para todas as
+                    empresas do departamento {FISCAL_DEPARTMENT_NAME}, com as
+                    marcações em branco e as observações copiadas do mês mais
+                    recente.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleGenerate}
+                    disabled={generateMutation.isPending}
+                  >
+                    Gerar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          Marcações são individuais por mês. Meses anteriores e o atual podem
+          ser editados; o próximo mês é liberado somente pelo administrador e
+          fica em modo leitura para os usuários.
         </p>
       </div>
 
@@ -180,30 +297,48 @@ export function MovimentoFiscal() {
                         </span>
                       </TableCell>
                       <TableCell className="whitespace-nowrap">
-                        <Select
-                          value={situacao === "" ? "none" : situacao}
-                          onValueChange={(value) =>
-                            save(company.id, {
-                              situacao: value === "none" ? null : value,
-                            })
-                          }
-                        >
-                          <SelectTrigger className="h-8 w-36">
-                            <SelectValue placeholder="—" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">—</SelectItem>
-                            {SITUACAO_OPTIONS.map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        {!canEdit ? (
+                          <span className="text-sm">{situacao || "—"}</span>
+                        ) : (
+                          <Select
+                            value={situacao === "" ? "none" : situacao}
+                            onValueChange={(value) =>
+                              save(company.id, {
+                                situacao: value === "none" ? null : value,
+                              })
+                            }
+                          >
+                            <SelectTrigger className="h-8 w-36">
+                              <SelectValue placeholder="—" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">—</SelectItem>
+                              {SITUACAO_OPTIONS.map((option) => (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
                       </TableCell>
                       {MOVIMENTO_FISCAL_FIELDS.map((field) => (
                         <TableCell key={field.key}>
-                          {field.type === "checkbox" ? (
+                          {!canEdit ? (
+                            field.type === "checkbox" ? (
+                              record?.[field.key] === true ? (
+                                <Check className="h-4 w-4 text-status-success" />
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  —
+                                </span>
+                              )
+                            ) : (
+                              <span className="text-sm">
+                                {(record?.[field.key] as string) || "—"}
+                              </span>
+                            )
+                          ) : field.type === "checkbox" ? (
                             <Checkbox
                               checked={record?.[field.key] === true}
                               onCheckedChange={(checked) =>
@@ -252,17 +387,23 @@ export function MovimentoFiscal() {
                         </TableCell>
                       ))}
                       <TableCell>
-                        <Input
-                          key={company.id}
-                          defaultValue={record?.observacoes ?? ""}
-                          onBlur={(event) =>
-                            save(company.id, {
-                              observacoes:
-                                event.target.value.trim() || null,
-                            })
-                          }
-                          className="h-8 min-w-40"
-                        />
+                        {!canEdit ? (
+                          <span className="text-sm text-muted-foreground">
+                            {record?.observacoes || "—"}
+                          </span>
+                        ) : (
+                          <Input
+                            key={company.id}
+                            defaultValue={record?.observacoes ?? ""}
+                            onBlur={(event) =>
+                              save(company.id, {
+                                observacoes:
+                                  event.target.value.trim() || null,
+                              })
+                            }
+                            className="h-8 min-w-40"
+                          />
+                        )}
                       </TableCell>
                     </TableRow>
                   );
