@@ -3485,6 +3485,70 @@ export type Database = {
         }
         Relationships: []
       }
+      movimento_fiscal: {
+        Row: {
+          antecipacao: boolean | null
+          company_id: string
+          created_at: string
+          das: boolean | null
+          destda: boolean | null
+          dif_aliq: boolean | null
+          dif_aliq_st: boolean | null
+          envio_icms: boolean | null
+          envio_sn: boolean | null
+          guia: boolean | null
+          id: string
+          mes_referencia: string
+          observacoes: string | null
+          situacao: string | null
+          st: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          antecipacao?: boolean | null
+          company_id: string
+          created_at?: string
+          das?: boolean | null
+          destda?: boolean | null
+          dif_aliq?: boolean | null
+          dif_aliq_st?: boolean | null
+          envio_icms?: boolean | null
+          envio_sn?: boolean | null
+          guia?: boolean | null
+          id?: string
+          mes_referencia: string
+          observacoes?: string | null
+          situacao?: string | null
+          st?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          antecipacao?: boolean | null
+          company_id?: string
+          created_at?: string
+          das?: boolean | null
+          destda?: boolean | null
+          dif_aliq?: boolean | null
+          dif_aliq_st?: boolean | null
+          envio_icms?: boolean | null
+          envio_sn?: boolean | null
+          guia?: boolean | null
+          id?: string
+          mes_referencia?: string
+          observacoes?: string | null
+          situacao?: string | null
+          st?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimento_fiscal_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_departments: {
         Row: {
           created_at: string

@@ -1,0 +1,37 @@
+create table if not exists public.movimento_fiscal (
+  id uuid primary key default gen_random_uuid(),
+  company_id uuid not null references public.companies(id) on delete cascade,
+  mes_referencia text not null,
+  situacao text,
+  das boolean,
+  antecipacao boolean,
+  st boolean,
+  dif_aliq boolean,
+  dif_aliq_st boolean,
+  guia boolean,
+  destda boolean,
+  envio_sn boolean,
+  envio_icms boolean,
+  observacoes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (company_id, mes_referencia)
+);
+
+alter table public.movimento_fiscal enable row level security;
+
+drop policy if exists "movimento_fiscal_admin_all" on public.movimento_fiscal;
+create policy "movimento_fiscal_admin_all" on public.movimento_fiscal
+  for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "movimento_fiscal_member_all" on public.movimento_fiscal;
+create policy "movimento_fiscal_member_all" on public.movimento_fiscal
+  for all
+  using (exists (
+    select 1 from public.company_departments cd
+    join public.profile_departments pd on pd.department_id = cd.department_id
+    where cd.company_id = movimento_fiscal.company_id and pd.profile_id = auth.uid()))
+  with check (exists (
+    select 1 from public.company_departments cd
+    join public.profile_departments pd on pd.department_id = cd.department_id
+    where cd.company_id = movimento_fiscal.company_id and pd.profile_id = auth.uid()));

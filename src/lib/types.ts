@@ -77,3 +77,29 @@ export interface CertificateRow {
   company: CompanyWithDepartments;
   certificate: Certificate | null;
 }
+
+/** Registro do Movimento Fiscal de uma empresa em um mês de referência. */
+export interface MovementFiscalRecord {
+  id: string;
+  company_id: string;
+  /** Mês de referência (YYYY-MM). */
+  mes_referencia: string;
+  situacao: string | null;
+  das: boolean | null;
+  antecipacao: boolean | null;
+  st: boolean | null;
+  dif_aliq: boolean | null;
+  dif_aliq_st: boolean | null;
+  guia: boolean | null;
+  destda: boolean | null;
+  envio_sn: boolean | null;
+  envio_icms: boolean | null;
+  observacoes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type MovementFiscalInput = Omit<
+  MovementFiscalRecord,
+  "id" | "created_at" | "updated_at"
+>;
