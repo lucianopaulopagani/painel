@@ -109,6 +109,7 @@ export default function CertificadoDigital() {
                 <TableHead>Empresa</TableHead>
                 <TableHead>Avisado</TableHead>
                 <TableHead>Agendamento</TableHead>
+                <TableHead>Observações</TableHead>
                 <TableHead className="w-20 text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -142,6 +143,20 @@ export default function CertificadoDigital() {
                       <TableCell className="whitespace-nowrap text-muted-foreground">
                         {formatDateTimeBr(row.certificate?.agendamento_at)}
                       </TableCell>
+                      <TableCell className="max-w-64">
+                        {row.certificate?.observacoes ? (
+                          <span
+                            className="line-clamp-2 text-sm text-muted-foreground"
+                            title={row.certificate.observacoes}
+                          >
+                            {row.certificate.observacoes.length > 100
+                              ? `${row.certificate.observacoes.slice(0, 100)}…`
+                              : row.certificate.observacoes}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
@@ -158,7 +173,7 @@ export default function CertificadoDigital() {
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={8}
                     className="py-10 text-center text-muted-foreground"
                   >
                     Nenhuma empresa vinculada ao departamento{" "}
