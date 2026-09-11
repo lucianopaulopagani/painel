@@ -77,6 +77,9 @@ function readStoredMonth(): string {
   }
 }
 
+const CELL = "px-1.5 py-1 text-xs";
+const HEAD = "px-1.5 py-1 text-xs font-medium text-muted-foreground";
+
 export function MovimentoFiscal() {
   const { profile } = useAuth();
   const [mes, setMes] = useState<string>(
@@ -277,20 +280,23 @@ export function MovimentoFiscal() {
       )}
 
       {!isLoading && !isError && (
-        <div className="overflow-x-auto rounded-lg border">
-          <Table>
+        <div className="rounded-lg border">
+          <Table className="table-fixed">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12">N</TableHead>
-                <TableHead className="w-14">UF</TableHead>
-                <TableHead>Empresa</TableHead>
-                <TableHead>Situação</TableHead>
+                <TableHead className={`${HEAD} w-8`}>N</TableHead>
+                <TableHead className={`${HEAD} w-10`}>UF</TableHead>
+                <TableHead className={`${HEAD} w-40`}>Empresa</TableHead>
+                <TableHead className={`${HEAD} w-24`}>Situação</TableHead>
                 {MOVIMENTO_FISCAL_FIELDS.map((field) => (
-                  <TableHead key={field.key} className="whitespace-nowrap">
+                  <TableHead
+                    key={field.key}
+                    className={`${HEAD} w-14 whitespace-nowrap`}
+                  >
                     {field.label}
                   </TableHead>
                 ))}
-                <TableHead>Observações</TableHead>
+                <TableHead className={`${HEAD} w-40`}>Observações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -300,25 +306,23 @@ export function MovimentoFiscal() {
                   const situacao = record?.situacao ?? "";
                   return (
                     <TableRow key={company.id}>
-                      <TableCell className="whitespace-nowrap font-medium">
+                      <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
                         {company.numero || "—"}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell className={`${CELL} whitespace-nowrap`}>
                         {company.uf}
                       </TableCell>
-                      <TableCell className="max-w-36">
+                      <TableCell className={CELL}>
                         <span
                           className="block truncate font-medium"
                           title={company.name}
                         >
-                          {company.name.length > 10
-                            ? `${company.name.slice(0, 10)}…`
-                            : company.name}
+                          {company.name}
                         </span>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell className={`${CELL} whitespace-nowrap`}>
                         {!canEdit ? (
-                          <span className="text-sm">{situacao || "—"}</span>
+                          <span>{situacao || "—"}</span>
                         ) : (
                           <Select
                             value={situacao === "" ? "none" : situacao}
@@ -328,7 +332,7 @@ export function MovimentoFiscal() {
                               })
                             }
                           >
-                            <SelectTrigger className="h-8 w-24 px-1.5 text-xs">
+                            <SelectTrigger className="h-7 w-full min-w-0 px-1 text-xs">
                               <SelectValue placeholder="—" />
                             </SelectTrigger>
                             <SelectContent>
@@ -343,7 +347,7 @@ export function MovimentoFiscal() {
                         )}
                       </TableCell>
                       {MOVIMENTO_FISCAL_FIELDS.map((field) => (
-                        <TableCell key={field.key}>
+                        <TableCell key={field.key} className={CELL}>
                           {!canEdit ? (
                             field.type === "checkbox" ? (
                               record?.[field.key] === true ? (
@@ -354,7 +358,7 @@ export function MovimentoFiscal() {
                                 </span>
                               )
                             ) : (
-                              <span className="text-sm">
+                              <span className="block truncate">
                                 {(record?.[field.key] as string) || "—"}
                               </span>
                             )
@@ -379,7 +383,7 @@ export function MovimentoFiscal() {
                                     event.target.value.trim() || null,
                                 })
                               }
-                              className="h-8 w-20"
+                              className="h-7 w-full min-w-0 px-1 text-xs"
                             />
                           ) : (
                             <Select
@@ -391,7 +395,7 @@ export function MovimentoFiscal() {
                                 })
                               }
                             >
-                              <SelectTrigger className="h-8 w-16 px-1 text-xs">
+                              <SelectTrigger className="h-7 w-full min-w-0 px-1 text-xs">
                                 <SelectValue placeholder="—" />
                               </SelectTrigger>
                               <SelectContent>
@@ -406,9 +410,9 @@ export function MovimentoFiscal() {
                           )}
                         </TableCell>
                       ))}
-                      <TableCell>
+                      <TableCell className={CELL}>
                         {!canEdit ? (
-                          <span className="text-sm text-muted-foreground">
+                          <span className="block truncate">
                             {record?.observacoes || "—"}
                           </span>
                         ) : (
@@ -421,7 +425,7 @@ export function MovimentoFiscal() {
                                   event.target.value.trim() || null,
                               })
                             }
-                            className="h-8 min-w-40"
+                            className="h-7 w-full min-w-0 px-1 text-xs"
                           />
                         )}
                       </TableCell>
@@ -432,7 +436,7 @@ export function MovimentoFiscal() {
                 <TableRow>
                   <TableCell
                     colSpan={5 + MOVIMENTO_FISCAL_FIELDS.length}
-                    className="py-10 text-center text-muted-foreground"
+                    className={`${CELL} py-8 text-center text-muted-foreground`}
                   >
                     Nenhuma empresa vinculada ao departamento{" "}
                     {FISCAL_DEPARTMENT_NAME}. Marque esse departamento no
