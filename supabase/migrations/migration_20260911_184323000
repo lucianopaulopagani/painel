@@ -1,0 +1,3 @@
+alter table public.movimento_fiscal alter column das type text using (case when das then 'OK' else null end);
+alter table public.movimento_fiscal alter column envio_sn type text using (case when envio_sn then 'OK' else null end);
+alter table public.movimento_fiscal alter column envio_icms type text using (case when envio_icms then 'OK' else null end);

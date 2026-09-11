@@ -3490,12 +3490,12 @@ export type Database = {
           antecipacao: boolean | null
           company_id: string
           created_at: string
-          das: boolean | null
+          das: string | null
           destda: boolean | null
           dif_aliq: boolean | null
           dif_aliq_st: boolean | null
-          envio_icms: boolean | null
-          envio_sn: boolean | null
+          envio_icms: string | null
+          envio_sn: string | null
           guia: boolean | null
           id: string
           mes_referencia: string
@@ -3508,12 +3508,12 @@ export type Database = {
           antecipacao?: boolean | null
           company_id: string
           created_at?: string
-          das?: boolean | null
+          das?: string | null
           destda?: boolean | null
           dif_aliq?: boolean | null
           dif_aliq_st?: boolean | null
-          envio_icms?: boolean | null
-          envio_sn?: boolean | null
+          envio_icms?: string | null
+          envio_sn?: string | null
           guia?: boolean | null
           id?: string
           mes_referencia: string
@@ -3526,12 +3526,12 @@ export type Database = {
           antecipacao?: boolean | null
           company_id?: string
           created_at?: string
-          das?: boolean | null
+          das?: string | null
           destda?: boolean | null
           dif_aliq?: boolean | null
           dif_aliq_st?: boolean | null
-          envio_icms?: boolean | null
-          envio_sn?: boolean | null
+          envio_icms?: string | null
+          envio_sn?: string | null
           guia?: boolean | null
           id?: string
           mes_referencia?: string

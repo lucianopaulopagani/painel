@@ -144,8 +144,8 @@ export function MovimentoFiscal() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Numero</TableHead>
-                <TableHead>UF</TableHead>
+                <TableHead className="w-12">N</TableHead>
+                <TableHead className="w-14">UF</TableHead>
                 <TableHead>Empresa</TableHead>
                 <TableHead>Situação</TableHead>
                 {MOVIMENTO_FISCAL_FIELDS.map((field) => (
@@ -196,14 +196,38 @@ export function MovimentoFiscal() {
                       </TableCell>
                       {MOVIMENTO_FISCAL_FIELDS.map((field) => (
                         <TableCell key={field.key}>
-                          <Checkbox
-                            checked={record?.[field.key] === true}
-                            onCheckedChange={(checked) =>
-                              save(company.id, {
-                                [field.key]: checked === true,
-                              })
-                            }
-                          />
+                          {field.type === "checkbox" ? (
+                            <Checkbox
+                              checked={record?.[field.key] === true}
+                              onCheckedChange={(checked) =>
+                                save(company.id, {
+                                  [field.key]: checked === true,
+                                })
+                              }
+                            />
+                          ) : (
+                            <Select
+                              value={(record?.[field.key] as string) || "none"}
+                              onValueChange={(value) =>
+                                save(company.id, {
+                                  [field.key]:
+                                    value === "none" ? null : value,
+                                })
+                              }
+                            >
+                              <SelectTrigger className="h-8 w-28">
+                                <SelectValue placeholder="—" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">—</SelectItem>
+                                {field.options?.map((option) => (
+                                  <SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
                         </TableCell>
                       ))}
                       <TableCell>
