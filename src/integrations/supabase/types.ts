@@ -3368,6 +3368,7 @@ export type Database = {
           created_at: string
           id: string
           observacoes: string | null
+          produtos: string[]
           updated_at: string
           vencimento: string | null
         }
@@ -3378,6 +3379,7 @@ export type Database = {
           created_at?: string
           id?: string
           observacoes?: string | null
+          produtos?: string[]
           updated_at?: string
           vencimento?: string | null
         }
@@ -3388,6 +3390,7 @@ export type Database = {
           created_at?: string
           id?: string
           observacoes?: string | null
+          produtos?: string[]
           updated_at?: string
           vencimento?: string | null
         }

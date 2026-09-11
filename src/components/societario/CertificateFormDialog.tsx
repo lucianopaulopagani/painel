@@ -19,7 +19,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { MultiSelectDropdown } from "@/components/ui/multi-select-dropdown";
 import { useUpsertCertificate } from "@/hooks/use-certificates";
+import { CERTIFICATE_PRODUCTS } from "@/lib/certificate-products";
 import { joinDateTimeLocal, splitDateTimeLocal } from "@/lib/utils";
 import type { CertificateRow } from "@/lib/types";
 
@@ -41,6 +43,7 @@ export default function CertificateFormDialog({
   const [agendamentoDate, setAgendamentoDate] = useState("");
   const [agendamentoTime, setAgendamentoTime] = useState("");
   const [observacoes, setObservacoes] = useState("");
+  const [produtos, setProdutos] = useState<string[]>([]);
 
   useEffect(() => {
     if (!open || !row) return;
@@ -57,6 +60,7 @@ export default function CertificateFormDialog({
     setAgendamentoDate(parts.date);
     setAgendamentoTime(parts.time);
     setObservacoes(certificate?.observacoes ?? "");
+    setProdutos(certificate?.produtos ?? []);
   }, [open, row]);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -89,6 +93,7 @@ export default function CertificateFormDialog({
           ? null
           : joinDateTimeLocal(agendamentoDate, agendamentoTime),
         observacoes: shouldClear ? null : observacoes.trim() || null,
+        produtos,
       });
       if (shouldClear) {
         toast.info(
@@ -136,6 +141,19 @@ export default function CertificateFormDialog({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Produto</Label>
+            <MultiSelectDropdown
+              options={CERTIFICATE_PRODUCTS.map((produto) => ({
+                value: produto,
+                label: produto,
+              }))}
+              value={produtos}
+              onChange={setProdutos}
+              placeholder="Selecionar produtos"
+            />
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

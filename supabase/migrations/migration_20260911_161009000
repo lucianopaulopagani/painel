@@ -1,0 +1,1 @@
+alter table public.certificates add column if not exists produtos text[] not null default '{}';

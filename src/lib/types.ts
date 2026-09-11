@@ -66,6 +66,8 @@ export interface Certificate {
   avisado: boolean | null;
   agendamento_at: string | null;
   observacoes: string | null;
+  /** Produtos selecionados (ex.: e-CNPJ A1 12 meses). */
+  produtos: string[];
   created_at: string;
   updated_at: string;
 }

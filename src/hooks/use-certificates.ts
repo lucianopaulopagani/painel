@@ -23,6 +23,7 @@ export interface CertificateInput {
   avisado: boolean | null;
   agendamento_at: string | null;
   observacoes: string | null;
+  produtos: string[];
 }
 
 /** Cria ou atualiza o certificado da empresa (um por empresa). */

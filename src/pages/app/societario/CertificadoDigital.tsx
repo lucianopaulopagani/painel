@@ -250,6 +250,7 @@ export default function CertificadoDigital() {
                 <TableHead>Situação</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Empresa</TableHead>
+                <TableHead>Produto</TableHead>
                 <TableHead>Avisado</TableHead>
                 <TableHead>Agendamento</TableHead>
                 <TableHead>Observações</TableHead>
@@ -279,6 +280,19 @@ export default function CertificadoDigital() {
                       </TableCell>
                       <TableCell className="font-medium">
                         {row.company.name}
+                      </TableCell>
+                      <TableCell>
+                        {row.certificate && row.certificate.produtos.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {row.certificate.produtos.map((produto) => (
+                              <Badge key={produto} variant="outline">
+                                {produto}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         {row.certificate?.avisado === true ? (
@@ -332,7 +346,7 @@ export default function CertificadoDigital() {
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={8}
+                    colSpan={9}
                     className="py-10 text-center text-muted-foreground"
                   >
                     {rows.length === 0

@@ -75,6 +75,7 @@ export function buildCertificateReportHtml(
       const pill = `<span class="pill" style="background:${colors.bg};color:${colors.fg}">`;
       return `<tr>
         <td>${escapeHtml(row.company.name)}</td>
+        <td>${escapeHtml((row.certificate?.produtos ?? []).join(", ") || "—")}</td>
         <td class="nowrap">${pill}${escapeHtml(situacao)}</span></td>
         <td>${pill}${escapeHtml(status.status)}</span></td>
         <td>${row.certificate?.avisado === true ? "Sim" : row.certificate?.avisado === false ? "Não" : "—"}</td>
@@ -123,11 +124,11 @@ export function buildCertificateReportHtml(
   <table>
     <thead>
       <tr>
-        <th>Empresa</th><th>Vencimento / Situação</th><th>Status</th>
+        <th>Empresa</th><th>Produto</th><th>Vencimento / Situação</th><th>Status</th>
         <th>Avisado</th><th>Agendamento</th><th>Observações</th>
       </tr>
     </thead>
-    <tbody>${body || `<tr><td colspan="6">Nenhum registro.</td></tr>`}</tbody>
+    <tbody>${body || `<tr><td colspan="7">Nenhum registro.</td></tr>`}</tbody>
   </table>
 </body>
 </html>`;
