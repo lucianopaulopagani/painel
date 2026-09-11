@@ -1,0 +1,38 @@
+create or replace function public.dashboard_fiscal(mes text)
+returns table (
+  company_id uuid,
+  numero text,
+  name text,
+  uf text,
+  situacao text,
+  responsavel_ids uuid[],
+  responsaveis text[]
+)
+language sql
+security definer
+set search_path = public
+as $$
+  select
+    c.id,
+    c.numero,
+    c.name,
+    c.uf,
+    mf.situacao,
+    coalesce(cd.responsible_profile_ids, '{}') as responsavel_ids,
+    array(
+      select p.full_name
+      from public.profiles p
+      where p.id = any(coalesce(cd.responsible_profile_ids, '{}'))
+      order by p.full_name
+    ) as responsaveis
+  from public.companies c
+  join public.company_departments cd on cd.company_id = c.id
+  join public.departments d on d.id = cd.department_id
+  left join public.movimento_fiscal mf
+    on mf.company_id = c.id and mf.mes_referencia = mes
+  where d.name = 'Depart. Fiscal'
+  order by c.numero;
+$$;
+
+revoke execute on function public.dashboard_fiscal(text) from anon;
+grant execute on function public.dashboard_fiscal(text) to authenticated;

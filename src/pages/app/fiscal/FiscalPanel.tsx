@@ -1,15 +1,19 @@
 import { useState } from "react";
 import { PanelHeader } from "@/components/shell/panel-header";
 import { ModuleNav } from "@/components/shell/module-nav";
+import FiscalDashboard from "./FiscalDashboard";
 import { MovimentoFiscal } from "./MovimentoFiscal";
 
 /** Recursos (módulos) do Fiscal — novos módulos entram nesta lista. */
-const MODULES = [{ key: "movimento-fiscal", label: "Movimento Fiscal" }] as const;
+const MODULES = [
+  { key: "dashboard", label: "Dashboard" },
+  { key: "movimento-fiscal", label: "Movimento Fiscal" },
+] as const;
 
 type ModuleKey = (typeof MODULES)[number]["key"];
 
 export default function FiscalPanel() {
-  const [active, setActive] = useState<ModuleKey>("movimento-fiscal");
+  const [active, setActive] = useState<ModuleKey>("dashboard");
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -23,6 +27,7 @@ export default function FiscalPanel() {
           ariaLabel="Recursos do Fiscal"
         />
 
+        {active === "dashboard" && <FiscalDashboard />}
         {active === "movimento-fiscal" && <MovimentoFiscal />}
       </main>
     </div>

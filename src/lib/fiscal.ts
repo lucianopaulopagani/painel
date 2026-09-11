@@ -15,6 +15,11 @@ export type MovimentoFiscalFieldKey =
   | "envio_sn"
   | "envio_icms";
 
+/** OK e OK-SM contam como empresa finalizada; o restante é pendente. */
+export function isSituacaoFinalizada(situacao: string | null): boolean {
+  return situacao === "OK" || situacao === "OK-SM";
+}
+
 export interface MovimentoFiscalFieldDef {
   key: MovimentoFiscalFieldKey;
   label: string;
