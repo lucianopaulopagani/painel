@@ -138,10 +138,24 @@ export default function CertificadoDigital() {
                         {row.company.name}
                       </TableCell>
                       <TableCell>
-                        {row.certificate?.avisado ? "Sim" : "Não"}
+                        {row.certificate?.avisado ? (
+                          <Badge className="bg-status-success text-status-success-foreground hover:bg-status-success">
+                            Sim
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-status-danger text-status-danger-foreground hover:bg-status-danger">
+                            Não
+                          </Badge>
+                        )}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap text-muted-foreground">
-                        {formatDateTimeBr(row.certificate?.agendamento_at)}
+                      <TableCell className="whitespace-nowrap">
+                        {row.certificate?.agendamento_at ? (
+                          <Badge className="bg-status-warning text-status-warning-foreground hover:bg-status-warning">
+                            {formatDateTimeBr(row.certificate.agendamento_at)}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
                       </TableCell>
                       <TableCell className="max-w-64">
                         {row.certificate?.observacoes ? (
