@@ -62,16 +62,41 @@ export default function CertificateFormDialog({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!row) return;
+
+    // Ao renovar (nova data futura) um certificado vencido ou que vence hoje,
+    // limpa automaticamente avisado, agendamento e observações.
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(
+      today.getMonth() + 1
+    ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const existingDue = row.certificate?.vencimento ?? null;
+    const isExistingOverdue = existingDue !== null && existingDue <= todayStr;
+    const isNewFuture = vencimento !== "" && vencimento > todayStr;
+    const shouldClear = isExistingOverdue && isNewFuture;
+
     try {
       await upsert.mutateAsync({
         company_id: row.company.id,
         vencimento: vencimento || null,
-        avisado:
-          avisado === "sim" ? true : avisado === "nao" ? false : null,
-        agendamento_at: joinDateTimeLocal(agendamentoDate, agendamentoTime),
-        observacoes: observacoes.trim() || null,
+        avisado: shouldClear
+          ? null
+          : avisado === "sim"
+            ? true
+            : avisado === "nao"
+              ? false
+              : null,
+        agendamento_at: shouldClear
+          ? null
+          : joinDateTimeLocal(agendamentoDate, agendamentoTime),
+        observacoes: shouldClear ? null : observacoes.trim() || null,
       });
-      toast.success("Certificado salvo.");
+      if (shouldClear) {
+        toast.info(
+          "Vencimento futuro — avisado, agendamento e observações foram limpos."
+        );
+      } else {
+        toast.success("Certificado salvo.");
+      }
       onOpenChange(false);
     } catch (err) {
       toast.error(
