@@ -3410,7 +3410,7 @@ export type Database = {
           id: string
           inscricao_estadual: string | null
           name: string
-          numero: string
+          numero: string | null
           uf: string
         }
         Insert: {
@@ -3419,7 +3419,7 @@ export type Database = {
           id?: string
           inscricao_estadual?: string | null
           name: string
-          numero: string
+          numero?: string | null
           uf: string
         }
         Update: {
@@ -3428,7 +3428,7 @@ export type Database = {
           id?: string
           inscricao_estadual?: string | null
           name?: string
-          numero?: string
+          numero?: string | null
           uf?: string
         }
         Relationships: []

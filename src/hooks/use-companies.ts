@@ -21,9 +21,14 @@ export function useCompanies() {
       if (error) throw error;
       return (data as unknown as RawCompanyRow[])
         .map(toCompanyWithDepartments)
-        .sort((a, b) =>
-          a.numero.localeCompare(b.numero, "pt-BR", { numeric: true })
-        );
+        .sort((a, b) => {
+          if (!a.numero && !b.numero) {
+            return a.name.localeCompare(b.name, "pt-BR");
+          }
+          if (!a.numero) return 1;
+          if (!b.numero) return -1;
+          return a.numero.localeCompare(b.numero, "pt-BR", { numeric: true });
+        });
     },
   });
 }
@@ -69,7 +74,7 @@ export function useCreateCompany() {
       const { data, error } = await supabase
         .from("companies")
         .insert({
-          numero: input.numero.trim(),
+          numero: input.numero.trim() || null,
           name: input.name.trim(),
           documento: input.documento.trim(),
           inscricao_estadual: input.inscricao_estadual?.trim() || null,
@@ -93,7 +98,7 @@ export function useUpdateCompany() {
       const { error } = await supabase
         .from("companies")
         .update({
-          numero: input.numero.trim(),
+          numero: input.numero.trim() || null,
           name: input.name.trim(),
           documento: input.documento.trim(),
           inscricao_estadual: input.inscricao_estadual?.trim() || null,

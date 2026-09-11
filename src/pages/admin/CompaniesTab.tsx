@@ -109,7 +109,7 @@ export default function CompaniesTab() {
                 companies.map((company) => (
                   <TableRow key={company.id}>
                     <TableCell className="font-medium">
-                      {company.numero}
+                      {company.numero || "—"}
                     </TableCell>
                     <TableCell className="font-medium">
                       {company.name}

@@ -34,7 +34,7 @@ export function toProfileWithDepartments(
 /** Linha crua de "companies" com os vínculos de departamento. */
 export interface RawCompanyRow {
   id: string;
-  numero: string;
+  numero: string | null;
   name: string;
   documento: string;
   inscricao_estadual: string | null;

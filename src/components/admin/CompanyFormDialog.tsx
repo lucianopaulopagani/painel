@@ -95,8 +95,8 @@ export default function CompanyFormDialog({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!numero.trim() || !name.trim()) {
-      toast.error("Preencha o numero e o nome da empresa.");
+    if (!name.trim()) {
+      toast.error("Preencha o nome da empresa.");
       return;
     }
     if (!isValidCpfCnpj(documento)) {
@@ -163,8 +163,7 @@ export default function CompanyFormDialog({
                 id="company-numero"
                 value={numero}
                 onChange={(e) => setNumero(e.target.value)}
-                placeholder="Ex.: 001"
-                required
+                placeholder="Ex.: 001 (opcional)"
               />
             </div>
             <div className="flex flex-col gap-1.5">
