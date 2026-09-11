@@ -10,8 +10,8 @@ interface StatusDonutProps {
 }
 
 const COLORS = {
-  finalizadas: "hsl(var(--status-success))",
-  pendentes: "hsl(var(--status-warning))",
+  finalizadas: "hsl(var(--chart-success))",
+  pendentes: "hsl(var(--chart-warning))",
 };
 
 function Metric({

@@ -26,6 +26,10 @@ export default {
 				brand: {
 					cyan: 'hsl(var(--brand-cyan))'
 				},
+				chart: {
+					warning: 'hsl(var(--chart-warning))',
+					success: 'hsl(var(--chart-success))'
+				},
 				status: {
 					danger: {
 						DEFAULT: 'hsl(var(--status-danger))',

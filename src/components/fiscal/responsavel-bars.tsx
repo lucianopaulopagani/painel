@@ -47,13 +47,13 @@ export function ResponsavelBars({ data }: { data: ResponsavelBarData[] }) {
             dataKey="finalizadas"
             name="Finalizadas"
             stackId="a"
-            fill="hsl(var(--status-success))"
+            fill="hsl(var(--chart-success))"
           />
           <Bar
             dataKey="pendentes"
             name="Pendentes"
             stackId="a"
-            fill="hsl(var(--status-warning))"
+            fill="hsl(var(--chart-warning))"
             radius={[0, 4, 4, 0]}
           />
         </BarChart>
