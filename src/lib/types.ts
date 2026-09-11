@@ -86,10 +86,10 @@ export interface MovementFiscalRecord {
   mes_referencia: string;
   situacao: string | null;
   das: string | null;
-  antecipacao: boolean | null;
-  st: boolean | null;
-  dif_aliq: boolean | null;
-  dif_aliq_st: boolean | null;
+  antecipacao: string | null;
+  st: string | null;
+  dif_aliq: string | null;
+  dif_aliq_st: string | null;
   guia: boolean | null;
   destda: boolean | null;
   envio_sn: string | null;

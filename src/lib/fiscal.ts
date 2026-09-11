@@ -19,18 +19,18 @@ export type MovimentoFiscalFieldKey =
 export interface MovimentoFiscalFieldDef {
   key: MovimentoFiscalFieldKey;
   label: string;
-  /** checkbox = marcação; select = menu suspenso. */
-  type: "checkbox" | "select";
+  /** checkbox = marcação; select = menu suspenso; input = digitação de valor. */
+  type: "checkbox" | "select" | "input";
   options?: readonly string[];
 }
 
 /** Campos de obrigação do Movimento Fiscal. */
 export const MOVIMENTO_FISCAL_FIELDS: MovimentoFiscalFieldDef[] = [
   { key: "das", label: "DAS", type: "select", options: DAS_OPTIONS },
-  { key: "antecipacao", label: "ANTECIPAÇÃO", type: "checkbox" },
-  { key: "st", label: "ST", type: "checkbox" },
-  { key: "dif_aliq", label: "DIF ALIQ", type: "checkbox" },
-  { key: "dif_aliq_st", label: "DIF ALIQ C/ST", type: "checkbox" },
+  { key: "antecipacao", label: "ANTECIPAÇÃO", type: "input" },
+  { key: "st", label: "ST", type: "input" },
+  { key: "dif_aliq", label: "DIF ALIQ", type: "input" },
+  { key: "dif_aliq_st", label: "DIF ALIQ C/ST", type: "input" },
   { key: "guia", label: "GUIA", type: "checkbox" },
   { key: "destda", label: "DESTDA", type: "checkbox" },
   {

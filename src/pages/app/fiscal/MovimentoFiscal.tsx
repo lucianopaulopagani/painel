@@ -212,6 +212,20 @@ export function MovimentoFiscal() {
                                 })
                               }
                             />
+                          ) : field.type === "input" ? (
+                            <Input
+                              key={company.id}
+                              defaultValue={
+                                (record?.[field.key] as string) ?? ""
+                              }
+                              onBlur={(event) =>
+                                save(company.id, {
+                                  [field.key]:
+                                    event.target.value.trim() || null,
+                                })
+                              }
+                              className="h-8 w-20"
+                            />
                           ) : (
                             <Select
                               value={(record?.[field.key] as string) || "none"}

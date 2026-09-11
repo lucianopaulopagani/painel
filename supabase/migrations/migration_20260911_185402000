@@ -1,0 +1,4 @@
+alter table public.movimento_fiscal alter column antecipacao type text using (case when antecipacao then 'X' else null end);
+alter table public.movimento_fiscal alter column st type text using (case when st then 'X' else null end);
+alter table public.movimento_fiscal alter column dif_aliq type text using (case when dif_aliq then 'X' else null end);
+alter table public.movimento_fiscal alter column dif_aliq_st type text using (case when dif_aliq_st then 'X' else null end);

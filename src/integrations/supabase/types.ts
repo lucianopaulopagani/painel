@@ -3487,13 +3487,13 @@ export type Database = {
       }
       movimento_fiscal: {
         Row: {
-          antecipacao: boolean | null
+          antecipacao: string | null
           company_id: string
           created_at: string
           das: string | null
           destda: boolean | null
-          dif_aliq: boolean | null
-          dif_aliq_st: boolean | null
+          dif_aliq: string | null
+          dif_aliq_st: string | null
           envio_icms: string | null
           envio_sn: string | null
           guia: boolean | null
@@ -3501,17 +3501,17 @@ export type Database = {
           mes_referencia: string
           observacoes: string | null
           situacao: string | null
-          st: boolean | null
+          st: string | null
           updated_at: string
         }
         Insert: {
-          antecipacao?: boolean | null
+          antecipacao?: string | null
           company_id: string
           created_at?: string
           das?: string | null
           destda?: boolean | null
-          dif_aliq?: boolean | null
-          dif_aliq_st?: boolean | null
+          dif_aliq?: string | null
+          dif_aliq_st?: string | null
           envio_icms?: string | null
           envio_sn?: string | null
           guia?: boolean | null
@@ -3519,17 +3519,17 @@ export type Database = {
           mes_referencia: string
           observacoes?: string | null
           situacao?: string | null
-          st?: boolean | null
+          st?: string | null
           updated_at?: string
         }
         Update: {
-          antecipacao?: boolean | null
+          antecipacao?: string | null
           company_id?: string
           created_at?: string
           das?: string | null
           destda?: boolean | null
-          dif_aliq?: boolean | null
-          dif_aliq_st?: boolean | null
+          dif_aliq?: string | null
+          dif_aliq_st?: string | null
           envio_icms?: string | null
           envio_sn?: string | null
           guia?: boolean | null
@@ -3537,7 +3537,7 @@ export type Database = {
           mes_referencia?: string
           observacoes?: string | null
           situacao?: string | null
-          st?: boolean | null
+          st?: string | null
           updated_at?: string
         }
         Relationships: [
