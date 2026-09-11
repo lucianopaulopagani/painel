@@ -3609,6 +3609,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      dashboard_fiscal: {
+        Args: { mes: string }
+        Returns: {
+          company_id: string
+          name: string
+          numero: string
+          situacao: string
+          uf: string
+        }[]
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
