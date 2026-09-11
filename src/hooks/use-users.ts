@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import type { ProfileWithDepartment, Role } from "@/lib/types";
+import { toProfileWithDepartments, type RawProfileRow } from "@/lib/mappers";
+import type { ProfileWithDepartments, Role } from "@/lib/types";
 
 export const profilesKeys = {
   all: ["profiles"] as const,
@@ -33,10 +34,10 @@ export function useUsers() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("*, departments(id, name)")
+        .select("*, profile_departments(departments(id, name))")
         .order("full_name");
       if (error) throw error;
-      return data as ProfileWithDepartment[];
+      return (data as unknown as RawProfileRow[]).map(toProfileWithDepartments);
     },
   });
 }
@@ -46,7 +47,7 @@ export interface CreateUserInput {
   email: string;
   password: string;
   role: Role;
-  department_id: string | null;
+  department_ids: string[];
 }
 
 export function useCreateUser() {
@@ -74,7 +75,7 @@ export interface UpdateUserInput {
   full_name?: string;
   email?: string;
   role?: Role;
-  department_id?: string | null;
+  department_ids?: string[];
 }
 
 export function useUpdateUser() {

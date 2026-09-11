@@ -7,17 +7,22 @@ export interface Department {
   created_at: string;
 }
 
+export interface DepartmentRef {
+  id: string;
+  name: string;
+}
+
 export interface Profile {
   id: string;
   email: string;
   full_name: string;
   role: Role;
-  department_id: string | null;
   created_at: string;
 }
 
-export interface ProfileWithDepartment extends Profile {
-  departments: { id: string; name: string } | null;
+/** Perfil já com a lista de departamentos vinculados (N:N). */
+export interface ProfileWithDepartments extends Profile {
+  departments: DepartmentRef[];
 }
 
 export interface ManageUserPayload {

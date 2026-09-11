@@ -19,10 +19,13 @@ export default function DepartmentPanel() {
   const firstName =
     profile.full_name.trim().split(/\s+/)[0] || profile.full_name;
 
+  const departmentNames = profile.departments.map((d) => d.name);
   const departmentLabel =
-    profile.role === "admin" && !profile.departments?.name
+    profile.role === "admin" && departmentNames.length === 0
       ? "Todos os departamentos"
-      : profile.departments?.name ?? "Sem departamento";
+      : departmentNames.length > 0
+        ? departmentNames.join(", ")
+        : "Sem departamento";
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -44,10 +47,14 @@ export default function DepartmentPanel() {
             )}
           </div>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            {profile.role === "admin" && !profile.departments?.name
+            {profile.role === "admin" && departmentNames.length === 0
               ? "Você está autenticado(a) como administrador com acesso a todos os departamentos do sistema."
-              : `Você está autenticado(a) no sistema com acesso ao departamento ${
-                  profile.departments?.name ?? "não definido"
+              : `Você está autenticado(a) no sistema com acesso ${
+                  departmentNames.length > 1 ? "aos departamentos" : "ao departamento"
+                } ${
+                  departmentNames.length > 0
+                    ? departmentNames.join(", ")
+                    : "não definido"
                 }.`}
           </p>
         </div>

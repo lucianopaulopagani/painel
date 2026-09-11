@@ -34,6 +34,42 @@ const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
 
 const VALID_ROLES = ["admin", "member"];
 
+// Normaliza a lista de departamentos recebida do frontend.
+function normalizeDepartmentIds(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return Array.from(
+    new Set(
+      value.filter(
+        (item): item is string => typeof item === "string" && item.length > 0
+      )
+    )
+  );
+}
+
+// Substitui os vínculos de departamento de um perfil.
+async function replaceProfileDepartments(
+  profileId: string,
+  departmentIds: string[]
+): Promise<string | null> {
+  const { error: deleteError } = await admin
+    .from("profile_departments")
+    .delete()
+    .eq("profile_id", profileId);
+  if (deleteError) return deleteError.message;
+
+  if (departmentIds.length === 0) return null;
+
+  const { error: insertError } = await admin
+    .from("profile_departments")
+    .insert(
+      departmentIds.map((departmentId) => ({
+        profile_id: profileId,
+        department_id: departmentId,
+      }))
+    );
+  return insertError ? insertError.message : null;
+}
+
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -100,7 +136,13 @@ Deno.serve(async (req) => {
 
     switch (action) {
       case "create-user": {
-        const { email, password, full_name, role = "member", department_id } = payload;
+        const {
+          email,
+          password,
+          full_name,
+          role = "member",
+          department_ids,
+        } = payload;
         if (!email || !password || !full_name) {
           return json({ ok: false, error: "Informe nome, e-mail e senha." });
         }
@@ -124,17 +166,23 @@ Deno.serve(async (req) => {
           email,
           full_name,
           role,
-          department_id: department_id ?? null,
         });
         if (profileError) {
           await admin.auth.admin.deleteUser(created.user.id);
           return json({ ok: false, error: profileError.message });
         }
+
+        const linkError = await replaceProfileDepartments(
+          created.user.id,
+          normalizeDepartmentIds(department_ids)
+        );
+        if (linkError) return json({ ok: false, error: linkError });
+
         return json({ ok: true, user_id: created.user.id });
       }
 
       case "update-user": {
-        const { id, full_name, email, role, department_id } = payload;
+        const { id, full_name, email, role, department_ids } = payload;
         if (!id) return json({ ok: false, error: "Usuário não informado." });
         if (role !== undefined && !VALID_ROLES.includes(role)) {
           return json({ ok: false, error: "Papel inválido." });
@@ -150,7 +198,6 @@ Deno.serve(async (req) => {
         const profileUpdate: Record<string, unknown> = {};
         if (full_name !== undefined) profileUpdate.full_name = full_name;
         if (role !== undefined) profileUpdate.role = role;
-        if (department_id !== undefined) profileUpdate.department_id = department_id;
         if (email !== undefined) profileUpdate.email = email;
         if (Object.keys(profileUpdate).length > 0) {
           const { error: profileError } = await admin
@@ -158,6 +205,14 @@ Deno.serve(async (req) => {
             .update(profileUpdate)
             .eq("id", id);
           if (profileError) return json({ ok: false, error: profileError.message });
+        }
+
+        if (Array.isArray(department_ids)) {
+          const linkError = await replaceProfileDepartments(
+            id,
+            normalizeDepartmentIds(department_ids)
+          );
+          if (linkError) return json({ ok: false, error: linkError });
         }
         return json({ ok: true });
       }

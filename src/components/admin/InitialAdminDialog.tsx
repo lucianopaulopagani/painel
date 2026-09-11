@@ -11,14 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useDepartments } from "@/hooks/use-departments";
+import { DepartmentMultiSelect } from "@/components/admin/department-multi-select";
 import { useCreateUser } from "@/hooks/use-users";
 
 interface InitialAdminDialogProps {
@@ -32,21 +25,19 @@ export default function InitialAdminDialog({
   onOpenChange,
   onCreated,
 }: InitialAdminDialogProps) {
-  const { data: departments, isLoading: departmentsLoading } =
-    useDepartments();
   const createMutation = useCreateUser();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [departmentId, setDepartmentId] = useState<string>("none");
+  const [departmentIds, setDepartmentIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (open) {
       setFullName("");
       setEmail("");
       setPassword("");
-      setDepartmentId("none");
+      setDepartmentIds([]);
     }
   }, [open]);
 
@@ -66,7 +57,7 @@ export default function InitialAdminDialog({
         email: email.trim(),
         password,
         role: "admin",
-        department_id: departmentId === "none" ? null : departmentId,
+        department_ids: departmentIds,
       });
       toast.success("Administrador criado com sucesso.");
       onOpenChange(false);
@@ -122,26 +113,11 @@ export default function InitialAdminDialog({
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label>Departamento (opcional)</Label>
-            <Select
-              value={departmentId}
-              onValueChange={(v) => setDepartmentId(v)}
-              disabled={departmentsLoading}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">
-                  Sem vínculo (acesso a todos)
-                </SelectItem>
-                {departments?.map((d) => (
-                  <SelectItem key={d.id} value={d.id}>
-                    {d.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Departamentos (opcional)</Label>
+            <DepartmentMultiSelect
+              value={departmentIds}
+              onChange={setDepartmentIds}
+            />
             <p className="text-xs text-muted-foreground">
               Sem vínculo, o administrador pode acessar todos os
               departamentos.

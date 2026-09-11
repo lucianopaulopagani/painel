@@ -12,10 +12,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useResetUserPassword } from "@/hooks/use-users";
-import type { ProfileWithDepartment } from "@/lib/types";
+import type { ProfileWithDepartments } from "@/lib/types";
 
 interface ResetPasswordDialogProps {
-  user: ProfileWithDepartment | null;
+  user: ProfileWithDepartments | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }

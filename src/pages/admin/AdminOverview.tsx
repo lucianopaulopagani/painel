@@ -38,8 +38,13 @@ export default function AdminOverview() {
 
   const counts = new Map<string, number>();
   for (const user of userList) {
-    const key = user.departments?.name ?? "Sem departamento";
-    counts.set(key, (counts.get(key) ?? 0) + 1);
+    if (user.departments.length === 0) {
+      counts.set("Sem departamento", (counts.get("Sem departamento") ?? 0) + 1);
+      continue;
+    }
+    for (const department of user.departments) {
+      counts.set(department.name, (counts.get(department.name) ?? 0) + 1);
+    }
   }
   const byDepartment = Array.from(counts.entries()).sort((a, b) =>
     a[0].localeCompare(b[0], "pt-BR")

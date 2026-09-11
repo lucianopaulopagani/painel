@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useDepartments } from "@/hooks/use-departments";
+import { DepartmentMultiSelect } from "@/components/admin/department-multi-select";
 import { useCreateUser } from "@/hooks/use-users";
 import type { Role } from "@/lib/types";
 
@@ -31,14 +31,13 @@ export default function UserFormDialog({
   open,
   onOpenChange,
 }: UserFormDialogProps) {
-  const { data: departments } = useDepartments();
   const createMutation = useCreateUser();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>("member");
-  const [departmentId, setDepartmentId] = useState<string>("none");
+  const [departmentIds, setDepartmentIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (open) {
@@ -46,7 +45,7 @@ export default function UserFormDialog({
       setEmail("");
       setPassword("");
       setRole("member");
-      setDepartmentId("none");
+      setDepartmentIds([]);
     }
   }, [open]);
 
@@ -66,7 +65,7 @@ export default function UserFormDialog({
         email: email.trim(),
         password,
         role,
-        department_id: departmentId === "none" ? null : departmentId,
+        department_ids: departmentIds,
       });
       toast.success("Usuário criado com sucesso.");
       onOpenChange(false);
@@ -83,8 +82,8 @@ export default function UserFormDialog({
         <DialogHeader>
           <DialogTitle>Novo usuário</DialogTitle>
           <DialogDescription>
-            Cria o acesso (e-mail e senha) e vincula o usuário a um
-            departamento.
+            Cria o acesso (e-mail e senha) e vincula o usuário a um ou mais
+            departamentos.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -120,41 +119,28 @@ export default function UserFormDialog({
               required
             />
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
-              <Label>Papel</Label>
-              <Select
-                value={role}
-                onValueChange={(v) => setRole(v as Role)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="member">Membro</SelectItem>
-                  <SelectItem value="admin">Administrador</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label>Departamento</Label>
-              <Select
-                value={departmentId}
-                onValueChange={(v) => setDepartmentId(v)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Sem departamento</SelectItem>
-                  {departments?.map((d) => (
-                    <SelectItem key={d.id} value={d.id}>
-                      {d.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>Papel</Label>
+            <Select value={role} onValueChange={(v) => setRole(v as Role)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="member">Membro</SelectItem>
+                <SelectItem value="admin">Administrador</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>Departamentos de acesso</Label>
+            <DepartmentMultiSelect
+              value={departmentIds}
+              onChange={setDepartmentIds}
+            />
+            <p className="text-xs text-muted-foreground">
+              Marque um ou mais departamentos. Sem vínculo, o usuário não
+              acessa nenhum departamento.
+            </p>
           </div>
           <DialogFooter>
             <Button

@@ -9,16 +9,17 @@ import {
 } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
-import type { ProfileWithDepartment } from "@/lib/types";
+import { toProfileWithDepartments, type RawProfileRow } from "@/lib/mappers";
+import type { ProfileWithDepartments } from "@/lib/types";
 
 interface LoginResult {
   error: string | null;
-  profile: ProfileWithDepartment | null;
+  profile: ProfileWithDepartments | null;
 }
 
 interface AuthContextValue {
   session: Session | null;
-  profile: ProfileWithDepartment | null;
+  profile: ProfileWithDepartments | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => Promise<void>;
@@ -29,19 +30,19 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 const loadProfile = async (
   userId: string
-): Promise<ProfileWithDepartment | null> => {
+): Promise<ProfileWithDepartments | null> => {
   const { data, error } = await supabase
     .from("profiles")
-    .select("*, departments(id, name)")
+    .select("*, profile_departments(departments(id, name))")
     .eq("id", userId)
     .maybeSingle();
   if (error || !data) return null;
-  return data as ProfileWithDepartment;
+  return toProfileWithDepartments(data as unknown as RawProfileRow);
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<ProfileWithDepartment | null>(null);
+  const [profile, setProfile] = useState<ProfileWithDepartments | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

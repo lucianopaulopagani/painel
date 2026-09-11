@@ -3381,10 +3381,40 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_departments: {
+        Row: {
+          created_at: string
+          department_id: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          department_id: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string
+          department_id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_departments_department_id_fkey"
+            columns: ["department_id"]
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_departments_profile_id_fkey"
+            columns: ["profile_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
-          department_id: string | null
           email: string
           full_name: string
           id: string
@@ -3392,7 +3422,6 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          department_id?: string | null
           email: string
           full_name: string
           id: string
@@ -3400,20 +3429,12 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          department_id?: string | null
           email?: string
           full_name?: string
           id?: string
           role?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_department_id_fkey"
-            columns: ["department_id"]
-            referencedRelation: "departments"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {

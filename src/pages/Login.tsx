@@ -25,7 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/context/auth";
 import { useDepartment } from "@/hooks/use-departments";
-import type { ProfileWithDepartment } from "@/lib/types";
+import type { ProfileWithDepartments } from "@/lib/types";
 
 export default function Login() {
   const { departmentId } = useParams<{ departmentId: string }>();
@@ -57,10 +57,12 @@ export default function Login() {
   useEffect(() => {
     if (startedLoggedIn !== true) return;
     if (!session) return;
-    if (profile?.role === "admin" || profile?.department_id === departmentId) {
+    const belongsToDepartment =
+      profile?.departments.some((d) => d.id === departmentId) ?? false;
+    if (profile?.role === "admin" || belongsToDepartment) {
       navigate("/app", { replace: true });
-    } else if (profile?.departments) {
-      navigate(`/login/${profile.departments.id}`, { replace: true });
+    } else if (profile && profile.departments.length > 0) {
+      navigate(`/login/${profile.departments[0].id}`, { replace: true });
     } else if (profile) {
       setError(
         "Seu perfil não está vinculado a um departamento. Contate o administrador."
@@ -83,17 +85,21 @@ export default function Login() {
       return;
     }
 
-    const pWithDept = p as ProfileWithDepartment;
+    const pWithDept = p as ProfileWithDepartments;
     // Admin pode acessar por qualquer departamento (mesmo sem vínculo).
-    if (pWithDept.role === "admin" || pWithDept.department_id === departmentId) {
+    const belongsToDepartment = pWithDept.departments.some(
+      (d) => d.id === departmentId
+    );
+    if (pWithDept.role === "admin" || belongsToDepartment) {
       navigate("/app", { replace: true });
       return;
     }
-    if (pWithDept.departments) {
-      setCorrectDept(pWithDept.departments);
+    const firstDepartment = pWithDept.departments[0];
+    if (firstDepartment) {
+      setCorrectDept(firstDepartment);
     } else {
       setError(
-        "Seu perfil ainda não está vinculado a um departamento. Contate o administrador."
+        "Seu perfil ainda não está vinculado a nenhum departamento. Contate o administrador."
       );
     }
     setSubmitting(false);

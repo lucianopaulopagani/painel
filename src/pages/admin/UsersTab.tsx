@@ -27,12 +27,12 @@ import { getInitials } from "@/lib/utils";
 import UserFormDialog from "@/components/admin/UserFormDialog";
 import UserEditDialog from "@/components/admin/UserEditDialog";
 import ResetPasswordDialog from "@/components/admin/ResetPasswordDialog";
-import type { ProfileWithDepartment } from "@/lib/types";
+import type { ProfileWithDepartments } from "@/lib/types";
 
 type DialogState =
   | { type: "create" }
-  | { type: "edit"; user: ProfileWithDepartment }
-  | { type: "reset"; user: ProfileWithDepartment }
+  | { type: "edit"; user: ProfileWithDepartments }
+  | { type: "reset"; user: ProfileWithDepartments }
   | null;
 
 export default function UsersTab() {
@@ -41,7 +41,7 @@ export default function UsersTab() {
 
   const [dialog, setDialog] = useState<DialogState>(null);
   const [deleteTarget, setDeleteTarget] =
-    useState<ProfileWithDepartment | null>(null);
+    useState<ProfileWithDepartments | null>(null);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -114,8 +114,18 @@ export default function UsersTab() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {u.departments?.name ?? "—"}
+                    <TableCell>
+                      {u.departments.length === 0 ? (
+                        <span className="text-muted-foreground">—</span>
+                      ) : (
+                        <div className="flex flex-wrap gap-1">
+                          {u.departments.map((department) => (
+                            <Badge key={department.id} variant="secondary">
+                              {department.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge
