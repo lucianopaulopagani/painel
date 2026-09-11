@@ -1,0 +1,20 @@
+alter table public.companies drop column if exists ufs;
+alter table public.companies add column if not exists uf text not null default '';
+alter table public.companies alter column uf drop default;
+
+alter table public.company_departments
+  add column if not exists responsible_profile_ids uuid[] not null default '{}';
+
+create or replace function public.cleanup_company_responsibles()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  update public.company_departments
+    set responsible_profile_ids = array_remove(responsible_profile_ids, old.id)
+    where old.id = any(responsible_profile_ids);
+  return old;
+end; $$;
+
+drop trigger if exists profiles_cleanup_company_responsibles on public.profiles;
+create trigger profiles_cleanup_company_responsibles
+  after delete on public.profiles
+  for each row execute function public.cleanup_company_responsibles();

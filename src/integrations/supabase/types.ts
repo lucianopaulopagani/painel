@@ -3368,7 +3368,7 @@ export type Database = {
           inscricao_estadual: string | null
           name: string
           numero: string
-          ufs: string[]
+          uf: string
         }
         Insert: {
           created_at?: string
@@ -3377,7 +3377,7 @@ export type Database = {
           inscricao_estadual?: string | null
           name: string
           numero: string
-          ufs?: string[]
+          uf: string
         }
         Update: {
           created_at?: string
@@ -3386,7 +3386,7 @@ export type Database = {
           inscricao_estadual?: string | null
           name?: string
           numero?: string
-          ufs?: string[]
+          uf?: string
         }
         Relationships: []
       }
@@ -3394,14 +3394,17 @@ export type Database = {
         Row: {
           company_id: string
           department_id: string
+          responsible_profile_ids: string[]
         }
         Insert: {
           company_id: string
           department_id: string
+          responsible_profile_ids?: string[]
         }
         Update: {
           company_id?: string
           department_id?: string
+          responsible_profile_ids?: string[]
         }
         Relationships: [
           {

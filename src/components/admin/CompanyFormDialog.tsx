@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -11,9 +12,17 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DepartmentMultiSelect } from "@/components/admin/department-multi-select";
-import { UfMultiSelect } from "@/components/admin/uf-multi-select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { UserMultiSelect } from "@/components/admin/user-multi-select";
 import { useCreateCompany, useUpdateCompany } from "@/hooks/use-companies";
+import { useDepartments } from "@/hooks/use-departments";
+import { UFS } from "@/lib/ufs";
 import { formatCpfCnpj, isValidCpfCnpj } from "@/lib/utils";
 import type { CompanyWithDepartments } from "@/lib/types";
 
@@ -23,6 +32,11 @@ interface CompanyFormDialogProps {
   company?: CompanyWithDepartments | null;
 }
 
+interface DepartmentAssignment {
+  selected: boolean;
+  profileIds: string[];
+}
+
 export default function CompanyFormDialog({
   open,
   onOpenChange,
@@ -30,25 +44,54 @@ export default function CompanyFormDialog({
 }: CompanyFormDialogProps) {
   const createMutation = useCreateCompany();
   const updateMutation = useUpdateCompany();
+  const { data: departments } = useDepartments();
   const isEditing = !!company;
 
   const [numero, setNumero] = useState("");
   const [name, setName] = useState("");
   const [documento, setDocumento] = useState("");
   const [inscricaoEstadual, setInscricaoEstadual] = useState("");
-  const [ufs, setUfs] = useState<string[]>([]);
-  const [departmentIds, setDepartmentIds] = useState<string[]>([]);
+  const [uf, setUf] = useState("");
+  const [assignments, setAssignments] = useState<
+    Record<string, DepartmentAssignment>
+  >({});
+
+  const departmentsKey = (departments ?? []).map((d) => d.id).join(",");
 
   useEffect(() => {
-    if (open) {
-      setNumero(company?.numero ?? "");
-      setName(company?.name ?? "");
-      setDocumento(company ? formatCpfCnpj(company.documento) : "");
-      setInscricaoEstadual(company?.inscricao_estadual ?? "");
-      setUfs(company?.ufs ?? []);
-      setDepartmentIds(company?.department_ids ?? []);
+    if (!open) return;
+    setNumero(company?.numero ?? "");
+    setName(company?.name ?? "");
+    setDocumento(company ? formatCpfCnpj(company.documento) : "");
+    setInscricaoEstadual(company?.inscricao_estadual ?? "");
+    setUf(company?.uf ?? "");
+
+    const initial: Record<string, DepartmentAssignment> = {};
+    for (const department of departments ?? []) {
+      const link = company?.department_links.find(
+        (item) => item.department_id === department.id
+      );
+      initial[department.id] = {
+        selected: !!link,
+        profileIds: link?.profile_ids ?? [],
+      };
     }
-  }, [open, company]);
+    setAssignments(initial);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, company, departmentsKey]);
+
+  const updateAssignment = (
+    departmentId: string,
+    patch: Partial<DepartmentAssignment>
+  ) => {
+    setAssignments((prev) => ({
+      ...prev,
+      [departmentId]: {
+        ...(prev[departmentId] ?? { selected: false, profileIds: [] }),
+        ...patch,
+      },
+    }));
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -60,18 +103,25 @@ export default function CompanyFormDialog({
       toast.error("Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.");
       return;
     }
-    if (ufs.length === 0) {
-      toast.error("Selecione pelo menos uma UF.");
+    if (!uf) {
+      toast.error("Selecione a UF.");
       return;
     }
+
+    const department_links = (departments ?? [])
+      .filter((department) => assignments[department.id]?.selected)
+      .map((department) => ({
+        department_id: department.id,
+        profile_ids: assignments[department.id]?.profileIds ?? [],
+      }));
 
     const payload = {
       numero: numero.trim(),
       name: name.trim(),
       documento,
       inscricao_estadual: inscricaoEstadual,
-      ufs,
-      department_ids: departmentIds,
+      uf,
+      department_links,
     };
 
     try {
@@ -101,7 +151,7 @@ export default function CompanyFormDialog({
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Atualize os dados da empresa e seus departamentos."
+              ? "Atualize os dados da empresa, seus departamentos e responsáveis."
               : "Cadastre uma empresa e vincule os departamentos que a utilizam."}
           </DialogDescription>
         </DialogHeader>
@@ -141,27 +191,78 @@ export default function CompanyFormDialog({
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="company-ie">Inscrição Estadual</Label>
-            <Input
-              id="company-ie"
-              value={inscricaoEstadual}
-              onChange={(e) => setInscricaoEstadual(e.target.value)}
-              placeholder="Opcional"
-            />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="company-ie">Inscrição Estadual</Label>
+              <Input
+                id="company-ie"
+                value={inscricaoEstadual}
+                onChange={(e) => setInscricaoEstadual(e.target.value)}
+                placeholder="Opcional"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label>UF</Label>
+              <Select value={uf} onValueChange={setUf}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a UF" />
+                </SelectTrigger>
+                <SelectContent>
+                  {UFS.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>UF</Label>
-            <UfMultiSelect value={ufs} onChange={setUfs} />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             <Label>Departamentos que utilizam a empresa</Label>
-            <DepartmentMultiSelect
-              value={departmentIds}
-              onChange={setDepartmentIds}
-            />
+            {(departments ?? []).length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Nenhum departamento cadastrado.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {(departments ?? []).map((department) => {
+                  const assignment = assignments[department.id] ?? {
+                    selected: false,
+                    profileIds: [],
+                  };
+                  return (
+                    <div
+                      key={department.id}
+                      className="flex flex-col gap-2 rounded-md border p-2 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <label className="flex cursor-pointer items-center gap-2 text-sm">
+                        <Checkbox
+                          checked={assignment.selected}
+                          onCheckedChange={(checked) =>
+                            updateAssignment(department.id, {
+                              selected: checked === true,
+                            })
+                          }
+                        />
+                        <span>{department.name}</span>
+                      </label>
+                      <UserMultiSelect
+                        value={assignment.profileIds}
+                        onChange={(ids) =>
+                          updateAssignment(department.id, { profileIds: ids })
+                        }
+                        disabled={!assignment.selected}
+                        className="w-full justify-between font-normal sm:w-56"
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              O usuário responsável é opcional.
+            </p>
           </div>
 
           <DialogFooter>

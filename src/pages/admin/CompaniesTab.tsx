@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useCompanies, useDeleteCompany } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
+import { useUsers } from "@/hooks/use-users";
 import CompanyFormDialog from "@/components/admin/CompanyFormDialog";
 import { formatCpfCnpj } from "@/lib/utils";
 import type { CompanyWithDepartments } from "@/lib/types";
@@ -30,6 +31,7 @@ import type { CompanyWithDepartments } from "@/lib/types";
 export default function CompaniesTab() {
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: departments } = useDepartments();
+  const { data: users } = useUsers();
   const deleteMutation = useDeleteCompany();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -39,6 +41,9 @@ export default function CompaniesTab() {
 
   const departmentNameById = new Map(
     (departments ?? []).map((department) => [department.id, department.name])
+  );
+  const userNameById = new Map(
+    (users ?? []).map((user) => [user.id, user.full_name])
   );
 
   const handleDelete = async () => {
@@ -113,28 +118,41 @@ export default function CompaniesTab() {
                       {formatCpfCnpj(company.documento)}
                     </TableCell>
                     <TableCell>
-                      {company.ufs.length === 0 ? (
-                        <span className="text-muted-foreground">—</span>
+                      {company.uf ? (
+                        <Badge variant="outline">{company.uf}</Badge>
                       ) : (
-                        <div className="flex flex-wrap gap-1">
-                          {company.ufs.map((uf) => (
-                            <Badge key={uf} variant="outline">
-                              {uf}
-                            </Badge>
-                          ))}
-                        </div>
+                        <span className="text-muted-foreground">—</span>
                       )}
                     </TableCell>
                     <TableCell>
-                      {company.department_ids.length === 0 ? (
+                      {company.department_links.length === 0 ? (
                         <span className="text-muted-foreground">—</span>
                       ) : (
-                        <div className="flex flex-wrap gap-1">
-                          {company.department_ids.map((id) => (
-                            <Badge key={id} variant="secondary">
-                              {departmentNameById.get(id) ?? "—"}
-                            </Badge>
-                          ))}
+                        <div className="flex flex-col gap-2">
+                          {company.department_links.map((link) => {
+                            const responsibleNames = link.profile_ids
+                              .map((id) => userNameById.get(id))
+                              .filter((name): name is string => !!name);
+                            return (
+                              <div
+                                key={link.department_id}
+                                className="flex flex-col gap-0.5"
+                              >
+                                <Badge
+                                  variant="secondary"
+                                  className="w-fit"
+                                >
+                                  {departmentNameById.get(link.department_id) ??
+                                    "—"}
+                                </Badge>
+                                {responsibleNames.length > 0 && (
+                                  <span className="text-xs text-muted-foreground">
+                                    Responsáveis: {responsibleNames.join(", ")}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </TableCell>

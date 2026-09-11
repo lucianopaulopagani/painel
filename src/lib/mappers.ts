@@ -38,12 +38,14 @@ export interface RawCompanyRow {
   name: string;
   documento: string;
   inscricao_estadual: string | null;
-  ufs: string[];
+  uf: string;
   created_at: string;
-  company_departments?: { department_id: string }[] | null;
+  company_departments?:
+    | { department_id: string; responsible_profile_ids: string[] | null }[]
+    | null;
 }
 
-/** Converte o retorno aninhado em `department_ids: string[]`. */
+/** Converte o retorno aninhado em `department_links`. */
 export function toCompanyWithDepartments(
   row: RawCompanyRow
 ): CompanyWithDepartments {
@@ -53,10 +55,11 @@ export function toCompanyWithDepartments(
     name: row.name,
     documento: row.documento,
     inscricao_estadual: row.inscricao_estadual,
-    ufs: row.ufs ?? [],
+    uf: row.uf,
     created_at: row.created_at,
-    department_ids: (row.company_departments ?? []).map(
-      (link) => link.department_id
-    ),
+    department_links: (row.company_departments ?? []).map((link) => ({
+      department_id: link.department_id,
+      profile_ids: link.responsible_profile_ids ?? [],
+    })),
   };
 }

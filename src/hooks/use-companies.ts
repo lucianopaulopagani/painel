@@ -1,7 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { toCompanyWithDepartments, type RawCompanyRow } from "@/lib/mappers";
-import type { CompanyWithDepartments } from "@/lib/types";
+import type {
+  CompanyDepartmentLink,
+  CompanyWithDepartments,
+} from "@/lib/types";
 
 export const companiesKeys = {
   all: ["companies"] as const,
@@ -13,12 +16,14 @@ export function useCompanies() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("companies")
-        .select("*, company_departments(department_id)")
-        .order("name");
+        .select("*, company_departments(department_id, responsible_profile_ids)")
+        .order("numero");
       if (error) throw error;
-      return (data as unknown as RawCompanyRow[]).map(
-        toCompanyWithDepartments
-      );
+      return (data as unknown as RawCompanyRow[])
+        .map(toCompanyWithDepartments)
+        .sort((a, b) =>
+          a.numero.localeCompare(b.numero, "pt-BR", { numeric: true })
+        );
     },
   });
 }
@@ -28,14 +33,14 @@ export interface CompanyInput {
   name: string;
   documento: string;
   inscricao_estadual: string | null;
-  ufs: string[];
-  department_ids: string[];
+  uf: string;
+  department_links: CompanyDepartmentLink[];
 }
 
-/** Substitui os vínculos de departamento de uma empresa. */
+/** Substitui os vínculos de departamento (e responsáveis) de uma empresa. */
 async function replaceCompanyDepartments(
   companyId: string,
-  departmentIds: string[]
+  links: CompanyDepartmentLink[]
 ) {
   const { error: deleteError } = await supabase
     .from("company_departments")
@@ -43,14 +48,15 @@ async function replaceCompanyDepartments(
     .eq("company_id", companyId);
   if (deleteError) throw deleteError;
 
-  if (departmentIds.length === 0) return;
+  if (links.length === 0) return;
 
   const { error: insertError } = await supabase
     .from("company_departments")
     .insert(
-      departmentIds.map((departmentId) => ({
+      links.map((link) => ({
         company_id: companyId,
-        department_id: departmentId,
+        department_id: link.department_id,
+        responsible_profile_ids: link.profile_ids,
       }))
     );
   if (insertError) throw insertError;
@@ -67,13 +73,13 @@ export function useCreateCompany() {
           name: input.name.trim(),
           documento: input.documento.trim(),
           inscricao_estadual: input.inscricao_estadual?.trim() || null,
-          ufs: input.ufs,
+          uf: input.uf,
         })
         .select("id")
         .single();
       if (error) throw error;
 
-      await replaceCompanyDepartments(data.id, input.department_ids);
+      await replaceCompanyDepartments(data.id, input.department_links);
     },
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: companiesKeys.all }),
@@ -91,12 +97,12 @@ export function useUpdateCompany() {
           name: input.name.trim(),
           documento: input.documento.trim(),
           inscricao_estadual: input.inscricao_estadual?.trim() || null,
-          ufs: input.ufs,
+          uf: input.uf,
         })
         .eq("id", id);
       if (error) throw error;
 
-      await replaceCompanyDepartments(id, input.department_ids);
+      await replaceCompanyDepartments(id, input.department_links);
     },
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: companiesKeys.all }),

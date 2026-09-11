@@ -41,11 +41,18 @@ export interface Company {
   /** CPF (11 dígitos) ou CNPJ (14 dígitos). */
   documento: string;
   inscricao_estadual: string | null;
-  ufs: string[];
+  /** Unidade federativa (sigla de 2 letras). */
+  uf: string;
   created_at: string;
+}
+
+/** Vínculo empresa × departamento, com os usuários responsáveis (opcional). */
+export interface CompanyDepartmentLink {
+  department_id: string;
+  profile_ids: string[];
 }
 
 /** Empresa já com os departamentos vinculados. */
 export interface CompanyWithDepartments extends Company {
-  department_ids: string[];
+  department_links: CompanyDepartmentLink[];
 }
