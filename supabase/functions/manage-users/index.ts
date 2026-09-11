@@ -20,7 +20,6 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -82,12 +81,16 @@ async function isAdmin(authorization: string | null): Promise<boolean> {
   if (!authorization || !authorization.startsWith("Bearer ")) return false;
   const token = authorization.replace("Bearer ", "");
 
-  const caller = createClient(SUPABASE_URL, ANON_KEY, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  // Identifica o usuário do token e filtra o perfil por id (o admin enxerga
+  // todos os perfis via RLS, então a consulta não pode ser "sem filtro").
+  const { data: userData, error: userError } = await admin.auth.getUser(token);
+  if (userError || !userData?.user) return false;
 
-  const { data, error } = await caller.from("profiles").select("role").maybeSingle();
+  const { data, error } = await admin
+    .from("profiles")
+    .select("role")
+    .eq("id", userData.user.id)
+    .maybeSingle();
   if (error || !data) return false;
   return data.role === "admin";
 }
