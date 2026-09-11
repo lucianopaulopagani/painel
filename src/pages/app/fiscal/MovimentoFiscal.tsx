@@ -169,8 +169,15 @@ export function MovimentoFiscal() {
                       <TableCell className="whitespace-nowrap">
                         {company.uf}
                       </TableCell>
-                      <TableCell className="font-medium">
-                        {company.name}
+                      <TableCell className="max-w-36">
+                        <span
+                          className="block truncate font-medium"
+                          title={company.name}
+                        >
+                          {company.name.length > 10
+                            ? `${company.name.slice(0, 10)}…`
+                            : company.name}
+                        </span>
                       </TableCell>
                       <TableCell className="whitespace-nowrap">
                         <Select
