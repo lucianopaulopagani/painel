@@ -17,11 +17,10 @@ import {
 } from "@/lib/departments";
 import { cn } from "@/lib/utils";
 import FiscalPanel from "./fiscal/FiscalPanel";
-import GeneralDashboard from "./general-dashboard";
 import SocietarioPanel from "./societario/SocietarioPanel";
 
 interface AvailablePanel {
-  key: "dashboard" | "fiscal" | "societario";
+  key: "fiscal" | "societario";
   label: string;
   panel: JSX.Element;
 }
@@ -42,12 +41,6 @@ export default function DepartmentPanel() {
     profile.departments.some((d) => d.name === SOCIETARIO_DEPARTMENT_NAME);
 
   const availablePanels: AvailablePanel[] = [
-    // Dashboard geral (todas as empresas do Fiscal) — disponível a qualquer usuário.
-    {
-      key: "dashboard",
-      label: "Dashboard",
-      panel: <GeneralDashboard />,
-    },
     hasFiscalAccess && {
       key: "fiscal",
       label: "Fiscal",

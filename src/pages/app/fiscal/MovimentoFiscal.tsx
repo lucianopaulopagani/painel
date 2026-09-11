@@ -38,42 +38,61 @@ import {
   useMovimentoFiscalMonthExists,
   useSaveMovimentoFiscal,
 } from "@/hooks/use-movimento-fiscal";
-import { useFiscalCompanies } from "@/hooks/use-fiscal-companies";
-import { FISCAL_DEPARTMENT_NAME } from "@/lib/departments";
-import { MOVIMENTO_FISCAL_FIELDS, SITUACAO_OPTIONS } from "@/lib/fiscal";
+import { useCompanies } from "@/hooks/use-companies";
+import { useDepartments } from "@/hooks/use-departments";
+import { useUsers } from "@/hooks/use-users";
+import { useAuth } from "@/context/auth";
+import { FISCAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import {
-  addMonths,
-  currentMonth,
-  defaultReferenceMonth,
-  formatMonthLabel,
-  readStoredMonth,
-  writeStoredMonth,
-} from "@/lib/fiscal-month";
+  MOVIMENTO_FISCAL_FIELDS,
+  SITUACAO_OPTIONS,
+} from "@/lib/fiscal";
 import type {
+  CompanyWithDepartments,
   MovementFiscalInput,
   MovementFiscalRecord,
 } from "@/lib/types";
+
+const STORAGE_KEY = "fiscal:mes-referencia";
+
+function currentMonth(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function addMonths(mes: string, amount: number): string {
+  const [year, month] = mes.split("-").map(Number);
+  const date = new Date(year, month - 1 + amount, 1);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function formatMonthLabel(mes: string): string {
+  const [year, month] = mes.split("-");
+  return `${month}/${year}`;
+}
+
+function readStoredMonth(): string {
+  try {
+    return localStorage.getItem(STORAGE_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
 
 const CELL = "px-1 py-1 text-[11px]";
 const HEAD =
   "px-1 py-1.5 text-[11px] font-semibold text-foreground lowercase whitespace-nowrap";
 
-export default function MovimentoFiscal() {
+export function MovimentoFiscal() {
+  const { profile } = useAuth();
   const [mes, setMes] = useState<string>(
-    () => readStoredMonth() || defaultReferenceMonth()
+    () => readStoredMonth() || addMonths(currentMonth(), -1)
   );
+  const [responsavelFiltro, setResponsavelFiltro] = useState<string>("todos");
 
-  const {
-    rows,
-    isLoading,
-    isError,
-    isAdmin,
-    responsibleIds,
-    userNameById,
-    responsavelFiltro,
-    setResponsavelFiltro,
-  } = useFiscalCompanies();
-
+  const { data: departments } = useDepartments();
+  const { data: companies, isLoading, isError } = useCompanies();
+  const { data: users } = useUsers();
   const { data: records } = useMovimentoFiscal(mes);
   const saveMutation = useSaveMovimentoFiscal(mes);
   const { data: latestRecords } = useLatestMovimentoFiscal();
@@ -85,12 +104,58 @@ export default function MovimentoFiscal() {
   const { data: nextMonthExists } = useMovimentoFiscalMonthExists(mesSeguinte);
   const generateMutation = useGenerateMovimentoFiscal(mesSeguinte);
 
+  const isAdmin = profile?.role === "admin";
   // Usuários editam meses até a referência (anterior ao mês em curso) e o
   // mês em curso depois que ele é liberado pelo administrador.
   const canEdit =
     isAdmin ||
     mes <= mesAtual ||
     (mes === mesSeguinte && !!nextMonthExists);
+
+  const fiscal = findDepartmentByName(departments, FISCAL_DEPARTMENT_NAME);
+
+  const fiscalLinkOf = (company: CompanyWithDepartments) =>
+    fiscal
+      ? company.department_links.find((link) => link.department_id === fiscal.id)
+      : undefined;
+
+  const fiscalCompanies = (companies ?? []).filter((company) =>
+    Boolean(fiscalLinkOf(company))
+  );
+
+  const responsibleIds = Array.from(
+    new Set(
+      fiscalCompanies.flatMap(
+        (company) => fiscalLinkOf(company)?.profile_ids ?? []
+      )
+    )
+  );
+  const userNameById = new Map(
+    (users ?? []).map((user) => [user.id, user.full_name])
+  );
+
+  const rows = fiscalCompanies
+    .filter((company) => {
+      const link = fiscalLinkOf(company);
+      if (!link) return false;
+      // Admin vê todas (com filtro por responsável); os demais veem apenas as
+      // empresas em que são o responsável.
+      if (isAdmin) {
+        return (
+          responsavelFiltro === "todos" ||
+          link.profile_ids.includes(responsavelFiltro)
+        );
+      }
+      return profile ? link.profile_ids.includes(profile.id) : false;
+    })
+    .sort((a, b) => {
+      if (!a.numero && !b.numero) {
+        return a.name.localeCompare(b.name, "pt-BR");
+      }
+      if (!a.numero) return 1;
+      if (!b.numero) return -1;
+      return a.numero.localeCompare(b.numero, "pt-BR", { numeric: true });
+    });
 
   const recordByCompany = new Map<string, MovementFiscalRecord>(
     (records ?? []).map((record) => [record.company_id, record])
@@ -124,7 +189,11 @@ export default function MovimentoFiscal() {
 
   const handleMonthChange = (value: string) => {
     setMes(value);
-    writeStoredMonth(value);
+    try {
+      localStorage.setItem(STORAGE_KEY, value);
+    } catch {
+      // armazenamento indisponível — mantém apenas em memória
+    }
   };
 
   const handleGenerate = async () => {
