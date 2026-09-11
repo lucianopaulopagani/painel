@@ -26,6 +26,24 @@ export default {
 				brand: {
 					cyan: 'hsl(var(--brand-cyan))'
 				},
+				status: {
+					danger: {
+						DEFAULT: 'hsl(var(--status-danger))',
+						foreground: 'hsl(var(--status-danger-foreground))'
+					},
+					warning: {
+						DEFAULT: 'hsl(var(--status-warning))',
+						foreground: 'hsl(var(--status-warning-foreground))'
+					},
+					success: {
+						DEFAULT: 'hsl(var(--status-success))',
+						foreground: 'hsl(var(--status-success-foreground))'
+					},
+					neutral: {
+						DEFAULT: 'hsl(var(--status-neutral))',
+						foreground: 'hsl(var(--status-neutral-foreground))'
+					}
+				},
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {

@@ -1,0 +1,41 @@
+create table if not exists public.certificates (
+  id uuid primary key default gen_random_uuid(),
+  company_id uuid not null unique references public.companies(id) on delete cascade,
+  vencimento date,
+  avisado boolean not null default false,
+  agendamento_at timestamptz,
+  observacoes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.certificates enable row level security;
+
+drop policy if exists "certificates_admin_all" on public.certificates;
+create policy "certificates_admin_all" on public.certificates
+  for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "certificates_member_all" on public.certificates;
+create policy "certificates_member_all" on public.certificates
+  for all
+  using (exists (
+    select 1 from public.company_departments cd
+    join public.profile_departments pd on pd.department_id = cd.department_id
+    where cd.company_id = certificates.company_id and pd.profile_id = auth.uid()))
+  with check (exists (
+    select 1 from public.company_departments cd
+    join public.profile_departments pd on pd.department_id = cd.department_id
+    where cd.company_id = certificates.company_id and pd.profile_id = auth.uid()));
+
+drop policy if exists "companies_department_read" on public.companies;
+create policy "companies_department_read" on public.companies
+  for select using (exists (
+    select 1 from public.company_departments cd
+    join public.profile_departments pd on pd.department_id = cd.department_id
+    where cd.company_id = companies.id and pd.profile_id = auth.uid()));
+
+drop policy if exists "company_departments_department_read" on public.company_departments;
+create policy "company_departments_department_read" on public.company_departments
+  for select using (exists (
+    select 1 from public.profile_departments pd
+    where pd.department_id = company_departments.department_id and pd.profile_id = auth.uid()));

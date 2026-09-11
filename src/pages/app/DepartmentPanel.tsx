@@ -10,11 +10,22 @@ import {
 } from "@/components/ui/card";
 import { PanelHeader } from "@/components/shell/panel-header";
 import { useAuth } from "@/context/auth";
+import { SOCIETARIO_DEPARTMENT_NAME } from "@/lib/departments";
+import SocietarioPanel from "./societario/SocietarioPanel";
 
 export default function DepartmentPanel() {
   const { profile } = useAuth();
 
   if (!profile) return null;
+
+  // Admin e membros do Societário acessam o painel do Societário.
+  const hasSocietarioAccess =
+    profile.role === "admin" ||
+    profile.departments.some((d) => d.name === SOCIETARIO_DEPARTMENT_NAME);
+
+  if (hasSocietarioAccess) {
+    return <SocietarioPanel />;
+  }
 
   const firstName =
     profile.full_name.trim().split(/\s+/)[0] || profile.full_name;

@@ -18,6 +18,15 @@
     --primary-foreground: 0 0% 100%;
     --brand-cyan: 197 85% 51%;
 
+    --status-danger: 350 100% 89%;
+    --status-danger-foreground: 0 100% 31%;
+    --status-warning: 45 100% 81%;
+    --status-warning-foreground: 35 100% 31%;
+    --status-success: 125 56% 86%;
+    --status-success-foreground: 120 100% 19%;
+    --status-neutral: 210 40% 94%;
+    --status-neutral-foreground: 215 25% 32%;
+
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
 
@@ -89,6 +98,15 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --status-danger: 0 60% 22%;
+    --status-danger-foreground: 0 90% 85%;
+    --status-warning: 40 60% 22%;
+    --status-warning-foreground: 45 95% 78%;
+    --status-success: 140 45% 20%;
+    --status-success-foreground: 130 60% 80%;
+    --status-neutral: 217 33% 20%;
+    --status-neutral-foreground: 210 30% 82%;
   }
 }
 

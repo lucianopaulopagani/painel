@@ -56,3 +56,21 @@ export interface CompanyDepartmentLink {
 export interface CompanyWithDepartments extends Company {
   department_links: CompanyDepartmentLink[];
 }
+
+export interface Certificate {
+  id: string;
+  company_id: string;
+  /** Data de vencimento (YYYY-MM-DD). */
+  vencimento: string | null;
+  avisado: boolean;
+  agendamento_at: string | null;
+  observacoes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Linha do módulo "Certificado digital" (empresa + certificado, se houver). */
+export interface CertificateRow {
+  company: CompanyWithDepartments;
+  certificate: Certificate | null;
+}

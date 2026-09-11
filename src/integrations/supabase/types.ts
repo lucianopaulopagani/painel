@@ -3360,6 +3360,46 @@ export type Database = {
   }
   public: {
     Tables: {
+      certificates: {
+        Row: {
+          agendamento_at: string | null
+          avisado: boolean
+          company_id: string
+          created_at: string
+          id: string
+          observacoes: string | null
+          updated_at: string
+          vencimento: string | null
+        }
+        Insert: {
+          agendamento_at?: string | null
+          avisado?: boolean
+          company_id: string
+          created_at?: string
+          id?: string
+          observacoes?: string | null
+          updated_at?: string
+          vencimento?: string | null
+        }
+        Update: {
+          agendamento_at?: string | null
+          avisado?: boolean
+          company_id?: string
+          created_at?: string
+          id?: string
+          observacoes?: string | null
+          updated_at?: string
+          vencimento?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificates_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           created_at: string
