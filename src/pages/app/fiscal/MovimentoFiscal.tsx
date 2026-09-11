@@ -296,7 +296,7 @@ export function MovimentoFiscal() {
                     {field.label}
                   </TableHead>
                 ))}
-                <TableHead className={`${HEAD} w-40`}>Observações</TableHead>
+                <TableHead className={`${HEAD} w-20`}>Observações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -419,6 +419,7 @@ export function MovimentoFiscal() {
                           <Input
                             key={`${company.id}:${mes}`}
                             defaultValue={record?.observacoes ?? ""}
+                            title={record?.observacoes ?? ""}
                             onBlur={(event) =>
                               save(company.id, {
                                 observacoes:
