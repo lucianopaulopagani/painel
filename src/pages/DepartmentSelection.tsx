@@ -24,6 +24,16 @@ export default function DepartmentSelection() {
   return (
     <div className="auth-page flex min-h-screen flex-col overflow-hidden">
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-5 py-8 sm:px-8">
+        <header className="flex items-center justify-end">
+          <Link
+            to="/admin/login"
+            className="inline-flex items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm font-medium text-white/90 backdrop-blur transition-colors hover:bg-white/20"
+          >
+            <ShieldCheck className="h-4 w-4" />
+            Administração
+          </Link>
+        </header>
+
         <main className="flex flex-1 flex-col items-center justify-center py-12">
           <div className="mb-10 flex max-w-xl flex-col items-center text-center">
             <div className="mb-8 flex justify-center">
