@@ -37,7 +37,7 @@ export default function CertificateFormDialog({
   const upsert = useUpsertCertificate();
 
   const [vencimento, setVencimento] = useState("");
-  const [avisado, setAvisado] = useState("nao");
+  const [avisado, setAvisado] = useState("branco");
   const [agendamentoDate, setAgendamentoDate] = useState("");
   const [agendamentoTime, setAgendamentoTime] = useState("");
   const [observacoes, setObservacoes] = useState("");
@@ -46,7 +46,13 @@ export default function CertificateFormDialog({
     if (!open || !row) return;
     const certificate = row.certificate;
     setVencimento(certificate?.vencimento ?? "");
-    setAvisado(certificate?.avisado ? "sim" : "nao");
+    setAvisado(
+      certificate?.avisado === true
+        ? "sim"
+        : certificate?.avisado === false
+          ? "nao"
+          : "branco"
+    );
     const parts = splitDateTimeLocal(certificate?.agendamento_at ?? null);
     setAgendamentoDate(parts.date);
     setAgendamentoTime(parts.time);
@@ -60,7 +66,8 @@ export default function CertificateFormDialog({
       await upsert.mutateAsync({
         company_id: row.company.id,
         vencimento: vencimento || null,
-        avisado: avisado === "sim",
+        avisado:
+          avisado === "sim" ? true : avisado === "nao" ? false : null,
         agendamento_at: joinDateTimeLocal(agendamentoDate, agendamentoTime),
         observacoes: observacoes.trim() || null,
       });
@@ -98,6 +105,7 @@ export default function CertificateFormDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="branco">Em branco</SelectItem>
                   <SelectItem value="sim">Sim</SelectItem>
                   <SelectItem value="nao">Não</SelectItem>
                 </SelectContent>

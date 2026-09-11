@@ -62,7 +62,8 @@ export interface Certificate {
   company_id: string;
   /** Data de vencimento (YYYY-MM-DD). */
   vencimento: string | null;
-  avisado: boolean;
+  /** null = em branco; true = sim; false = não. */
+  avisado: boolean | null;
   agendamento_at: string | null;
   observacoes: string | null;
   created_at: string;

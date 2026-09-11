@@ -20,7 +20,7 @@ export function useCertificates() {
 export interface CertificateInput {
   company_id: string;
   vencimento: string | null;
-  avisado: boolean;
+  avisado: boolean | null;
   agendamento_at: string | null;
   observacoes: string | null;
 }

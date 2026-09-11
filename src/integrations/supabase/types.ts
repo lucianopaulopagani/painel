@@ -3363,7 +3363,7 @@ export type Database = {
       certificates: {
         Row: {
           agendamento_at: string | null
-          avisado: boolean
+          avisado: boolean | null
           company_id: string
           created_at: string
           id: string
@@ -3373,7 +3373,7 @@ export type Database = {
         }
         Insert: {
           agendamento_at?: string | null
-          avisado?: boolean
+          avisado?: boolean | null
           company_id: string
           created_at?: string
           id?: string
@@ -3383,7 +3383,7 @@ export type Database = {
         }
         Update: {
           agendamento_at?: string | null
-          avisado?: boolean
+          avisado?: boolean | null
           company_id?: string
           created_at?: string
           id?: string

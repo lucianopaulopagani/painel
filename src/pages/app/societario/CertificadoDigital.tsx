@@ -138,14 +138,16 @@ export default function CertificadoDigital() {
                         {row.company.name}
                       </TableCell>
                       <TableCell>
-                        {row.certificate?.avisado ? (
+                        {row.certificate?.avisado === true ? (
                           <Badge className="bg-status-success text-status-success-foreground hover:bg-status-success">
                             Sim
                           </Badge>
-                        ) : (
+                        ) : row.certificate?.avisado === false ? (
                           <Badge className="bg-status-danger text-status-danger-foreground hover:bg-status-danger">
                             Não
                           </Badge>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
                       <TableCell className="whitespace-nowrap">
