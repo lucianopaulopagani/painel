@@ -97,7 +97,12 @@ export function MovimentoFiscal() {
   const generateMutation = useGenerateMovimentoFiscal(mesSeguinte);
 
   const isAdmin = profile?.role === "admin";
-  const canEdit = isAdmin || mes <= mesAtual;
+  // Usuários editam meses até a referência (anterior ao mês em curso) e o
+  // mês em curso depois que ele é liberado pelo administrador.
+  const canEdit =
+    isAdmin ||
+    mes <= mesAtual ||
+    (mes === mesSeguinte && !!nextMonthExists);
 
   const fiscal = findDepartmentByName(departments, FISCAL_DEPARTMENT_NAME);
 
@@ -245,8 +250,8 @@ export function MovimentoFiscal() {
 
         <p className="text-xs text-muted-foreground">
           O mês atual é sempre a referência anterior ao mês em curso.
-          Marcações são individuais por mês. O mês em curso é liberado somente
-          pelo administrador e fica em modo leitura para os usuários.
+          Marcações são individuais por mês. O mês em curso é liberado pelo
+          administrador; depois de liberado, os usuários podem editá-lo.
         </p>
       </div>
 
