@@ -40,6 +40,7 @@ import {
 } from "@/hooks/use-movimento-fiscal";
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
+import { useUsers } from "@/hooks/use-users";
 import { useAuth } from "@/context/auth";
 import { FISCAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import {
@@ -47,6 +48,7 @@ import {
   SITUACAO_OPTIONS,
 } from "@/lib/fiscal";
 import type {
+  CompanyWithDepartments,
   MovementFiscalInput,
   MovementFiscalRecord,
 } from "@/lib/types";
@@ -86,9 +88,11 @@ export function MovimentoFiscal() {
   const [mes, setMes] = useState<string>(
     () => readStoredMonth() || addMonths(currentMonth(), -1)
   );
+  const [responsavelFiltro, setResponsavelFiltro] = useState<string>("todos");
 
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
+  const { data: users } = useUsers();
   const { data: records } = useMovimentoFiscal(mes);
   const saveMutation = useSaveMovimentoFiscal(mes);
   const { data: latestRecords } = useLatestMovimentoFiscal();
@@ -110,14 +114,40 @@ export function MovimentoFiscal() {
 
   const fiscal = findDepartmentByName(departments, FISCAL_DEPARTMENT_NAME);
 
-  const rows = (companies ?? [])
-    .filter((company) =>
-      fiscal
-        ? company.department_links.some(
-            (link) => link.department_id === fiscal.id
-          )
-        : false
+  const fiscalLinkOf = (company: CompanyWithDepartments) =>
+    fiscal
+      ? company.department_links.find((link) => link.department_id === fiscal.id)
+      : undefined;
+
+  const fiscalCompanies = (companies ?? []).filter((company) =>
+    Boolean(fiscalLinkOf(company))
+  );
+
+  const responsibleIds = Array.from(
+    new Set(
+      fiscalCompanies.flatMap(
+        (company) => fiscalLinkOf(company)?.profile_ids ?? []
+      )
     )
+  );
+  const userNameById = new Map(
+    (users ?? []).map((user) => [user.id, user.full_name])
+  );
+
+  const rows = fiscalCompanies
+    .filter((company) => {
+      const link = fiscalLinkOf(company);
+      if (!link) return false;
+      // Admin vê todas (com filtro por responsável); os demais veem apenas as
+      // empresas em que são o responsável.
+      if (isAdmin) {
+        return (
+          responsavelFiltro === "todos" ||
+          link.profile_ids.includes(responsavelFiltro)
+        );
+      }
+      return profile ? link.profile_ids.includes(profile.id) : false;
+    })
     .sort((a, b) => {
       if (!a.numero && !b.numero) {
         return a.name.localeCompare(b.name, "pt-BR");
@@ -266,6 +296,28 @@ export function MovimentoFiscal() {
           Marcações são individuais por mês. O mês em curso é liberado pelo
           administrador; depois de liberado, os usuários podem editá-lo.
         </p>
+
+        {isAdmin && (
+          <div className="max-w-xs">
+            <Label>Responsável</Label>
+            <Select
+              value={responsavelFiltro}
+              onValueChange={setResponsavelFiltro}
+            >
+              <SelectTrigger className="mt-1.5">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos os responsáveis</SelectItem>
+                {responsibleIds.map((id) => (
+                  <SelectItem key={id} value={id}>
+                    {userNameById.get(id) ?? "—"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       {isLoading && (
@@ -441,9 +493,9 @@ export function MovimentoFiscal() {
                     colSpan={5 + MOVIMENTO_FISCAL_FIELDS.length}
                     className={`${CELL} py-8 text-center text-muted-foreground`}
                   >
-                    Nenhuma empresa vinculada ao departamento{" "}
-                    {FISCAL_DEPARTMENT_NAME}. Marque esse departamento no
-                    cadastro de empresas para que elas apareçam aqui.
+                    {isAdmin
+                      ? `Nenhuma empresa vinculada ao departamento ${FISCAL_DEPARTMENT_NAME}. Marque esse departamento no cadastro de empresas para que elas apareçam aqui.`
+                      : "Nenhuma empresa sob sua responsabilidade. Fale com o administrador para vincular as empresas a você no cadastro geral."}
                   </TableCell>
                 </TableRow>
               )}
