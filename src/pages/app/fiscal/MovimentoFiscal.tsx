@@ -71,23 +71,28 @@ function formatMonthLabel(mes: string): string {
 
 function readStoredMonth(): string {
   try {
-    return localStorage.getItem(STORAGE_KEY) ?? currentMonth();
+    return localStorage.getItem(STORAGE_KEY) ?? "";
   } catch {
-    return currentMonth();
+    return "";
   }
 }
 
 export function MovimentoFiscal() {
   const { profile } = useAuth();
-  const [mes, setMes] = useState<string>(readStoredMonth);
+  const [mes, setMes] = useState<string>(
+    () => readStoredMonth() || addMonths(currentMonth(), -1)
+  );
 
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: records } = useMovimentoFiscal(mes);
   const saveMutation = useSaveMovimentoFiscal(mes);
   const { data: latestRecords } = useLatestMovimentoFiscal();
-  const mesAtual = currentMonth();
-  const mesSeguinte = addMonths(mesAtual, 1);
+  // O "mês atual" (referência de trabalho) é sempre o mês anterior ao mês em
+  // curso; o mês em curso é gerado/liberado pelo administrador.
+  const mesEmCurso = currentMonth();
+  const mesAtual = addMonths(mesEmCurso, -1);
+  const mesSeguinte = mesEmCurso;
   const { data: nextMonthExists } = useMovimentoFiscalMonthExists(mesSeguinte);
   const generateMutation = useGenerateMovimentoFiscal(mesSeguinte);
 
@@ -239,9 +244,9 @@ export function MovimentoFiscal() {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Marcações são individuais por mês. Meses anteriores e o atual podem
-          ser editados; o próximo mês é liberado somente pelo administrador e
-          fica em modo leitura para os usuários.
+          O mês atual é sempre a referência anterior ao mês em curso.
+          Marcações são individuais por mês. O mês em curso é liberado somente
+          pelo administrador e fica em modo leitura para os usuários.
         </p>
       </div>
 

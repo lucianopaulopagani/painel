@@ -1,0 +1,29 @@
+drop policy if exists "movimento_fiscal_member_insert" on public.movimento_fiscal;
+drop policy if exists "movimento_fiscal_member_update" on public.movimento_fiscal;
+drop policy if exists "movimento_fiscal_member_delete" on public.movimento_fiscal;
+
+create policy "movimento_fiscal_member_insert" on public.movimento_fiscal
+  for insert with check (exists (
+    select 1 from public.company_departments cd
+    join public.profile_departments pd on pd.department_id = cd.department_id
+    where cd.company_id = movimento_fiscal.company_id and pd.profile_id = auth.uid())
+    and movimento_fiscal.mes_referencia <= to_char(current_date - interval '1 month', 'YYYY-MM'));
+
+create policy "movimento_fiscal_member_update" on public.movimento_fiscal
+  for update using (exists (
+    select 1 from public.company_departments cd
+    join public.profile_departments pd on pd.department_id = cd.department_id
+    where cd.company_id = movimento_fiscal.company_id and pd.profile_id = auth.uid())
+    and movimento_fiscal.mes_referencia <= to_char(current_date - interval '1 month', 'YYYY-MM'))
+  with check (exists (
+    select 1 from public.company_departments cd
+    join public.profile_departments pd on pd.department_id = cd.department_id
+    where cd.company_id = movimento_fiscal.company_id and pd.profile_id = auth.uid())
+    and movimento_fiscal.mes_referencia <= to_char(current_date - interval '1 month', 'YYYY-MM'));
+
+create policy "movimento_fiscal_member_delete" on public.movimento_fiscal
+  for delete using (exists (
+    select 1 from public.company_departments cd
+    join public.profile_departments pd on pd.department_id = cd.department_id
+    where cd.company_id = movimento_fiscal.company_id and pd.profile_id = auth.uid())
+    and movimento_fiscal.mes_referencia <= to_char(current_date - interval '1 month', 'YYYY-MM'));
