@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  Briefcase,
   Building2,
   LayoutDashboard,
   Users,
@@ -7,12 +8,18 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type AdminSection = "overview" | "users" | "departments" | "dashboards";
+export type AdminSection =
+  | "overview"
+  | "users"
+  | "departments"
+  | "companies"
+  | "dashboards";
 
 const NAV_ITEMS: { key: AdminSection; label: string; icon: LucideIcon }[] = [
   { key: "overview", label: "Visão geral", icon: LayoutDashboard },
   { key: "users", label: "Usuários", icon: Users },
   { key: "departments", label: "Departamentos", icon: Building2 },
+  { key: "companies", label: "Empresas", icon: Briefcase },
   { key: "dashboards", label: "Dashboards", icon: BarChart3 },
 ];
 

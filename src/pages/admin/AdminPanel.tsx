@@ -5,6 +5,7 @@ import {
   type AdminSection,
 } from "@/components/admin/admin-sidebar";
 import AdminOverview from "./AdminOverview";
+import CompaniesTab from "./CompaniesTab";
 import DashboardsSection from "./DashboardsSection";
 import DepartmentsTab from "./DepartmentsTab";
 import UsersTab from "./UsersTab";
@@ -27,6 +28,7 @@ export default function AdminPanel() {
             {section === "overview" && <AdminOverview />}
             {section === "users" && <UsersTab />}
             {section === "departments" && <DepartmentsTab />}
+            {section === "companies" && <CompaniesTab />}
             {section === "dashboards" && <DashboardsSection />}
           </div>
         </div>

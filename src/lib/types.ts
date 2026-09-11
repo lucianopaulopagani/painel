@@ -33,3 +33,19 @@ export interface ManageUserPayload {
     | "delete-user";
   [key: string]: unknown;
 }
+
+export interface Company {
+  id: string;
+  numero: string;
+  name: string;
+  /** CPF (11 dígitos) ou CNPJ (14 dígitos). */
+  documento: string;
+  inscricao_estadual: string | null;
+  ufs: string[];
+  created_at: string;
+}
+
+/** Empresa já com os departamentos vinculados. */
+export interface CompanyWithDepartments extends Company {
+  department_ids: string[];
+}

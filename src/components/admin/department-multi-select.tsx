@@ -1,6 +1,5 @@
-import { Checkbox } from "@/components/ui/checkbox";
+import { CheckboxList } from "@/components/admin/checkbox-list";
 import { useDepartments } from "@/hooks/use-departments";
-import { cn } from "@/lib/utils";
 
 interface DepartmentMultiSelectProps {
   value: string[];
@@ -17,12 +16,6 @@ export function DepartmentMultiSelect({
 }: DepartmentMultiSelectProps) {
   const { data: departments, isLoading } = useDepartments();
 
-  const toggle = (id: string) => {
-    onChange(
-      value.includes(id) ? value.filter((item) => item !== id) : [...value, id]
-    );
-  };
-
   if (isLoading) {
     return (
       <p className="text-sm text-muted-foreground">
@@ -31,34 +24,17 @@ export function DepartmentMultiSelect({
     );
   }
 
-  if (!departments || departments.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        Nenhum departamento cadastrado.
-      </p>
-    );
-  }
-
   return (
-    <div
-      className={cn(
-        "max-h-48 space-y-0.5 overflow-y-auto rounded-md border p-1.5",
-        className
-      )}
-    >
-      {departments.map((department) => (
-        <label
-          key={department.id}
-          className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1.5 text-sm hover:bg-muted"
-        >
-          <Checkbox
-            checked={value.includes(department.id)}
-            onCheckedChange={() => toggle(department.id)}
-            disabled={disabled}
-          />
-          <span>{department.name}</span>
-        </label>
-      ))}
-    </div>
+    <CheckboxList
+      options={(departments ?? []).map((department) => ({
+        value: department.id,
+        label: department.name,
+      }))}
+      value={value}
+      onChange={onChange}
+      disabled={disabled}
+      className={className}
+      emptyMessage="Nenhum departamento cadastrado."
+    />
   );
 }

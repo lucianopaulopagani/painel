@@ -1,0 +1,27 @@
+create table if not exists public.companies (
+  id uuid primary key default gen_random_uuid(),
+  numero text not null,
+  name text not null,
+  documento text not null,
+  inscricao_estadual text,
+  ufs text[] not null default '{}',
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.company_departments (
+  company_id uuid not null references public.companies(id) on delete cascade,
+  department_id uuid not null references public.departments(id) on delete cascade,
+  primary key (company_id, department_id)
+);
+
+alter table public.companies enable row level security;
+
+drop policy if exists "companies_admin_all" on public.companies;
+create policy "companies_admin_all" on public.companies
+  for all using (public.is_admin()) with check (public.is_admin());
+
+alter table public.company_departments enable row level security;
+
+drop policy if exists "company_departments_admin_all" on public.company_departments;
+create policy "company_departments_admin_all" on public.company_departments
+  for all using (public.is_admin()) with check (public.is_admin());

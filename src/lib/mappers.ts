@@ -1,4 +1,5 @@
 import type {
+  CompanyWithDepartments,
   DepartmentRef,
   ProfileWithDepartments,
   Role,
@@ -27,5 +28,35 @@ export function toProfileWithDepartments(
     departments: (row.profile_departments ?? [])
       .map((link) => link.departments)
       .filter((department): department is DepartmentRef => department !== null),
+  };
+}
+
+/** Linha crua de "companies" com os vínculos de departamento. */
+export interface RawCompanyRow {
+  id: string;
+  numero: string;
+  name: string;
+  documento: string;
+  inscricao_estadual: string | null;
+  ufs: string[];
+  created_at: string;
+  company_departments?: { department_id: string }[] | null;
+}
+
+/** Converte o retorno aninhado em `department_ids: string[]`. */
+export function toCompanyWithDepartments(
+  row: RawCompanyRow
+): CompanyWithDepartments {
+  return {
+    id: row.id,
+    numero: row.numero,
+    name: row.name,
+    documento: row.documento,
+    inscricao_estadual: row.inscricao_estadual,
+    ufs: row.ufs ?? [],
+    created_at: row.created_at,
+    department_ids: (row.company_departments ?? []).map(
+      (link) => link.department_id
+    ),
   };
 }

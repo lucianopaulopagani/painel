@@ -3360,6 +3360,64 @@ export type Database = {
   }
   public: {
     Tables: {
+      companies: {
+        Row: {
+          created_at: string
+          documento: string
+          id: string
+          inscricao_estadual: string | null
+          name: string
+          numero: string
+          ufs: string[]
+        }
+        Insert: {
+          created_at?: string
+          documento: string
+          id?: string
+          inscricao_estadual?: string | null
+          name: string
+          numero: string
+          ufs?: string[]
+        }
+        Update: {
+          created_at?: string
+          documento?: string
+          id?: string
+          inscricao_estadual?: string | null
+          name?: string
+          numero?: string
+          ufs?: string[]
+        }
+        Relationships: []
+      }
+      company_departments: {
+        Row: {
+          company_id: string
+          department_id: string
+        }
+        Insert: {
+          company_id: string
+          department_id: string
+        }
+        Update: {
+          company_id?: string
+          department_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_departments_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_departments_department_id_fkey"
+            columns: ["department_id"]
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departments: {
         Row: {
           created_at: string
