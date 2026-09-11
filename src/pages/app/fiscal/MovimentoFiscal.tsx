@@ -77,8 +77,9 @@ function readStoredMonth(): string {
   }
 }
 
-const CELL = "px-1.5 py-1 text-xs";
-const HEAD = "px-1.5 py-1 text-xs font-medium text-muted-foreground";
+const CELL = "px-1 py-1 text-[11px]";
+const HEAD =
+  "px-1 py-1.5 text-[11px] font-semibold text-foreground lowercase whitespace-nowrap";
 
 export function MovimentoFiscal() {
   const { profile } = useAuth();
@@ -283,20 +284,21 @@ export function MovimentoFiscal() {
         <div className="rounded-lg border">
           <Table className="table-fixed">
             <TableHeader>
-              <TableRow>
-                <TableHead className={`${HEAD} w-8`}>N</TableHead>
-                <TableHead className={`${HEAD} w-10`}>UF</TableHead>
-                <TableHead className={`${HEAD} w-40`}>Empresa</TableHead>
-                <TableHead className={`${HEAD} w-24`}>Situação</TableHead>
+              <TableRow className="bg-muted hover:bg-muted">
+                <TableHead className={`${HEAD} w-7`}>n</TableHead>
+                <TableHead className={`${HEAD} w-8`}>uf</TableHead>
+                <TableHead className={`${HEAD} w-28`}>empresa</TableHead>
+                <TableHead className={`${HEAD} w-20`}>situação</TableHead>
                 {MOVIMENTO_FISCAL_FIELDS.map((field) => (
                   <TableHead
                     key={field.key}
-                    className={`${HEAD} w-14 whitespace-nowrap`}
+                    className={`${HEAD} w-16`}
+                    title={field.label}
                   >
-                    {field.label}
+                    {field.short}
                   </TableHead>
                 ))}
-                <TableHead className={`${HEAD} w-20`}>Observações</TableHead>
+                <TableHead className={`${HEAD} w-20`}>obs.</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -332,7 +334,7 @@ export function MovimentoFiscal() {
                               })
                             }
                           >
-                            <SelectTrigger className="h-7 w-full min-w-0 px-1 text-xs">
+                            <SelectTrigger className="h-7 w-full min-w-0 px-1 text-[11px]">
                               <SelectValue placeholder="—" />
                             </SelectTrigger>
                             <SelectContent>
@@ -383,7 +385,7 @@ export function MovimentoFiscal() {
                                     event.target.value.trim() || null,
                                 })
                               }
-                              className="h-7 w-full min-w-0 px-1 text-xs"
+                              className="h-7 w-full min-w-0 px-1 text-[11px]"
                             />
                           ) : (
                             <Select
@@ -395,7 +397,7 @@ export function MovimentoFiscal() {
                                 })
                               }
                             >
-                              <SelectTrigger className="h-7 w-full min-w-0 px-1 text-xs">
+                              <SelectTrigger className="h-7 w-full min-w-0 px-1 text-[11px]">
                                 <SelectValue placeholder="—" />
                               </SelectTrigger>
                               <SelectContent>
@@ -426,7 +428,7 @@ export function MovimentoFiscal() {
                                   event.target.value.trim() || null,
                               })
                             }
-                            className="h-7 w-full min-w-0 px-1 text-xs"
+                            className="h-7 w-full min-w-0 px-1 text-[11px]"
                           />
                         )}
                       </TableCell>
