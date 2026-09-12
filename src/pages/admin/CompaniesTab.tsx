@@ -145,27 +145,19 @@ export default function CompaniesTab() {
                                     (name): name is string => !!name
                                   );
                                 return names.length > 0
-                                  ? `${deptName}: ${names.join(", ")}`
-                                  : deptName;
+                                  ? `- ${deptName}: ${names.join(", ")}`
+                                  : `- ${deptName}`;
                               })
-                              .join(" · ")
+                              .join("\n")
                           : undefined
                       }
                     >
                       {company.department_links.length === 0 ? (
                         <span className="text-muted-foreground">—</span>
                       ) : (
-                        <div className="flex flex-wrap items-center gap-1">
-                          {company.department_links.map((link) => (
-                            <Badge
-                              key={link.department_id}
-                              variant="secondary"
-                            >
-                              {departmentNameById.get(link.department_id) ??
-                                "—"}
-                            </Badge>
-                          ))}
-                        </div>
+                        <span className="whitespace-nowrap">
+                          {company.department_links.length} depart.
+                        </span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
