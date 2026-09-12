@@ -4,9 +4,15 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
   Building2,
+  Calculator,
+  FileText,
   Loader2,
+  Receipt,
+  Scale,
   ShieldCheck,
   UserPlus,
+  Users,
+  type LucideIcon,
 } from "lucide-react";
 import {
   Alert,
@@ -28,6 +34,17 @@ import { useAuth } from "@/context/auth";
 import InitialAdminDialog from "@/components/admin/InitialAdminDialog";
 import { useDepartments } from "@/hooks/use-departments";
 import { useHasAdmin } from "@/hooks/use-users";
+
+/** Ícone do card de acordo com o nome/descrição do departamento. */
+function departmentIcon(name: string): LucideIcon {
+  const normalized = name.toLowerCase();
+  if (normalized.includes("fiscal")) return Receipt;
+  if (normalized.includes("cont")) return Calculator;
+  if (normalized.includes("pessoal")) return Users;
+  if (normalized.includes("nota")) return FileText;
+  if (normalized.includes("socie")) return Scale;
+  return Building2;
+}
 
 export default function DepartmentSelection() {
   const queryClient = useQueryClient();
@@ -102,24 +119,23 @@ export default function DepartmentSelection() {
 
             {!isLoading && !isError && departments && (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {departments.map((d) => (
-                  <Link
-                    key={d.id}
-                    to={`/login/${d.id}`}
-                    className="group focus:outline-none"
-                  >
-                    <Card className="h-full border-white/15 bg-white/10 backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/15">
-                      <CardContent className="flex items-center gap-3 p-4">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/15 ring-1 ring-white/20">
-                          <Building2 className="h-4 w-4 text-white" />
-                        </div>
-                        <div className="text-sm font-semibold text-white">
-                          {d.name}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
+                {departments.map((d) => {
+                  const Icon = departmentIcon(d.name);
+                  return (
+                    <div key={d.id}>
+                      <Card className="h-full border-white/15 bg-white/10 backdrop-blur">
+                        <CardContent className="flex items-center gap-3 p-4">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/15 ring-1 ring-white/20">
+                            <Icon className="h-4 w-4 text-white" />
+                          </div>
+                          <div className="text-sm font-semibold text-white">
+                            {d.name}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
