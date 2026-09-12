@@ -125,3 +125,54 @@ export function useDeleteCompany() {
       queryClient.invalidateQueries({ queryKey: companiesKeys.all }),
   });
 }
+
+export interface ImportCompanyItem {
+  numero: string;
+  name: string;
+  documento: string;
+  uf: string;
+  inscricao_estadual: string | null;
+  department_ids: string[];
+  responsible_ids: string[];
+}
+
+/** Importa várias empresas de uma vez (cadastro + vínculos). */
+export function useImportCompanies() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (items: ImportCompanyItem[]) => {
+      let imported = 0;
+      let failed = 0;
+      for (const item of items) {
+        try {
+          const { data, error } = await supabase
+            .from("companies")
+            .insert({
+              numero: item.numero || null,
+              name: item.name,
+              documento: item.documento,
+              inscricao_estadual: item.inscricao_estadual || null,
+              uf: item.uf,
+            })
+            .select("id")
+            .single();
+          if (error) throw error;
+
+          await replaceCompanyDepartments(
+            data.id,
+            item.department_ids.map((department_id) => ({
+              department_id,
+              profile_ids: item.responsible_ids,
+            }))
+          );
+          imported += 1;
+        } catch {
+          failed += 1;
+        }
+      }
+      return { imported, failed };
+    },
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: companiesKeys.all }),
+  });
+}

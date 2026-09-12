@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import { FileUp, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import { useCompanies, useDeleteCompany } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { useUsers } from "@/hooks/use-users";
 import CompanyFormDialog from "@/components/admin/CompanyFormDialog";
+import CompanyImportDialog from "@/components/admin/CompanyImportDialog";
 import { formatCpfCnpj } from "@/lib/utils";
 import type { CompanyWithDepartments } from "@/lib/types";
 
@@ -35,6 +36,7 @@ export default function CompaniesTab() {
   const deleteMutation = useDeleteCompany();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [editing, setEditing] = useState<CompanyWithDepartments | null>(null);
   const [deleteTarget, setDeleteTarget] =
     useState<CompanyWithDepartments | null>(null);
@@ -68,15 +70,21 @@ export default function CompaniesTab() {
             Cadastro central de empresas, usado pelos departamentos.
           </p>
         </div>
-        <Button
-          onClick={() => {
-            setEditing(null);
-            setDialogOpen(true);
-          }}
-        >
-          <Plus className="h-4 w-4" />
-          Nova empresa
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <FileUp className="h-4 w-4" />
+            Importar
+          </Button>
+          <Button
+            onClick={() => {
+              setEditing(null);
+              setDialogOpen(true);
+            }}
+          >
+            <Plus className="h-4 w-4" />
+            Nova empresa
+          </Button>
+        </div>
       </div>
 
       {isLoading && (
@@ -208,6 +216,11 @@ export default function CompaniesTab() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         company={editing}
+      />
+
+      <CompanyImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
       />
 
       <AlertDialog
