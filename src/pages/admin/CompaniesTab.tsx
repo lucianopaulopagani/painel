@@ -96,22 +96,24 @@ export default function CompaniesTab() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-24">Numero</TableHead>
-                <TableHead>Nome</TableHead>
-                <TableHead>CPF/CNPJ</TableHead>
-                <TableHead>UF</TableHead>
-                <TableHead>Departamentos</TableHead>
-                <TableHead className="w-28 text-right">Ações</TableHead>
+                <TableHead className="h-9 w-24 px-3">Numero</TableHead>
+                <TableHead className="h-9 px-3">Nome</TableHead>
+                <TableHead className="h-9 px-3">CPF/CNPJ</TableHead>
+                <TableHead className="h-9 px-3">UF</TableHead>
+                <TableHead className="h-9 px-3">Departamentos</TableHead>
+                <TableHead className="h-9 w-28 px-3 text-right">
+                  Ações
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {companies && companies.length > 0 ? (
                 companies.map((company) => (
                   <TableRow key={company.id}>
-                    <TableCell className="font-medium">
+                    <TableCell className="px-3 py-1.5 font-medium">
                       {company.numero || "—"}
                     </TableCell>
-                    <TableCell className="font-medium">
+                    <TableCell className="px-3 py-1.5 font-medium">
                       <span
                         className="block max-w-56 truncate"
                         title={company.name}
@@ -121,10 +123,10 @@ export default function CompaniesTab() {
                           : company.name}
                       </span>
                     </TableCell>
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
+                    <TableCell className="whitespace-nowrap px-3 py-1.5 text-muted-foreground">
                       {formatCpfCnpj(company.documento)}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="px-3 py-1.5">
                       {company.uf ? (
                         <Badge variant="outline">{company.uf}</Badge>
                       ) : (
@@ -132,6 +134,7 @@ export default function CompaniesTab() {
                       )}
                     </TableCell>
                     <TableCell
+                      className="px-3 py-1.5"
                       title={
                         company.department_links.length > 0
                           ? company.department_links
@@ -160,7 +163,7 @@ export default function CompaniesTab() {
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="px-3 py-1.5 text-right">
                       <div className="flex justify-end gap-1">
                         <Button
                           variant="ghost"
