@@ -112,7 +112,14 @@ export default function CompaniesTab() {
                       {company.numero || "—"}
                     </TableCell>
                     <TableCell className="font-medium">
-                      {company.name}
+                      <span
+                        className="block max-w-56 truncate"
+                        title={company.name}
+                      >
+                        {company.name.length > 20
+                          ? `${company.name.slice(0, 20)}…`
+                          : company.name}
+                      </span>
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-muted-foreground">
                       {formatCpfCnpj(company.documento)}
