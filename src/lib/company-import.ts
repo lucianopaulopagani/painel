@@ -1,4 +1,5 @@
 import * as XLSX from "xlsx";
+import { TRIBUTACOES } from "@/lib/companies";
 import type { Department, ProfileWithDepartments } from "@/lib/types";
 import { isValidCpfCnpj } from "@/lib/utils";
 
@@ -8,6 +9,7 @@ export interface CompanyImportRow {
   documento: string;
   uf: string;
   inscricaoEstadual: string;
+  tributacao: string;
   /** Nomes de departamentos (separados por ";") */
   departamentos: string[];
   /** Nomes de responsáveis (separados por ";") */
@@ -28,6 +30,7 @@ const HEADERS = [
   "CPF/CNPJ",
   "UF",
   "Inscrição Estadual",
+  "Tributação",
   "Departamentos",
   "Responsáveis",
 ];
@@ -45,6 +48,7 @@ export function buildCompanyImportTemplate(
       "00.000.000/0000-00",
       "SC",
       "",
+      "Simples Nacional",
       "Depart. Fiscal;Societário",
       "Elizandra;Jannaina",
     ],
@@ -54,6 +58,7 @@ export function buildCompanyImportTemplate(
     { wch: 40 },
     { wch: 22 },
     { wch: 6 },
+    { wch: 22 },
     { wch: 22 },
     { wch: 40 },
     { wch: 40 },
@@ -113,11 +118,12 @@ export function parseCompanyImportFile(
         documento: get(2),
         uf: get(3).toUpperCase(),
         inscricaoEstadual: get(4),
-        departamentos: get(5)
+        tributacao: get(5),
+        departamentos: get(6)
           .split(";")
           .map((name) => name.trim())
           .filter(Boolean),
-        responsaveis: get(6)
+        responsaveis: get(7)
           .split(";")
           .map((name) => name.trim())
           .filter(Boolean),
@@ -146,6 +152,14 @@ export function validateCompanyImportRows(
       errors.push("CPF/CNPJ inválido (11 ou 14 dígitos)");
     }
     if (!row.uf) errors.push("UF obrigatória");
+    if (
+      row.tributacao &&
+      !TRIBUTACOES.some(
+        (option) => option.toLowerCase() === row.tributacao.toLowerCase()
+      )
+    ) {
+      errors.push("Tributação desconhecida");
+    }
 
     const department_ids = row.departamentos
       .map((name) => departmentByName.get(name.toLocaleLowerCase("pt-BR")))

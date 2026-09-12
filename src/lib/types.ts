@@ -43,6 +43,8 @@ export interface Company {
   inscricao_estadual: string | null;
   /** Unidade federativa (sigla de 2 letras). */
   uf: string;
+  /** Regime de tributação. */
+  tributacao: string | null;
   created_at: string;
 }
 

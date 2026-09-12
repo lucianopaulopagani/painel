@@ -91,6 +91,7 @@ export default function CompanyImportDialog({
           documento: v.row.documento,
           uf: v.row.uf,
           inscricao_estadual: v.row.inscricaoEstadual || null,
+          tributacao: v.row.tributacao || null,
           department_ids: v.department_ids,
           responsible_ids: v.responsible_ids,
         }))

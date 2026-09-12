@@ -39,6 +39,7 @@ export interface CompanyInput {
   documento: string;
   inscricao_estadual: string | null;
   uf: string;
+  tributacao: string | null;
   department_links: CompanyDepartmentLink[];
 }
 
@@ -79,6 +80,7 @@ export function useCreateCompany() {
           documento: input.documento.trim(),
           inscricao_estadual: input.inscricao_estadual?.trim() || null,
           uf: input.uf,
+          tributacao: input.tributacao ?? null,
         })
         .select("id")
         .single();
@@ -103,6 +105,7 @@ export function useUpdateCompany() {
           documento: input.documento.trim(),
           inscricao_estadual: input.inscricao_estadual?.trim() || null,
           uf: input.uf,
+          tributacao: input.tributacao ?? null,
         })
         .eq("id", id);
       if (error) throw error;
@@ -132,6 +135,7 @@ export interface ImportCompanyItem {
   documento: string;
   uf: string;
   inscricao_estadual: string | null;
+  tributacao: string | null;
   department_ids: string[];
   responsible_ids: string[];
 }
@@ -153,6 +157,7 @@ export function useImportCompanies() {
               documento: item.documento,
               inscricao_estadual: item.inscricao_estadual || null,
               uf: item.uf,
+              tributacao: item.tributacao ?? null,
             })
             .select("id")
             .single();

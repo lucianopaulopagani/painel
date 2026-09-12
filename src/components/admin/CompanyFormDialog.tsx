@@ -22,6 +22,7 @@ import {
 import { UserMultiSelect } from "@/components/admin/user-multi-select";
 import { useCreateCompany, useUpdateCompany } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
+import { TRIBUTACOES } from "@/lib/companies";
 import { UFS } from "@/lib/ufs";
 import { formatCpfCnpj, isValidCpfCnpj } from "@/lib/utils";
 import type { CompanyWithDepartments } from "@/lib/types";
@@ -52,6 +53,7 @@ export default function CompanyFormDialog({
   const [documento, setDocumento] = useState("");
   const [inscricaoEstadual, setInscricaoEstadual] = useState("");
   const [uf, setUf] = useState("");
+  const [tributacao, setTributacao] = useState("");
   const [assignments, setAssignments] = useState<
     Record<string, DepartmentAssignment>
   >({});
@@ -65,6 +67,7 @@ export default function CompanyFormDialog({
     setDocumento(company ? formatCpfCnpj(company.documento) : "");
     setInscricaoEstadual(company?.inscricao_estadual ?? "");
     setUf(company?.uf ?? "");
+    setTributacao(company?.tributacao ?? "");
 
     const initial: Record<string, DepartmentAssignment> = {};
     for (const department of departments ?? []) {
@@ -121,6 +124,7 @@ export default function CompanyFormDialog({
       documento,
       inscricao_estadual: inscricaoEstadual,
       uf,
+      tributacao: tributacao || null,
       department_links,
     };
 
@@ -215,6 +219,26 @@ export default function CompanyFormDialog({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Tributação</Label>
+            <Select
+              value={tributacao === "" ? "none" : tributacao}
+              onValueChange={setTributacao}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione a tributação" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">—</SelectItem>
+                {TRIBUTACOES.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex flex-col gap-2">

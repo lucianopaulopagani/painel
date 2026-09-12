@@ -108,6 +108,7 @@ export default function CompaniesTab() {
                 <TableHead className="h-9 px-3">Nome</TableHead>
                 <TableHead className="h-9 px-3">CPF/CNPJ</TableHead>
                 <TableHead className="h-9 px-3">UF</TableHead>
+                <TableHead className="h-9 px-3">Tributação</TableHead>
                 <TableHead className="h-9 px-3">Departamentos</TableHead>
                 <TableHead className="h-9 w-28 px-3 text-right">
                   Ações
@@ -140,6 +141,14 @@ export default function CompaniesTab() {
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
+                    </TableCell>
+                    <TableCell className="px-3 py-1.5">
+                      <span
+                        className="block max-w-36 truncate"
+                        title={company.tributacao ?? undefined}
+                      >
+                        {company.tributacao || "—"}
+                      </span>
                     </TableCell>
                     <TableCell
                       className="px-3 py-1.5"

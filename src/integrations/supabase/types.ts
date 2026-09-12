@@ -3411,6 +3411,7 @@ export type Database = {
           inscricao_estadual: string | null
           name: string
           numero: string | null
+          tributacao: string | null
           uf: string
         }
         Insert: {
@@ -3420,6 +3421,7 @@ export type Database = {
           inscricao_estadual?: string | null
           name: string
           numero?: string | null
+          tributacao?: string | null
           uf: string
         }
         Update: {
@@ -3429,6 +3431,7 @@ export type Database = {
           inscricao_estadual?: string | null
           name?: string
           numero?: string | null
+          tributacao?: string | null
           uf?: string
         }
         Relationships: []
