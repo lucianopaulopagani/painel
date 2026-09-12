@@ -161,6 +161,45 @@ export function MovimentoFiscal() {
     (records ?? []).map((record) => [record.company_id, record])
   );
 
+  const [busca, setBusca] = useState({
+    uf: "",
+    empresa: "",
+    situacao: "",
+    das: "",
+    guia: "",
+    destda: "",
+    envio_sn: "",
+    envio_icms: "",
+  });
+
+  const setBuscaField = (key: keyof typeof busca, value: string) => {
+    setBusca((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const hasBusca = Object.values(busca).some(Boolean);
+
+  const filteredRows = rows.filter((company) => {
+    const record = recordByCompany.get(company.id);
+    const match = (
+      value: string | null | undefined,
+      query: string
+    ): boolean =>
+      !query ||
+      (value ?? "")
+        .toLocaleLowerCase("pt-BR")
+        .includes(query.toLocaleLowerCase("pt-BR"));
+    return (
+      match(company.uf, busca.uf) &&
+      match(company.name, busca.empresa) &&
+      match(record?.situacao, busca.situacao) &&
+      match(record?.das, busca.das) &&
+      match(record?.guia, busca.guia) &&
+      match(record?.destda, busca.destda) &&
+      match(record?.envio_sn, busca.envio_sn) &&
+      match(record?.envio_icms, busca.envio_icms)
+    );
+  });
+
   const save = (companyId: string, patch: Record<string, unknown>) => {
     const current = recordByCompany.get(companyId);
     const base: Partial<MovementFiscalRecord> = current ?? {};
@@ -337,25 +376,88 @@ export function MovimentoFiscal() {
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
-                <TableHead className={`${HEAD} w-7`}>n</TableHead>
-                <TableHead className={`${HEAD} w-8`}>uf</TableHead>
-                <TableHead className={`${HEAD} w-28`}>empresa</TableHead>
-                <TableHead className={`${HEAD} w-20`}>situação</TableHead>
-                {MOVIMENTO_FISCAL_FIELDS.map((field) => (
-                  <TableHead
-                    key={field.key}
-                    className={`${HEAD} w-16`}
-                    title={field.label}
-                  >
-                    {field.short}
-                  </TableHead>
-                ))}
-                <TableHead className={`${HEAD} w-20`}>obs.</TableHead>
+                <TableHead className="w-7 px-1 py-1 align-bottom">
+                  <span className="text-[11px] font-semibold lowercase text-foreground">
+                    n
+                  </span>
+                </TableHead>
+                <TableHead className="w-10 px-1 py-1 align-bottom">
+                  <span className="mb-1 block text-[11px] font-semibold lowercase text-foreground">
+                    uf
+                  </span>
+                  <Input
+                    value={busca.uf}
+                    onChange={(e) => setBuscaField("uf", e.target.value)}
+                    placeholder="Filtrar"
+                    className="h-6 w-full min-w-0 px-1 text-[11px]"
+                  />
+                </TableHead>
+                <TableHead className="w-28 px-1 py-1 align-bottom">
+                  <span className="mb-1 block text-[11px] font-semibold lowercase text-foreground">
+                    empresa
+                  </span>
+                  <Input
+                    value={busca.empresa}
+                    onChange={(e) => setBuscaField("empresa", e.target.value)}
+                    placeholder="Filtrar"
+                    className="h-6 w-full min-w-0 px-1 text-[11px]"
+                  />
+                </TableHead>
+                <TableHead className="w-20 px-1 py-1 align-bottom">
+                  <span className="mb-1 block text-[11px] font-semibold lowercase text-foreground">
+                    situação
+                  </span>
+                  <Input
+                    value={busca.situacao}
+                    onChange={(e) => setBuscaField("situacao", e.target.value)}
+                    placeholder="Filtrar"
+                    className="h-6 w-full min-w-0 px-1 text-[11px]"
+                  />
+                </TableHead>
+                {MOVIMENTO_FISCAL_FIELDS.map((field) =>
+                  field.type === "select" ? (
+                    <TableHead
+                      key={field.key}
+                      className="w-16 px-1 py-1 align-bottom"
+                      title={field.label}
+                    >
+                      <span className="mb-1 block whitespace-nowrap text-[11px] font-semibold lowercase text-foreground">
+                        {field.short}
+                      </span>
+                      <Input
+                        value={busca[field.key as keyof typeof busca]}
+                        onChange={(e) =>
+                          setBuscaField(
+                            field.key as keyof typeof busca,
+                            e.target.value
+                          )
+                        }
+                        placeholder="Filtrar"
+                        className="h-6 w-full min-w-0 px-1 text-[11px]"
+                      />
+                    </TableHead>
+                  ) : (
+                    <TableHead
+                      key={field.key}
+                      className="w-16 px-1 py-1 align-bottom"
+                      title={field.label}
+                    >
+                      <span className="whitespace-nowrap text-[11px] font-semibold lowercase text-foreground">
+                        {field.short}
+                      </span>
+                    </TableHead>
+                  )
+                )}
+                <TableHead className="w-20 px-1 py-1 align-bottom">
+                  <span className="text-[11px] font-semibold lowercase text-foreground">
+                    obs.
+                  </span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.length > 0 ? (
-                rows.map((company) => {
+              {filteredRows.length > 0 ? (
+                filteredRows.map((company) => {
                   const record = recordByCompany.get(company.id);
                   const situacao = record?.situacao ?? "";
                   return (
@@ -493,9 +595,11 @@ export function MovimentoFiscal() {
                     colSpan={5 + MOVIMENTO_FISCAL_FIELDS.length}
                     className={`${CELL} py-8 text-center text-muted-foreground`}
                   >
-                    {isAdmin
-                      ? `Nenhuma empresa vinculada ao departamento ${FISCAL_DEPARTMENT_NAME}. Marque esse departamento no cadastro de empresas para que elas apareçam aqui.`
-                      : "Nenhuma empresa sob sua responsabilidade. Fale com o administrador para vincular as empresas a você no cadastro geral."}
+                    {hasBusca && rows.length > 0
+                      ? "Nenhuma empresa encontrada com os filtros."
+                      : isAdmin
+                        ? `Nenhuma empresa vinculada ao departamento ${FISCAL_DEPARTMENT_NAME}. Marque esse departamento no cadastro de empresas para que elas apareçam aqui.`
+                        : "Nenhuma empresa sob sua responsabilidade. Fale com o administrador para vincular as empresas a você no cadastro geral."}
                   </TableCell>
                 </TableRow>
               )}
