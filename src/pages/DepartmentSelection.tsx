@@ -46,8 +46,8 @@ export default function DepartmentSelection() {
               Hub <span className="text-brand-cyan">P4</span>
             </h1>
             <p className="mt-4 max-w-md text-sm text-white/70 sm:text-base">
-              Portal de departamentos da P4 Contabilidade. Escolha o
-              departamento ao qual você pertence para acessar o sistema.
+              Escolha o departamento ao qual você pertence para acessar o
+              sistema.
             </p>
           </div>
 
