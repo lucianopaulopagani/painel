@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { FileUp, Loader2, Pencil, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
+import {
+  FileUp,
+  Loader2,
+  Pencil,
+  Plus,
+  SlidersHorizontal,
+  Trash2,
+  X,
+} from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,13 +49,52 @@ export default function CompaniesTab() {
   const [importOpen, setImportOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [filters, setFilters] = useState<{
+    nome?: string;
+    documento?: string;
+    uf?: string;
+    tributacao?: string;
+  }>({});
   const [editing, setEditing] = useState<CompanyWithDepartments | null>(null);
   const [deleteTarget, setDeleteTarget] =
     useState<CompanyWithDepartments | null>(null);
 
+  const departmentNameById = new Map(
+    (departments ?? []).map((department) => [department.id, department.name])
+  );
+  const userNameById = new Map(
+    (users ?? []).map((user) => [user.id, user.full_name])
+  );
+
+  const filteredCompanies = (companies ?? []).filter((company) => {
+    if (filters.nome && company.name !== filters.nome) return false;
+    if (filters.documento && company.documento !== filters.documento)
+      return false;
+    if (filters.uf && (company.uf ?? "") !== filters.uf) return false;
+    if (filters.tributacao && (company.tributacao ?? "") !== filters.tributacao)
+      return false;
+    return true;
+  });
+
+  const setFilter = (key: keyof typeof filters, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const clearFilter = (key: keyof typeof filters) => {
+    setFilters((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
+
+  const activeFilters = Object.entries(filters).filter(
+    ([, value]) => Boolean(value)
+  );
+
   const allSelected =
-    (companies?.length ?? 0) > 0 &&
-    (companies ?? []).every((company) => selected.has(company.id));
+    filteredCompanies.length > 0 &&
+    filteredCompanies.every((company) => selected.has(company.id));
 
   const toggleSelect = (id: string) => {
     setSelected((prev) => {
@@ -60,15 +107,9 @@ export default function CompaniesTab() {
 
   const toggleAll = () => {
     if (allSelected) setSelected(new Set());
-    else setSelected(new Set((companies ?? []).map((company) => company.id)));
+    else
+      setSelected(new Set(filteredCompanies.map((company) => company.id)));
   };
-
-  const departmentNameById = new Map(
-    (departments ?? []).map((department) => [department.id, department.name])
-  );
-  const userNameById = new Map(
-    (users ?? []).map((user) => [user.id, user.full_name])
-  );
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -131,6 +172,31 @@ export default function CompaniesTab() {
       )}
 
       {!isLoading && !isError && (
+        <>
+          {activeFilters.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 rounded-lg border p-3">
+              <span className="text-xs text-muted-foreground">
+                Filtros ativos:
+              </span>
+              {activeFilters.map(([key, value]) => (
+                <Badge key={key} variant="secondary" className="gap-1">
+                  {key}: {value}
+                  <button
+                    type="button"
+                    onClick={() => clearFilter(key as keyof typeof filters)}
+                    className="text-muted-foreground hover:text-foreground"
+                    aria-label={`Remover filtro ${key}`}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+              <Button size="sm" variant="ghost" onClick={() => setFilters({})}>
+                Limpar
+              </Button>
+            </div>
+          )}
+
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
@@ -154,8 +220,8 @@ export default function CompaniesTab() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {companies && companies.length > 0 ? (
-                companies.map((company) => (
+              {filteredCompanies.length > 0 ? (
+                filteredCompanies.map((company) => (
                   <TableRow key={company.id}>
                     <TableCell className="px-3 py-1.5">
                       <Checkbox
@@ -168,32 +234,58 @@ export default function CompaniesTab() {
                       {company.numero || "—"}
                     </TableCell>
                     <TableCell className="px-3 py-1.5 font-medium">
-                      <span
-                        className="block max-w-56 truncate"
-                        title={company.name}
+                      <button
+                        type="button"
+                        onClick={() => setFilter("nome", company.name)}
+                        title={`Filtrar por "${company.name}"`}
+                        className="block max-w-56 truncate text-left hover:underline"
                       >
                         {company.name.length > 20
                           ? `${company.name.slice(0, 20)}…`
                           : company.name}
-                      </span>
+                      </button>
                     </TableCell>
                     <TableCell className="whitespace-nowrap px-3 py-1.5 text-muted-foreground">
-                      {formatCpfCnpj(company.documento)}
+                      <button
+                        type="button"
+                        onClick={() => setFilter("documento", company.documento)}
+                        title={`Filtrar por "${formatCpfCnpj(
+                          company.documento
+                        )}"`}
+                        className="hover:underline"
+                      >
+                        {formatCpfCnpj(company.documento)}
+                      </button>
                     </TableCell>
                     <TableCell className="px-3 py-1.5">
                       {company.uf ? (
-                        <Badge variant="outline">{company.uf}</Badge>
+                        <button
+                          type="button"
+                          onClick={() => setFilter("uf", company.uf)}
+                          title={`Filtrar por UF "${company.uf}"`}
+                        >
+                          <Badge variant="outline">{company.uf}</Badge>
+                        </button>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
                     </TableCell>
                     <TableCell className="px-3 py-1.5">
-                      <span
-                        className="block max-w-36 truncate"
-                        title={company.tributacao ?? undefined}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFilter("tributacao", company.tributacao ?? "")
+                        }
+                        disabled={!company.tributacao}
+                        title={
+                          company.tributacao
+                            ? `Filtrar por "${company.tributacao}"`
+                            : undefined
+                        }
+                        className="block max-w-36 truncate text-left hover:underline disabled:pointer-events-none"
                       >
                         {company.tributacao || "—"}
-                      </span>
+                      </button>
                     </TableCell>
                     <TableCell
                       className="px-3 py-1.5"
@@ -257,13 +349,16 @@ export default function CompaniesTab() {
                     colSpan={7}
                     className="py-10 text-center text-muted-foreground"
                   >
-                    Nenhuma empresa cadastrada.
+                    {activeFilters.length > 0
+                      ? "Nenhuma empresa encontrada com os filtros aplicados."
+                      : "Nenhuma empresa cadastrada."}
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
         </div>
+        </>
       )}
 
       <CompanyFormDialog
