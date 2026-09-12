@@ -12,7 +12,6 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
-import { BrandLogo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -67,8 +66,12 @@ export default function AdminLogin() {
     <div className="auth-page flex min-h-screen flex-col overflow-hidden">
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-5 py-8 sm:px-8">
         <header className="flex items-center">
-          <div className="flex items-center rounded-xl bg-white p-1 shadow-lg shadow-black/20">
-            <BrandLogo variant="horizontal" className="h-10 w-auto" />
+          <div className="h-10 w-10 overflow-hidden rounded-lg shadow-lg shadow-black/20">
+            <img
+              src="/brand/logo-panel-nova.png"
+              alt="P4 Contabilidade"
+              className="h-full w-full object-cover"
+            />
           </div>
         </header>
 
