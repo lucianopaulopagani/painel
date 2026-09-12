@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { FileUp, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import { FileUp, Loader2, Pencil, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -26,6 +27,7 @@ import { useDepartments } from "@/hooks/use-departments";
 import { useUsers } from "@/hooks/use-users";
 import CompanyFormDialog from "@/components/admin/CompanyFormDialog";
 import CompanyImportDialog from "@/components/admin/CompanyImportDialog";
+import CompanyBulkEditDialog from "@/components/admin/CompanyBulkEditDialog";
 import { formatCpfCnpj } from "@/lib/utils";
 import type { CompanyWithDepartments } from "@/lib/types";
 
@@ -37,9 +39,29 @@ export default function CompaniesTab() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<CompanyWithDepartments | null>(null);
   const [deleteTarget, setDeleteTarget] =
     useState<CompanyWithDepartments | null>(null);
+
+  const allSelected =
+    (companies?.length ?? 0) > 0 &&
+    (companies ?? []).every((company) => selected.has(company.id));
+
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (allSelected) setSelected(new Set());
+    else setSelected(new Set((companies ?? []).map((company) => company.id)));
+  };
 
   const departmentNameById = new Map(
     (departments ?? []).map((department) => [department.id, department.name])
@@ -71,6 +93,15 @@ export default function CompaniesTab() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setBulkOpen(true)}
+            disabled={selected.size === 0}
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            Manutenção em massa
+            {selected.size > 0 ? ` (${selected.size})` : ""}
+          </Button>
           <Button variant="outline" onClick={() => setImportOpen(true)}>
             <FileUp className="h-4 w-4" />
             Importar
@@ -104,6 +135,13 @@ export default function CompaniesTab() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="h-9 w-10 px-3">
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={() => toggleAll()}
+                    aria-label="Selecionar todas"
+                  />
+                </TableHead>
                 <TableHead className="h-9 w-24 px-3">Numero</TableHead>
                 <TableHead className="h-9 px-3">Nome</TableHead>
                 <TableHead className="h-9 px-3">CPF/CNPJ</TableHead>
@@ -119,6 +157,13 @@ export default function CompaniesTab() {
               {companies && companies.length > 0 ? (
                 companies.map((company) => (
                   <TableRow key={company.id}>
+                    <TableCell className="px-3 py-1.5">
+                      <Checkbox
+                        checked={selected.has(company.id)}
+                        onCheckedChange={() => toggleSelect(company.id)}
+                        aria-label={`Selecionar ${company.name}`}
+                      />
+                    </TableCell>
                     <TableCell className="px-3 py-1.5 font-medium">
                       {company.numero || "—"}
                     </TableCell>
@@ -209,7 +254,7 @@ export default function CompaniesTab() {
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={6}
+                    colSpan={7}
                     className="py-10 text-center text-muted-foreground"
                   >
                     Nenhuma empresa cadastrada.
@@ -230,6 +275,15 @@ export default function CompaniesTab() {
       <CompanyImportDialog
         open={importOpen}
         onOpenChange={setImportOpen}
+      />
+
+      <CompanyBulkEditDialog
+        open={bulkOpen}
+        onOpenChange={(open) => {
+          setBulkOpen(open);
+          if (!open) setSelected(new Set());
+        }}
+        ids={Array.from(selected)}
       />
 
       <AlertDialog

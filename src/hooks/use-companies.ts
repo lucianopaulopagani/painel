@@ -129,6 +129,28 @@ export function useDeleteCompany() {
   });
 }
 
+/** Atualiza em massa vários registros (exceto nome, CNPJ e número). */
+export function useBulkUpdateCompanies() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      ids,
+      patch,
+    }: {
+      ids: string[];
+      patch: Record<string, unknown>;
+    }) => {
+      const { error } = await supabase
+        .from("companies")
+        .update(patch)
+        .in("id", ids);
+      if (error) throw error;
+    },
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: companiesKeys.all }),
+  });
+}
+
 export interface ImportCompanyItem {
   numero: string;
   name: string;
