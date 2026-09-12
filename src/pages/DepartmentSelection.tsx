@@ -34,22 +34,26 @@ export default function DepartmentSelection() {
         </header>
 
         <main className="flex flex-1 flex-col items-center justify-center py-8">
-          <div className="mb-8 flex max-w-xl flex-col items-center text-center">
+          <div className="mb-10 flex max-w-2xl flex-col items-center text-center">
             <div className="mb-6 flex justify-center">
               <img
                 src="/brand/logo-home-nova.png"
                 alt="P4 Contabilidade"
-                className="h-36 w-auto drop-shadow-[0_8px_28px_rgba(0,0,0,0.35)] sm:h-40"
+                className="h-16 w-auto drop-shadow-[0_6px_20px_rgba(0,0,0,0.35)] sm:h-20"
               />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Selecione seu departamento
+            <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-6xl">
+              Hub <span className="text-brand-cyan">P4</span>
             </h1>
-            <p className="mt-3 text-sm text-white/70 sm:text-base">
-              Escolha o departamento ao qual você pertence para acessar o
-              sistema.
+            <p className="mt-4 max-w-md text-sm text-white/70 sm:text-base">
+              Portal de departamentos da P4 Contabilidade. Escolha o
+              departamento ao qual você pertence para acessar o sistema.
             </p>
           </div>
+
+          <h2 className="mb-4 text-base font-semibold text-white/85">
+            Selecione seu departamento
+          </h2>
 
           {isLoading && (
             <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
