@@ -27,7 +27,7 @@ export function PanelHeader({ title, subtitle, children }: PanelHeaderProps) {
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
           <div className="shrink-0 overflow-hidden rounded-lg bg-white ring-1 ring-border">
-            <BrandLogo variant="horizontal" className="h-9 w-auto" />
+            <BrandLogo variant="horizontal" className="h-10 w-auto" />
           </div>
           <div className="min-w-0">
             <div className="truncate text-sm font-semibold">{title}</div>
