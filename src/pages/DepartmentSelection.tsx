@@ -33,9 +33,9 @@ export default function DepartmentSelection() {
           </Link>
         </header>
 
-        <main className="flex flex-1 flex-col items-center justify-center py-8">
-          <div className="mb-10 flex max-w-2xl flex-col items-center text-center">
-            <div className="mb-6 flex justify-center">
+        <main className="flex flex-1 flex-col items-center justify-center py-6">
+          <div className="mb-5 flex max-w-2xl flex-col items-center text-center">
+            <div className="mb-4 flex justify-center">
               <img
                 src="/brand/logo-home-nova.png"
                 alt="P4 Contabilidade"
@@ -45,22 +45,18 @@ export default function DepartmentSelection() {
             <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-6xl">
               Hub <span className="text-brand-cyan">P4</span>
             </h1>
-            <p className="mt-4 max-w-md text-sm text-white/70 sm:text-base">
+            <p className="mt-3 max-w-md text-sm text-white/70 sm:text-base">
               Escolha o departamento ao qual você pertence para acessar o
               sistema.
             </p>
           </div>
 
-          <h2 className="mb-4 text-base font-semibold text-white/85">
-            Selecione seu departamento
-          </h2>
-
           {isLoading && (
-            <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {[0, 1, 2].map((i) => (
                 <Skeleton
                   key={i}
-                  className="h-44 rounded-xl bg-white/10 ring-1 ring-white/10"
+                  className="h-28 rounded-xl bg-white/10 ring-1 ring-white/10"
                 />
               ))}
             </div>
@@ -84,29 +80,29 @@ export default function DepartmentSelection() {
                   Nenhum departamento cadastrado ainda.
                 </p>
               ) : (
-                <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {departments.map((d) => (
                     <Link
                       key={d.id}
                       to={`/login/${d.id}`}
                       className="group focus:outline-none"
                     >
-                      <Card className="h-full border-white/15 bg-white/10 backdrop-blur transition-all duration-200 hover:-translate-y-1 hover:border-white/30 hover:bg-white/15 hover:shadow-xl hover:shadow-black/20">
-                        <CardContent className="flex h-full flex-col gap-4 p-6">
-                          <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white/15 ring-1 ring-white/20">
-                            <Building2 className="h-5 w-5 text-white" />
+                      <Card className="h-full border-white/15 bg-white/10 backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/15">
+                        <CardContent className="flex h-full flex-col gap-2 p-4">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 ring-1 ring-white/20">
+                            <Building2 className="h-4 w-4 text-white" />
                           </div>
                           <div className="flex-1">
-                            <div className="text-lg font-semibold text-white">
+                            <div className="text-sm font-semibold text-white">
                               {d.name}
                             </div>
-                            <p className="mt-1 line-clamp-2 text-sm text-white/65">
+                            <p className="mt-0.5 line-clamp-1 text-xs text-white/65">
                               {d.description ?? "Sem descrição"}
                             </p>
                           </div>
-                          <div className="flex items-center gap-2 text-sm font-medium text-white/80">
+                          <div className="flex items-center gap-2 text-xs font-medium text-white/80">
                             Acessar
-                            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                           </div>
                         </CardContent>
                       </Card>
