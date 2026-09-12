@@ -114,7 +114,7 @@ export default function CompaniesTab() {
                     <TableCell className="font-medium">
                       {company.name}
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
                       {formatCpfCnpj(company.documento)}
                     </TableCell>
                     <TableCell>
@@ -124,35 +124,40 @@ export default function CompaniesTab() {
                         <span className="text-muted-foreground">—</span>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell
+                      title={
+                        company.department_links.length > 0
+                          ? company.department_links
+                              .map((link) => {
+                                const deptName =
+                                  departmentNameById.get(link.department_id) ??
+                                  "—";
+                                const names = link.profile_ids
+                                  .map((id) => userNameById.get(id))
+                                  .filter(
+                                    (name): name is string => !!name
+                                  );
+                                return names.length > 0
+                                  ? `${deptName}: ${names.join(", ")}`
+                                  : deptName;
+                              })
+                              .join(" · ")
+                          : undefined
+                      }
+                    >
                       {company.department_links.length === 0 ? (
                         <span className="text-muted-foreground">—</span>
                       ) : (
-                        <div className="flex flex-col gap-2">
-                          {company.department_links.map((link) => {
-                            const responsibleNames = link.profile_ids
-                              .map((id) => userNameById.get(id))
-                              .filter((name): name is string => !!name);
-                            return (
-                              <div
-                                key={link.department_id}
-                                className="flex flex-col gap-0.5"
-                              >
-                                <Badge
-                                  variant="secondary"
-                                  className="w-fit"
-                                >
-                                  {departmentNameById.get(link.department_id) ??
-                                    "—"}
-                                </Badge>
-                                {responsibleNames.length > 0 && (
-                                  <span className="text-xs text-muted-foreground">
-                                    Responsáveis: {responsibleNames.join(", ")}
-                                  </span>
-                                )}
-                              </div>
-                            );
-                          })}
+                        <div className="flex flex-wrap items-center gap-1">
+                          {company.department_links.map((link) => (
+                            <Badge
+                              key={link.department_id}
+                              variant="secondary"
+                            >
+                              {departmentNameById.get(link.department_id) ??
+                                "—"}
+                            </Badge>
+                          ))}
                         </div>
                       )}
                     </TableCell>
