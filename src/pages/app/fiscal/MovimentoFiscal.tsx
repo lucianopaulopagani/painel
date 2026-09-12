@@ -178,6 +178,14 @@ export function MovimentoFiscal() {
 
   const hasBusca = Object.values(busca).some(Boolean);
 
+  const ufOptions = Array.from(
+    new Set(
+      rows
+        .map((company) => company.uf)
+        .filter((uf): uf is string => Boolean(uf))
+    )
+  ).sort();
+
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
     const match = (
@@ -188,15 +196,19 @@ export function MovimentoFiscal() {
       (value ?? "")
         .toLocaleLowerCase("pt-BR")
         .includes(query.toLocaleLowerCase("pt-BR"));
+    const exact = (
+      value: string | null | undefined,
+      query: string
+    ): boolean => !query || (value ?? "") === query;
     return (
-      match(company.uf, busca.uf) &&
+      exact(company.uf, busca.uf) &&
       match(company.name, busca.empresa) &&
-      match(record?.situacao, busca.situacao) &&
-      match(record?.das, busca.das) &&
-      match(record?.guia, busca.guia) &&
-      match(record?.destda, busca.destda) &&
-      match(record?.envio_sn, busca.envio_sn) &&
-      match(record?.envio_icms, busca.envio_icms)
+      exact(record?.situacao, busca.situacao) &&
+      exact(record?.das, busca.das) &&
+      exact(record?.guia, busca.guia) &&
+      exact(record?.destda, busca.destda) &&
+      exact(record?.envio_sn, busca.envio_sn) &&
+      exact(record?.envio_icms, busca.envio_icms)
     );
   });
 
@@ -385,12 +397,24 @@ export function MovimentoFiscal() {
                   <span className="mb-1 block text-[11px] font-semibold lowercase text-foreground">
                     uf
                   </span>
-                  <Input
-                    value={busca.uf}
-                    onChange={(e) => setBuscaField("uf", e.target.value)}
-                    placeholder="Filtrar"
-                    className="h-6 w-full min-w-0 px-1 text-[11px]"
-                  />
+                  <Select
+                    value={busca.uf === "" ? "todos" : busca.uf}
+                    onValueChange={(value) =>
+                      setBuscaField("uf", value === "todos" ? "" : value)
+                    }
+                  >
+                    <SelectTrigger className="h-6 w-full min-w-0 px-1 text-[11px]">
+                      <SelectValue placeholder="Todos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      {ufOptions.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </TableHead>
                 <TableHead className="w-28 px-1 py-1 align-bottom">
                   <span className="mb-1 block text-[11px] font-semibold lowercase text-foreground">
@@ -407,12 +431,27 @@ export function MovimentoFiscal() {
                   <span className="mb-1 block text-[11px] font-semibold lowercase text-foreground">
                     situação
                   </span>
-                  <Input
-                    value={busca.situacao}
-                    onChange={(e) => setBuscaField("situacao", e.target.value)}
-                    placeholder="Filtrar"
-                    className="h-6 w-full min-w-0 px-1 text-[11px]"
-                  />
+                  <Select
+                    value={busca.situacao === "" ? "todos" : busca.situacao}
+                    onValueChange={(value) =>
+                      setBuscaField(
+                        "situacao",
+                        value === "todos" ? "" : value
+                      )
+                    }
+                  >
+                    <SelectTrigger className="h-6 w-full min-w-0 px-1 text-[11px]">
+                      <SelectValue placeholder="Todos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      {SITUACAO_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </TableHead>
                 {MOVIMENTO_FISCAL_FIELDS.map((field) =>
                   field.type === "select" ? (
@@ -424,17 +463,31 @@ export function MovimentoFiscal() {
                       <span className="mb-1 block whitespace-nowrap text-[11px] font-semibold lowercase text-foreground">
                         {field.short}
                       </span>
-                      <Input
-                        value={busca[field.key as keyof typeof busca]}
-                        onChange={(e) =>
+                      <Select
+                        value={
+                          busca[field.key as keyof typeof busca] === ""
+                            ? "todos"
+                            : busca[field.key as keyof typeof busca]
+                        }
+                        onValueChange={(value) =>
                           setBuscaField(
                             field.key as keyof typeof busca,
-                            e.target.value
+                            value === "todos" ? "" : value
                           )
                         }
-                        placeholder="Filtrar"
-                        className="h-6 w-full min-w-0 px-1 text-[11px]"
-                      />
+                      >
+                        <SelectTrigger className="h-6 w-full min-w-0 px-1 text-[11px]">
+                          <SelectValue placeholder="Todos" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="todos">Todos</SelectItem>
+                          {field.options?.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </TableHead>
                   ) : (
                     <TableHead
