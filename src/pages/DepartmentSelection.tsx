@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BrandLogo } from "@/components/brand/logo";
 import InitialAdminDialog from "@/components/admin/InitialAdminDialog";
 import { useDepartments } from "@/hooks/use-departments";
 import { useHasAdmin } from "@/hooks/use-users";
@@ -34,12 +33,12 @@ export default function DepartmentSelection() {
           </Link>
         </header>
 
-        <main className="flex flex-1 flex-col items-center justify-center py-12">
-          <div className="mb-10 flex max-w-xl flex-col items-center text-center">
-            <div className="mb-8 flex justify-center">
-              <BrandLogo
-                variant="vertical"
-                theme="transparent-light"
+        <main className="flex flex-1 flex-col items-center justify-center py-8">
+          <div className="mb-8 flex max-w-xl flex-col items-center text-center">
+            <div className="mb-6 flex justify-center">
+              <img
+                src="/brand/logo-home-nova.png"
+                alt="P4 Contabilidade"
                 className="h-36 w-auto drop-shadow-[0_8px_28px_rgba(0,0,0,0.35)] sm:h-40"
               />
             </div>
