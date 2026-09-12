@@ -129,22 +129,56 @@ export function useDeleteCompany() {
   });
 }
 
-/** Atualiza em massa vários registros (exceto nome, CNPJ e número). */
+/** Atualiza em massa vários registros (exceto nome, CNPJ e número),
+ * incluindo marcar/desmarcar departamentos e definir responsáveis. */
 export function useBulkUpdateCompanies() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
       ids,
       patch,
+      deptActions,
     }: {
       ids: string[];
       patch: Record<string, unknown>;
+      deptActions?: {
+        department_id: string;
+        action: "remove" | "set";
+        responsible_ids: string[];
+      }[];
     }) => {
-      const { error } = await supabase
-        .from("companies")
-        .update(patch)
-        .in("id", ids);
-      if (error) throw error;
+      if (Object.keys(patch).length > 0) {
+        const { error } = await supabase
+          .from("companies")
+          .update(patch)
+          .in("id", ids);
+        if (error) throw error;
+      }
+
+      for (const dept of deptActions ?? []) {
+        if (dept.action === "remove") {
+          const { error } = await supabase
+            .from("company_departments")
+            .delete()
+            .in("company_id", ids)
+            .eq("department_id", dept.department_id);
+          if (error) throw error;
+        } else {
+          for (const companyId of ids) {
+            const { error } = await supabase
+              .from("company_departments")
+              .upsert(
+                {
+                  company_id: companyId,
+                  department_id: dept.department_id,
+                  responsible_profile_ids: dept.responsible_ids,
+                },
+                { onConflict: "company_id,department_id" }
+              );
+            if (error) throw error;
+          }
+        }
+      }
     },
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: companiesKeys.all }),

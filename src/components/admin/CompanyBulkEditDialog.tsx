@@ -19,7 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MultiSelectDropdown } from "@/components/ui/multi-select-dropdown";
 import { useBulkUpdateCompanies } from "@/hooks/use-companies";
+import { useDepartments } from "@/hooks/use-departments";
+import { useUsers } from "@/hooks/use-users";
 import { TRIBUTACOES } from "@/lib/companies";
 import { UFS } from "@/lib/ufs";
 
@@ -31,16 +34,29 @@ interface CompanyBulkEditDialogProps {
 
 const NAO_ALTERAR = "nao-alterar";
 
+type DeptActionValue = "none" | "set" | "remove";
+
+interface DeptAction {
+  action: DeptActionValue;
+  responsibleIds: string[];
+}
+
 export default function CompanyBulkEditDialog({
   open,
   onOpenChange,
   ids,
 }: CompanyBulkEditDialogProps) {
   const bulkUpdate = useBulkUpdateCompanies();
+  const { data: departments } = useDepartments();
+  const { data: users } = useUsers();
+
   const [uf, setUf] = useState(NAO_ALTERAR);
   const [tributacao, setTributacao] = useState(NAO_ALTERAR);
   const [ie, setIe] = useState("");
   const [clearIe, setClearIe] = useState(false);
+  const [deptActions, setDeptActions] = useState<Record<string, DeptAction>>(
+    {}
+  );
 
   useEffect(() => {
     if (open) {
@@ -48,8 +64,21 @@ export default function CompanyBulkEditDialog({
       setTributacao(NAO_ALTERAR);
       setIe("");
       setClearIe(false);
+      setDeptActions({});
     }
   }, [open]);
+
+  const updateDept = (departmentId: string, patch: Partial<DeptAction>) => {
+    setDeptActions((prev) => ({
+      ...prev,
+      [departmentId]: {
+        action: "none",
+        responsibleIds: [],
+        ...prev[departmentId],
+        ...patch,
+      },
+    }));
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -59,16 +88,22 @@ export default function CompanyBulkEditDialog({
     if (clearIe) patch.inscricao_estadual = null;
     else if (ie.trim()) patch.inscricao_estadual = ie.trim();
 
-    if (Object.keys(patch).length === 0) {
+    const deptActionsList = Object.entries(deptActions)
+      .filter(([, value]) => value.action !== "none")
+      .map(([department_id, value]) => ({
+        department_id,
+        action: value.action as "remove" | "set",
+        responsible_ids: value.responsibleIds,
+      }));
+
+    if (Object.keys(patch).length === 0 && deptActionsList.length === 0) {
       toast.error("Selecione pelo menos um campo para alterar.");
       return;
     }
 
     try {
-      await bulkUpdate.mutateAsync({ ids, patch });
-      toast.success(
-        `${ids.length} empresa(s) atualizada(s) em massa.`
-      );
+      await bulkUpdate.mutateAsync({ ids, patch, deptActions: deptActionsList });
+      toast.success(`${ids.length} empresa(s) atualizada(s) em massa.`);
       onOpenChange(false);
     } catch (err) {
       toast.error(
@@ -140,12 +175,80 @@ export default function CompanyBulkEditDialog({
             <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
               <Checkbox
                 checked={clearIe}
-                onCheckedChange={(checked) =>
-                  setClearIe(checked === true)
-                }
+                onCheckedChange={(checked) => setClearIe(checked === true)}
               />
               Limpar a Inscrição Estadual das empresas selecionadas
             </label>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label>Departamentos e responsáveis</Label>
+            {(departments ?? []).length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Nenhum departamento cadastrado.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {(departments ?? []).map((department) => {
+                  const action =
+                    deptActions[department.id]?.action ?? "none";
+                  const responsibleIds =
+                    deptActions[department.id]?.responsibleIds ?? [];
+                  return (
+                    <div
+                      key={department.id}
+                      className="flex flex-col gap-2 rounded-md border p-2 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <span className="text-sm font-medium">
+                        {department.name}
+                      </span>
+                      <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+                        <Select
+                          value={action}
+                          onValueChange={(value) =>
+                            updateDept(department.id, {
+                              action: value as DeptActionValue,
+                            })
+                          }
+                        >
+                          <SelectTrigger className="h-8 w-36">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Não alterar</SelectItem>
+                            <SelectItem value="set">
+                              Adicionar / definir
+                            </SelectItem>
+                            <SelectItem value="remove">Remover</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {action === "set" && (
+                          <MultiSelectDropdown
+                            options={(users ?? []).map((user) => ({
+                              value: user.id,
+                              label: user.full_name,
+                            }))}
+                            value={responsibleIds}
+                            onChange={(values) =>
+                              updateDept(department.id, {
+                                responsibleIds: values,
+                              })
+                            }
+                            placeholder="Responsáveis (opcional)"
+                            className="w-full sm:w-60"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              "Adicionar / definir" inclui o departamento nas empresas
+              selecionadas (e troca os responsáveis, se informados);
+              "Remover" desvincula o departamento.
+            </p>
           </div>
 
           <DialogFooter>
