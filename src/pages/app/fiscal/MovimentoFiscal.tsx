@@ -170,6 +170,11 @@ export function MovimentoFiscal() {
     destda: "",
     envio_sn: "",
     envio_icms: "",
+    antecipacao: "",
+    st: "",
+    dif_aliq: "",
+    dif_aliq_st: "",
+    obs: "",
   });
 
   const setBuscaField = (key: keyof typeof busca, value: string) => {
@@ -196,19 +201,28 @@ export function MovimentoFiscal() {
       (value ?? "")
         .toLocaleLowerCase("pt-BR")
         .includes(query.toLocaleLowerCase("pt-BR"));
-    const exact = (
+    // "branco" = filtrar campos vazios; caso contrário, igualdade exata.
+    const exactOrBlank = (
       value: string | null | undefined,
       query: string
-    ): boolean => !query || (value ?? "") === query;
+    ): boolean => {
+      if (query === "branco") return !value;
+      return !query || (value ?? "") === query;
+    };
     return (
-      exact(company.uf, busca.uf) &&
+      exactOrBlank(company.uf, busca.uf) &&
       match(company.name, busca.empresa) &&
-      exact(record?.situacao, busca.situacao) &&
-      exact(record?.das, busca.das) &&
-      exact(record?.guia, busca.guia) &&
-      exact(record?.destda, busca.destda) &&
-      exact(record?.envio_sn, busca.envio_sn) &&
-      exact(record?.envio_icms, busca.envio_icms)
+      exactOrBlank(record?.situacao, busca.situacao) &&
+      exactOrBlank(record?.das, busca.das) &&
+      exactOrBlank(record?.guia, busca.guia) &&
+      exactOrBlank(record?.destda, busca.destda) &&
+      exactOrBlank(record?.envio_sn, busca.envio_sn) &&
+      exactOrBlank(record?.envio_icms, busca.envio_icms) &&
+      match(record?.antecipacao, busca.antecipacao) &&
+      match(record?.st, busca.st) &&
+      match(record?.dif_aliq, busca.dif_aliq) &&
+      match(record?.dif_aliq_st, busca.dif_aliq_st) &&
+      match(record?.observacoes, busca.obs)
     );
   });
 
@@ -408,6 +422,7 @@ export function MovimentoFiscal() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="branco">Em branco</SelectItem>
                       {ufOptions.map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
@@ -445,6 +460,7 @@ export function MovimentoFiscal() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="branco">Em branco</SelectItem>
                       {SITUACAO_OPTIONS.map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
@@ -481,6 +497,7 @@ export function MovimentoFiscal() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="todos">Todos</SelectItem>
+                          <SelectItem value="branco">Em branco</SelectItem>
                           {field.options?.map((option) => (
                             <SelectItem key={option} value={option}>
                               {option}
@@ -495,16 +512,33 @@ export function MovimentoFiscal() {
                       className="w-16 px-1 py-1 align-bottom"
                       title={field.label}
                     >
-                      <span className="whitespace-nowrap text-[11px] font-semibold lowercase text-foreground">
+                      <span className="mb-1 block whitespace-nowrap text-[11px] font-semibold lowercase text-foreground">
                         {field.short}
                       </span>
+                      <Input
+                        value={busca[field.key as keyof typeof busca]}
+                        onChange={(e) =>
+                          setBuscaField(
+                            field.key as keyof typeof busca,
+                            e.target.value
+                          )
+                        }
+                        placeholder="Filtrar"
+                        className="h-6 w-full min-w-0 px-1 text-[11px]"
+                      />
                     </TableHead>
                   )
                 )}
                 <TableHead className="w-20 px-1 py-1 align-bottom">
-                  <span className="text-[11px] font-semibold lowercase text-foreground">
+                  <span className="mb-1 block text-[11px] font-semibold lowercase text-foreground">
                     obs.
                   </span>
+                  <Input
+                    value={busca.obs}
+                    onChange={(e) => setBuscaField("obs", e.target.value)}
+                    placeholder="Filtrar"
+                    className="h-6 w-full min-w-0 px-1 text-[11px]"
+                  />
                 </TableHead>
               </TableRow>
             </TableHeader>
