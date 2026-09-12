@@ -67,7 +67,9 @@ export default function CompaniesTab() {
     if (!query) return true;
     return (
       company.name.toLocaleLowerCase("pt-BR").includes(query) ||
-      company.documento.toLocaleLowerCase("pt-BR").includes(query)
+      company.documento.toLocaleLowerCase("pt-BR").includes(query) ||
+      (company.uf ?? "").toLocaleLowerCase("pt-BR").includes(query) ||
+      (company.tributacao ?? "").toLocaleLowerCase("pt-BR").includes(query)
     );
   });
 
@@ -157,7 +159,7 @@ export default function CompaniesTab() {
             <Input
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              placeholder="Buscar empresa (nome ou CPF/CNPJ) — busca parcial"
+              placeholder="Buscar empresa (nome, CPF/CNPJ, UF ou tributação)"
               className="max-w-sm"
             />
           </div>
