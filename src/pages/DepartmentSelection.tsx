@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
-  ArrowRight,
   Building2,
   Loader2,
   ShieldCheck,
@@ -110,21 +109,12 @@ export default function DepartmentSelection() {
                     className="group focus:outline-none"
                   >
                     <Card className="h-full border-white/15 bg-white/10 backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/15">
-                      <CardContent className="flex h-full flex-col gap-2 p-4">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 ring-1 ring-white/20">
+                      <CardContent className="flex items-center gap-3 p-4">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/15 ring-1 ring-white/20">
                           <Building2 className="h-4 w-4 text-white" />
                         </div>
-                        <div className="flex-1">
-                          <div className="text-sm font-semibold text-white">
-                            {d.name}
-                          </div>
-                          <p className="mt-0.5 line-clamp-1 text-xs text-white/65">
-                            {d.description ?? "Sem descrição"}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs font-medium text-white/80">
-                          Acessar
-                          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                        <div className="text-sm font-semibold text-white">
+                          {d.name}
                         </div>
                       </CardContent>
                     </Card>
