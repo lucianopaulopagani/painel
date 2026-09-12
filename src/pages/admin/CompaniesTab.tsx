@@ -4,14 +4,15 @@ import {
   Loader2,
   Pencil,
   Plus,
+  Search,
   SlidersHorizontal,
   Trash2,
-  X,
 } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -49,12 +50,7 @@ export default function CompaniesTab() {
   const [importOpen, setImportOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [filters, setFilters] = useState<{
-    nome?: string;
-    documento?: string;
-    uf?: string;
-    tributacao?: string;
-  }>({});
+  const [busca, setBusca] = useState("");
   const [editing, setEditing] = useState<CompanyWithDepartments | null>(null);
   const [deleteTarget, setDeleteTarget] =
     useState<CompanyWithDepartments | null>(null);
@@ -66,31 +62,14 @@ export default function CompaniesTab() {
     (users ?? []).map((user) => [user.id, user.full_name])
   );
 
+  const query = busca.trim().toLocaleLowerCase("pt-BR");
   const filteredCompanies = (companies ?? []).filter((company) => {
-    if (filters.nome && company.name !== filters.nome) return false;
-    if (filters.documento && company.documento !== filters.documento)
-      return false;
-    if (filters.uf && (company.uf ?? "") !== filters.uf) return false;
-    if (filters.tributacao && (company.tributacao ?? "") !== filters.tributacao)
-      return false;
-    return true;
+    if (!query) return true;
+    return (
+      company.name.toLocaleLowerCase("pt-BR").includes(query) ||
+      company.documento.toLocaleLowerCase("pt-BR").includes(query)
+    );
   });
-
-  const setFilter = (key: keyof typeof filters, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const clearFilter = (key: keyof typeof filters) => {
-    setFilters((prev) => {
-      const next = { ...prev };
-      delete next[key];
-      return next;
-    });
-  };
-
-  const activeFilters = Object.entries(filters).filter(
-    ([, value]) => Boolean(value)
-  );
 
   const allSelected =
     filteredCompanies.length > 0 &&
@@ -173,29 +152,15 @@ export default function CompaniesTab() {
 
       {!isLoading && !isError && (
         <>
-          {activeFilters.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 rounded-lg border p-3">
-              <span className="text-xs text-muted-foreground">
-                Filtros ativos:
-              </span>
-              {activeFilters.map(([key, value]) => (
-                <Badge key={key} variant="secondary" className="gap-1">
-                  {key}: {value}
-                  <button
-                    type="button"
-                    onClick={() => clearFilter(key as keyof typeof filters)}
-                    className="text-muted-foreground hover:text-foreground"
-                    aria-label={`Remover filtro ${key}`}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-              <Button size="sm" variant="ghost" onClick={() => setFilters({})}>
-                Limpar
-              </Button>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <Input
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Buscar empresa (nome ou CPF/CNPJ) — busca parcial"
+              className="max-w-sm"
+            />
+          </div>
 
         <div className="rounded-lg border">
           <Table>
@@ -234,58 +199,32 @@ export default function CompaniesTab() {
                       {company.numero || "—"}
                     </TableCell>
                     <TableCell className="px-3 py-1.5 font-medium">
-                      <button
-                        type="button"
-                        onClick={() => setFilter("nome", company.name)}
-                        title={`Filtrar por "${company.name}"`}
-                        className="block max-w-56 truncate text-left hover:underline"
+                      <span
+                        className="block max-w-56 truncate"
+                        title={company.name}
                       >
                         {company.name.length > 20
                           ? `${company.name.slice(0, 20)}…`
                           : company.name}
-                      </button>
+                      </span>
                     </TableCell>
                     <TableCell className="whitespace-nowrap px-3 py-1.5 text-muted-foreground">
-                      <button
-                        type="button"
-                        onClick={() => setFilter("documento", company.documento)}
-                        title={`Filtrar por "${formatCpfCnpj(
-                          company.documento
-                        )}"`}
-                        className="hover:underline"
-                      >
-                        {formatCpfCnpj(company.documento)}
-                      </button>
+                      {formatCpfCnpj(company.documento)}
                     </TableCell>
                     <TableCell className="px-3 py-1.5">
                       {company.uf ? (
-                        <button
-                          type="button"
-                          onClick={() => setFilter("uf", company.uf)}
-                          title={`Filtrar por UF "${company.uf}"`}
-                        >
-                          <Badge variant="outline">{company.uf}</Badge>
-                        </button>
+                        <Badge variant="outline">{company.uf}</Badge>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
                     </TableCell>
                     <TableCell className="px-3 py-1.5">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setFilter("tributacao", company.tributacao ?? "")
-                        }
-                        disabled={!company.tributacao}
-                        title={
-                          company.tributacao
-                            ? `Filtrar por "${company.tributacao}"`
-                            : undefined
-                        }
-                        className="block max-w-36 truncate text-left hover:underline disabled:pointer-events-none"
+                      <span
+                        className="block max-w-36 truncate"
+                        title={company.tributacao ?? undefined}
                       >
                         {company.tributacao || "—"}
-                      </button>
+                      </span>
                     </TableCell>
                     <TableCell
                       className="px-3 py-1.5"
@@ -349,8 +288,8 @@ export default function CompaniesTab() {
                     colSpan={7}
                     className="py-10 text-center text-muted-foreground"
                   >
-                    {activeFilters.length > 0
-                      ? "Nenhuma empresa encontrada com os filtros aplicados."
+                    {busca.trim()
+                      ? "Nenhuma empresa encontrada com a busca."
                       : "Nenhuma empresa cadastrada."}
                   </TableCell>
                 </TableRow>
