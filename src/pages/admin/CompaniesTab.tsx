@@ -4,7 +4,6 @@ import {
   Loader2,
   Pencil,
   Plus,
-  Search,
   SlidersHorizontal,
   Trash2,
 } from "lucide-react";
@@ -50,7 +49,13 @@ export default function CompaniesTab() {
   const [importOpen, setImportOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [busca, setBusca] = useState("");
+  const [busca, setBusca] = useState({
+    numero: "",
+    nome: "",
+    documento: "",
+    uf: "",
+    tributacao: "",
+  });
   const [editing, setEditing] = useState<CompanyWithDepartments | null>(null);
   const [deleteTarget, setDeleteTarget] =
     useState<CompanyWithDepartments | null>(null);
@@ -62,14 +67,25 @@ export default function CompaniesTab() {
     (users ?? []).map((user) => [user.id, user.full_name])
   );
 
-  const query = busca.trim().toLocaleLowerCase("pt-BR");
+  const setBuscaField = (key: keyof typeof busca, value: string) => {
+    setBusca((prev) => ({ ...prev, [key]: value }));
+  };
+
   const filteredCompanies = (companies ?? []).filter((company) => {
-    if (!query) return true;
+    const match = (
+      value: string | null | undefined,
+      query: string
+    ): boolean =>
+      !query ||
+      (value ?? "").toLocaleLowerCase("pt-BR").includes(
+        query.toLocaleLowerCase("pt-BR")
+      );
     return (
-      company.name.toLocaleLowerCase("pt-BR").includes(query) ||
-      company.documento.toLocaleLowerCase("pt-BR").includes(query) ||
-      (company.uf ?? "").toLocaleLowerCase("pt-BR").includes(query) ||
-      (company.tributacao ?? "").toLocaleLowerCase("pt-BR").includes(query)
+      match(company.numero, busca.numero) &&
+      match(company.name, busca.nome) &&
+      match(company.documento, busca.documento) &&
+      match(company.uf, busca.uf) &&
+      match(company.tributacao, busca.tributacao)
     );
   });
 
@@ -154,35 +170,85 @@ export default function CompaniesTab() {
 
       {!isLoading && !isError && (
         <>
-          <div className="flex items-center gap-2">
-            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <Input
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              placeholder="Buscar empresa (nome, CPF/CNPJ, UF ou tributação)"
-              className="max-w-sm"
-            />
-          </div>
-
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="h-9 w-10 px-3">
+                <TableHead className="w-10 px-3 py-1.5">
                   <Checkbox
                     checked={allSelected}
                     onCheckedChange={() => toggleAll()}
                     aria-label="Selecionar todas"
                   />
                 </TableHead>
-                <TableHead className="h-9 w-24 px-3">Numero</TableHead>
-                <TableHead className="h-9 px-3">Nome</TableHead>
-                <TableHead className="h-9 px-3">CPF/CNPJ</TableHead>
-                <TableHead className="h-9 px-3">UF</TableHead>
-                <TableHead className="h-9 px-3">Tributação</TableHead>
-                <TableHead className="h-9 px-3">Departamentos</TableHead>
-                <TableHead className="h-9 w-28 px-3 text-right">
-                  Ações
+                <TableHead className="px-3 py-1.5 align-bottom">
+                  <div className="mb-1 text-xs font-medium text-muted-foreground">
+                    Numero
+                  </div>
+                  <Input
+                    value={busca.numero}
+                    onChange={(e) => setBuscaField("numero", e.target.value)}
+                    placeholder="Filtrar"
+                    className="h-6 w-24 text-xs"
+                  />
+                </TableHead>
+                <TableHead className="px-3 py-1.5 align-bottom">
+                  <div className="mb-1 text-xs font-medium text-muted-foreground">
+                    Nome
+                  </div>
+                  <Input
+                    value={busca.nome}
+                    onChange={(e) => setBuscaField("nome", e.target.value)}
+                    placeholder="Filtrar"
+                    className="h-6 w-40 text-xs"
+                  />
+                </TableHead>
+                <TableHead className="px-3 py-1.5 align-bottom">
+                  <div className="mb-1 text-xs font-medium text-muted-foreground">
+                    CPF/CNPJ
+                  </div>
+                  <Input
+                    value={busca.documento}
+                    onChange={(e) =>
+                      setBuscaField("documento", e.target.value)
+                    }
+                    placeholder="Filtrar"
+                    className="h-6 w-36 text-xs"
+                  />
+                </TableHead>
+                <TableHead className="px-3 py-1.5 align-bottom">
+                  <div className="mb-1 text-xs font-medium text-muted-foreground">
+                    UF
+                  </div>
+                  <Input
+                    value={busca.uf}
+                    onChange={(e) => setBuscaField("uf", e.target.value)}
+                    placeholder="Filtrar"
+                    className="h-6 w-16 text-xs"
+                  />
+                </TableHead>
+                <TableHead className="px-3 py-1.5 align-bottom">
+                  <div className="mb-1 text-xs font-medium text-muted-foreground">
+                    Tributação
+                  </div>
+                  <Input
+                    value={busca.tributacao}
+                    onChange={(e) =>
+                      setBuscaField("tributacao", e.target.value)
+                    }
+                    placeholder="Filtrar"
+                    className="h-6 w-32 text-xs"
+                  />
+                </TableHead>
+                <TableHead className="px-3 py-1.5 align-bottom">
+                  <div className="mb-1 text-xs font-medium text-muted-foreground">
+                    Departamentos
+                  </div>
+                </TableHead>
+                <TableHead className="w-28 px-3 py-1.5 text-right align-bottom">
+                  <div className="mb-1 text-xs font-medium text-muted-foreground">
+                    Ações
+                  </div>
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -290,7 +356,7 @@ export default function CompaniesTab() {
                     colSpan={7}
                     className="py-10 text-center text-muted-foreground"
                   >
-                    {busca.trim()
+                    {Object.values(busca).some(Boolean)
                       ? "Nenhuma empresa encontrada com a busca."
                       : "Nenhuma empresa cadastrada."}
                   </TableCell>
