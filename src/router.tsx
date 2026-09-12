@@ -1,5 +1,6 @@
 import DepartmentSelection from "./pages/DepartmentSelection";
 import Login from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword";
 import DepartmentPanel from "./pages/app/DepartmentPanel";
 import AdminPanel from "./pages/admin/AdminPanel";
 import AdminLogin from "./pages/admin/AdminLogin";
@@ -22,6 +23,11 @@ export const routers = [
     path: "/admin/login",
     name: "admin-login",
     element: <AdminLogin />,
+  },
+  {
+    path: "/reset-password",
+    name: "reset-password",
+    element: <ResetPassword />,
   },
   {
     path: "/app",
