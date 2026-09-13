@@ -13,15 +13,17 @@ import { PanelHeader } from "@/components/shell/panel-header";
 import { useAuth } from "@/context/auth";
 import {
   FISCAL_DEPARTMENT_NAME,
+  PESSOAL_DEPARTMENT_NAME,
   SOCIETARIO_DEPARTMENT_NAME,
 } from "@/lib/departments";
 import { cn } from "@/lib/utils";
 import FiscalPanel from "./fiscal/FiscalPanel";
 import GeneralDashboard from "./general-dashboard";
+import PessoalPanel from "./pessoal/PessoalPanel";
 import SocietarioPanel from "./societario/SocietarioPanel";
 
 interface AvailablePanel {
-  key: "dashboard" | "fiscal" | "societario";
+  key: "dashboard" | "fiscal" | "pessoal" | "societario";
   label: string;
   panel: JSX.Element;
 }
@@ -40,6 +42,9 @@ export default function DepartmentPanel() {
   const hasSocietarioAccess =
     profile.role === "admin" ||
     profile.departments.some((d) => d.name === SOCIETARIO_DEPARTMENT_NAME);
+  const hasPessoalAccess =
+    profile.role === "admin" ||
+    profile.departments.some((d) => d.name === PESSOAL_DEPARTMENT_NAME);
 
   const availablePanels: AvailablePanel[] = [
     // Dashboard geral (todas as empresas do Fiscal) — disponível a qualquer usuário.
@@ -52,6 +57,11 @@ export default function DepartmentPanel() {
       key: "fiscal",
       label: "Fiscal",
       panel: <FiscalPanel />,
+    },
+    hasPessoalAccess && {
+      key: "pessoal",
+      label: "Pessoal",
+      panel: <PessoalPanel />,
     },
     hasSocietarioAccess && {
       key: "societario",

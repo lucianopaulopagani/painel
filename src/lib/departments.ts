@@ -6,6 +6,9 @@ export const SOCIETARIO_DEPARTMENT_NAME = "Societário";
 /** Departamento que dá acesso ao painel do Fiscal. */
 export const FISCAL_DEPARTMENT_NAME = "Depart. Fiscal";
 
+/** Departamento que dá acesso ao painel do Pessoal. */
+export const PESSOAL_DEPARTMENT_NAME = "Depart. Pessoal";
+
 export function findDepartmentByName(
   departments: Department[] | undefined,
   name: string
