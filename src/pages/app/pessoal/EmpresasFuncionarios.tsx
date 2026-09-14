@@ -28,6 +28,7 @@ import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import {
+  EMPRESAS_FUNC_DCTFWEB_OPTIONS,
   EMPRESAS_FUNC_EMPRESTIMO_OPTIONS,
   EMPRESAS_FUNC_ENVIO_OPTIONS,
   EMPRESAS_FUNC_FGTS_OPTIONS,
@@ -515,7 +516,7 @@ export default function EmpresasFuncionarios() {
           {renderSelectCell(
             company.id,
             record?.dctfweb ?? "",
-            EMPRESAS_FUNC_FLAG_OPTIONS,
+            EMPRESAS_FUNC_DCTFWEB_OPTIONS,
             "dctfweb"
           )}
         </TableCell>
@@ -603,7 +604,7 @@ export default function EmpresasFuncionarios() {
                 {renderFilterSelect("emprestimo", "Empréstimo", EMPRESAS_FUNC_EMPRESTIMO_OPTIONS)}
                 {renderFilterSelect("fgts", "FGTS", EMPRESAS_FUNC_FGTS_OPTIONS)}
                 {renderFilterSelect("taxaSindical", "Taxa Sindical", EMPRESAS_FUNC_FLAG_OPTIONS)}
-                {renderFilterSelect("dctfweb", "DCTFWEB", EMPRESAS_FUNC_FLAG_OPTIONS)}
+                {renderFilterSelect("dctfweb", "DCTFWEB", EMPRESAS_FUNC_DCTFWEB_OPTIONS)}
                 {renderFilterSelect("envio", "Envio", EMPRESAS_FUNC_ENVIO_OPTIONS)}
                 {renderFilterInput("observacao", "Obs. Fechamento", "w-64")}
                 {renderFilterInput("infoSindicato", "Info. Sindicato", "w-64")}

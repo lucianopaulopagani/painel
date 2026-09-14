@@ -30,6 +30,13 @@ export const EMPRESAS_FUNC_FGTS_OPTIONS = [
   "Possui",
 ] as const;
 
+/** Opções do campo DCTFWEB. */
+export const EMPRESAS_FUNC_DCTFWEB_OPTIONS = [
+  "OK",
+  "Não Possui",
+  "Possui",
+] as const;
+
 export const EMPRESAS_FUNC_ENVIO_OPTIONS = ["Enviado", "Pendente"] as const;
 
 /** Meses do ano em 3 letras maiúsculas (Data Base). */
