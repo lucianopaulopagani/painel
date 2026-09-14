@@ -81,24 +81,40 @@ export default function EmpresasFiscal() {
     (records ?? []).map((record) => [record.company_id, record])
   );
 
-  const effectiveEnvio = (companyId: string): string | null => {
+  /**
+   * Status/Envio efetivos no mês: usa o registro do mês; se não existir,
+   * mantém "Desativado" fixo caso o mês anterior mais recente seja Desativado
+   * (em status ou envio) até ser alterado novamente.
+   */
+  const effectiveFields = (
+    companyId: string
+  ): { status: string | null; envio: string | null } => {
     const current = recordByCompany.get(companyId);
-    if (current) return current.envio;
+    if (current) {
+      return { status: current.status, envio: current.envio };
+    }
     const prior = (allRecords ?? [])
       .filter(
         (record) =>
           record.company_id === companyId && record.mes_referencia < mes
       )
       .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia));
-    return prior[0]?.envio === "Desativado" ? "Desativado" : null;
+    const latest = prior[0];
+    return {
+      status: latest?.status === "Desativado" ? "Desativado" : null,
+      envio: latest?.envio === "Desativado" ? "Desativado" : null,
+    };
+  };
+
+  const isDesativada = (companyId: string): boolean => {
+    const { status, envio } = effectiveFields(companyId);
+    return status === "Desativado" || envio === "Desativado";
   };
 
   const activeRows = rows.filter(
-    (company) => effectiveEnvio(company.id) !== "Desativado"
+    (company) => !isDesativada(company.id)
   );
-  const inactiveRows = rows.filter(
-    (company) => effectiveEnvio(company.id) === "Desativado"
-  );
+  const inactiveRows = rows.filter((company) => isDesativada(company.id));
 
   const save = (companyId: string, patch: Record<string, unknown>) => {
     const current = recordByCompany.get(companyId);
@@ -137,9 +153,10 @@ export default function EmpresasFiscal() {
 
   const renderRow = (company: (typeof rows)[number]) => {
     const record = recordByCompany.get(company.id);
-    const status = record?.status ?? "";
+    const { status: statusEff, envio: envioEff } = effectiveFields(company.id);
+    const status = statusEff ?? "";
     const dctfweb = record?.dctfweb ?? "";
-    const envio = effectiveEnvio(company.id) ?? "";
+    const envio = envioEff ?? "";
     return (
       <TableRow key={company.id}>
         <TableCell className={`${CELL} w-20`}>
