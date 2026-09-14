@@ -155,7 +155,9 @@ export default function EmpresasFiscal() {
                 status === "Concluído" &&
                   "bg-status-success text-status-success-foreground hover:bg-status-success/90",
                 status === "Pendente" &&
-                  "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90"
+                  "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
+                status === "Desativado" &&
+                  "bg-muted text-muted-foreground hover:bg-muted/80"
               )}
             >
               <SelectValue placeholder="—" />

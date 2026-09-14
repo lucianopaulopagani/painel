@@ -52,7 +52,6 @@ import type {
   MovementFiscalInput,
   MovementFiscalRecord,
 } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
 const STORAGE_KEY = "fiscal:mes-referencia";
 
@@ -576,13 +575,7 @@ export function MovimentoFiscal() {
                               })
                             }
                           >
-                            <SelectTrigger
-                              className={cn(
-                                "h-7 w-full min-w-0 px-1 text-[11px]",
-                                situacao === "Desativado" &&
-                                  "bg-muted font-semibold text-muted-foreground hover:bg-muted/80"
-                              )}
-                            >
+                            <SelectTrigger className="h-7 w-full min-w-0 px-1 text-[11px]">
                               <SelectValue placeholder="—" />
                             </SelectTrigger>
                             <SelectContent>
