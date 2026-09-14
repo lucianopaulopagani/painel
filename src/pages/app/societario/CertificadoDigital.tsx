@@ -54,6 +54,9 @@ const agendamentoDateOf = (row: CertificateRow): string =>
     ? splitDateTimeLocal(row.certificate.agendamento_at).date
     : "";
 
+const CELL = "px-1 py-1 text-[11px]";
+const HEAD = "h-auto px-1 py-1 text-[11px] font-medium text-muted-foreground";
+
 export default function CertificadoDigital() {
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
@@ -251,15 +254,15 @@ export default function CertificadoDigital() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Vencimento</TableHead>
-                <TableHead>Situação</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Empresa</TableHead>
-                <TableHead>Produto</TableHead>
-                <TableHead>Avisado</TableHead>
-                <TableHead>Agendamento</TableHead>
-                <TableHead>Observações</TableHead>
-                <TableHead className="w-20 text-right">Ações</TableHead>
+                <TableHead className={HEAD}>Vencimento</TableHead>
+                <TableHead className={HEAD}>Situação</TableHead>
+                <TableHead className={HEAD}>Status</TableHead>
+                <TableHead className={HEAD}>Empresa</TableHead>
+                <TableHead className={HEAD}>Produto</TableHead>
+                <TableHead className={HEAD}>Avisado</TableHead>
+                <TableHead className={HEAD}>Agendamento</TableHead>
+                <TableHead className={HEAD}>Observações</TableHead>
+                <TableHead className={`${HEAD} w-20 text-right`}>Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -270,23 +273,23 @@ export default function CertificadoDigital() {
                   );
                   return (
                     <TableRow key={row.company.id}>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell className={`${CELL} whitespace-nowrap`}>
                         {formatDateOnlyBr(row.certificate?.vencimento)}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className={CELL}>
                         <Badge className={STATUS_CLASS[status.level]}>
                           {status.situacao}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className={CELL}>
                         <Badge className={STATUS_CLASS[status.level]}>
                           {status.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className={`${CELL} font-medium`}>
                         {row.company.name}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className={CELL}>
                         {row.certificate && row.certificate.produtos.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
                             {row.certificate.produtos.map((produto) => (
@@ -305,7 +308,7 @@ export default function CertificadoDigital() {
                           <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className={CELL}>
                         {row.certificate?.avisado === true ? (
                           <Badge className="bg-status-success text-status-success-foreground hover:bg-status-success">
                             Sim
@@ -318,7 +321,7 @@ export default function CertificadoDigital() {
                           <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell className={`${CELL} whitespace-nowrap`}>
                         {row.certificate?.agendamento_at ? (
                           <Badge className="bg-status-warning text-status-warning-foreground hover:bg-status-warning">
                             {formatDateTimeBr(row.certificate.agendamento_at)}
@@ -327,10 +330,10 @@ export default function CertificadoDigital() {
                           <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
-                      <TableCell className="max-w-64">
+                      <TableCell className={`${CELL} max-w-64`}>
                         {row.certificate?.observacoes ? (
                           <span
-                            className="line-clamp-2 text-sm text-muted-foreground"
+                            className="line-clamp-2 text-[11px] text-muted-foreground"
                             title={row.certificate.observacoes}
                           >
                             {row.certificate.observacoes.length > 100
@@ -341,7 +344,7 @@ export default function CertificadoDigital() {
                           <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className={`${CELL} text-right`}>
                         <Button
                           variant="ghost"
                           size="icon"
