@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PanelHeader } from "@/components/shell/panel-header";
 import { StatusDonut } from "@/components/fiscal/status-donut";
 import {
   ResponsavelBars,
@@ -79,14 +78,8 @@ export default function GeneralDashboard() {
     DASHBOARDS.find((dashboard) => dashboard.key === active)?.label ?? "";
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <PanelHeader
-        title="Dashboard geral"
-        subtitle="Visão geral por departamento"
-      />
-
-      <main className="mx-auto w-full max-w-[1600px] flex-1 space-y-4 px-4 py-8 sm:px-6">
-        <div className="group relative w-fit">
+    <div className="space-y-4">
+      <div className="group relative w-fit">
           <Button type="button" variant="outline" className="gap-2">
             {activeLabel}
             <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
@@ -180,7 +173,6 @@ export default function GeneralDashboard() {
             </CardContent>
           </Card>
         )}
-      </main>
     </div>
   );
 }
