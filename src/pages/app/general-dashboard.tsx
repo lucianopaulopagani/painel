@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -24,7 +25,20 @@ import {
 
 const SEM_RESPONSAVEL = "Sem responsável";
 
-export default function GeneralDashboard() {
+export interface DashboardNavItem {
+  key: string;
+  label: string;
+}
+
+interface GeneralDashboardProps {
+  navItems?: DashboardNavItem[];
+  onNavigate?: (key: string) => void;
+}
+
+export default function GeneralDashboard({
+  navItems = [],
+  onNavigate,
+}: GeneralDashboardProps) {
   const [mes, setMes] = useState<string>(
     () => readStoredMonth() || defaultReferenceMonth()
   );
@@ -63,11 +77,35 @@ export default function GeneralDashboard() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <PanelHeader
-        title="Dashboard"
-        subtitle="Todas as empresas do departamento Fiscal"
+        title="Dashboard geral"
+        subtitle="Visão geral por departamento"
       />
 
       <main className="mx-auto w-full max-w-[1600px] flex-1 space-y-4 px-4 py-8 sm:px-6">
+        {navItems.length > 0 && onNavigate && (
+          <div className="group relative w-fit">
+            <Button type="button" variant="outline" className="gap-2">
+              Departamentos
+              <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
+            </Button>
+
+            <div className="invisible absolute left-0 top-full z-50 pt-1 opacity-0 transition-all group-hover:visible group-hover:opacity-100">
+              <div className="min-w-44 rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
+                {navItems.map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => onNavigate(item.key)}
+                    className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-muted"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="max-w-xs">
           <Label htmlFor="geral-mes">Mês de referência</Label>
           <Input
