@@ -51,6 +51,19 @@ const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
 
 export default function EmpresasFiscal() {
   const [mes, setMes] = useState<string>(readStoredMes);
+  const [busca, setBusca] = useState({
+    status: "",
+    numero: "",
+    empresa: "",
+    cnpj: "",
+    informacoes: "",
+    dctfweb: "",
+    envio: "",
+  });
+
+  const setBuscaField = (key: keyof typeof busca, value: string) => {
+    setBusca((prev) => ({ ...prev, [key]: value }));
+  };
 
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
@@ -111,10 +124,41 @@ export default function EmpresasFiscal() {
     return status === "Desativado" || envio === "Desativado";
   };
 
-  const activeRows = rows.filter(
+  const filteredRows = rows.filter((company) => {
+    const { status, envio } = effectiveFields(company.id);
+    const record = recordByCompany.get(company.id);
+    const match = (
+      value: string | null | undefined,
+      query: string
+    ): boolean =>
+      !query ||
+      (value ?? "")
+        .toLocaleLowerCase("pt-BR")
+        .includes(query.toLocaleLowerCase("pt-BR"));
+    const selectOrBlank = (
+      value: string | null | undefined,
+      query: string
+    ): boolean => {
+      if (query === "branco") return !value;
+      return !query || (value ?? "") === query;
+    };
+    return (
+      selectOrBlank(status, busca.status) &&
+      match(company.numero, busca.numero) &&
+      match(company.name, busca.empresa) &&
+      match(company.documento, busca.cnpj) &&
+      match(record?.informacoes, busca.informacoes) &&
+      selectOrBlank(record?.dctfweb, busca.dctfweb) &&
+      selectOrBlank(envio, busca.envio)
+    );
+  });
+
+  const displayActiveRows = filteredRows.filter(
     (company) => !isDesativada(company.id)
   );
-  const inactiveRows = rows.filter((company) => isDesativada(company.id));
+  const displayInactiveRows = filteredRows.filter((company) =>
+    isDesativada(company.id)
+  );
 
   const save = (companyId: string, patch: Record<string, unknown>) => {
     const current = recordByCompany.get(companyId);
@@ -310,20 +354,119 @@ export default function EmpresasFiscal() {
           <Table className="table-fixed min-w-[900px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
-                <TableHead className={`${HEAD} w-20`}>Status</TableHead>
-                <TableHead className={`${HEAD} w-12`}>Nº</TableHead>
-                <TableHead className={`${HEAD} w-32`}>Empresa</TableHead>
-                <TableHead className={`${HEAD} w-36`}>CNPJ</TableHead>
-                <TableHead className={`${HEAD} w-64`}>
-                  Informações fechamento
+                <TableHead className={`${HEAD} w-24 align-bottom`}>
+                  <span className="mb-1 block">Status</span>
+                  <Select
+                    value={busca.status === "" ? "todos" : busca.status}
+                    onValueChange={(value) =>
+                      setBuscaField("status", value === "todos" ? "" : value)
+                    }
+                  >
+                    <SelectTrigger className="h-6 w-full min-w-0 px-1 text-xs">
+                      <SelectValue placeholder="Todos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="branco">Em branco</SelectItem>
+                      {EMPRESAS_FISCAL_STATUS_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </TableHead>
-                <TableHead className={`${HEAD} w-16`}>DCTFWEB</TableHead>
-                <TableHead className={`${HEAD} w-20`}>Envio</TableHead>
+                <TableHead className={`${HEAD} w-14 align-bottom`}>
+                  <span className="mb-1 block">Nº</span>
+                  <Input
+                    value={busca.numero}
+                    onChange={(e) =>
+                      setBuscaField("numero", e.target.value)
+                    }
+                    placeholder="Filtrar"
+                    className="h-6 w-full min-w-0 px-1 text-xs"
+                  />
+                </TableHead>
+                <TableHead className={`${HEAD} w-36 align-bottom`}>
+                  <span className="mb-1 block">Empresa</span>
+                  <Input
+                    value={busca.empresa}
+                    onChange={(e) =>
+                      setBuscaField("empresa", e.target.value)
+                    }
+                    placeholder="Filtrar"
+                    className="h-6 w-full min-w-0 px-1 text-xs"
+                  />
+                </TableHead>
+                <TableHead className={`${HEAD} w-36 align-bottom`}>
+                  <span className="mb-1 block">CNPJ</span>
+                  <Input
+                    value={busca.cnpj}
+                    onChange={(e) => setBuscaField("cnpj", e.target.value)}
+                    placeholder="Filtrar"
+                    className="h-6 w-full min-w-0 px-1 text-xs"
+                  />
+                </TableHead>
+                <TableHead className={`${HEAD} w-64 align-bottom`}>
+                  <span className="mb-1 block">Informações fechamento</span>
+                  <Input
+                    value={busca.informacoes}
+                    onChange={(e) =>
+                      setBuscaField("informacoes", e.target.value)
+                    }
+                    placeholder="Filtrar"
+                    className="h-6 w-full min-w-0 px-1 text-xs"
+                  />
+                </TableHead>
+                <TableHead className={`${HEAD} w-24 align-bottom`}>
+                  <span className="mb-1 block">DCTFWEB</span>
+                  <Select
+                    value={busca.dctfweb === "" ? "todos" : busca.dctfweb}
+                    onValueChange={(value) =>
+                      setBuscaField("dctfweb", value === "todos" ? "" : value)
+                    }
+                  >
+                    <SelectTrigger className="h-6 w-full min-w-0 px-1 text-xs">
+                      <SelectValue placeholder="Todos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="branco">Em branco</SelectItem>
+                      {EMPRESAS_FISCAL_DCTFWEB_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableHead>
+                <TableHead className={`${HEAD} w-28 align-bottom`}>
+                  <span className="mb-1 block">Envio</span>
+                  <Select
+                    value={busca.envio === "" ? "todos" : busca.envio}
+                    onValueChange={(value) =>
+                      setBuscaField("envio", value === "todos" ? "" : value)
+                    }
+                  >
+                    <SelectTrigger className="h-6 w-full min-w-0 px-1 text-xs">
+                      <SelectValue placeholder="Todos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="branco">Em branco</SelectItem>
+                      {EMPRESAS_FISCAL_ENVIO_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {activeRows.map(renderRow)}
-              {inactiveRows.length > 0 && (
+              {displayActiveRows.map(renderRow)}
+              {displayInactiveRows.length > 0 && (
                 <TableRow className="bg-muted/50">
                   <TableCell
                     colSpan={7}
@@ -333,17 +476,20 @@ export default function EmpresasFiscal() {
                   </TableCell>
                 </TableRow>
               )}
-              {inactiveRows.map(renderRow)}
-              {activeRows.length === 0 && inactiveRows.length === 0 && (
-                <TableRow>
-                  <TableCell
-                    colSpan={7}
-                    className={`${CELL} py-8 text-center text-muted-foreground`}
-                  >
-                    {`Nenhuma empresa vinculada ao departamento ${PESSOAL_DEPARTMENT_NAME}. Marque esse departamento no cadastro de empresas para que elas apareçam aqui.`}
-                  </TableCell>
-                </TableRow>
-              )}
+              {displayInactiveRows.map(renderRow)}
+              {displayActiveRows.length === 0 &&
+                displayInactiveRows.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={7}
+                      className={`${CELL} py-8 text-center text-muted-foreground`}
+                    >
+                      {Object.values(busca).some(Boolean) && rows.length > 0
+                        ? "Nenhuma empresa encontrada com os filtros."
+                        : `Nenhuma empresa vinculada ao departamento ${PESSOAL_DEPARTMENT_NAME}. Marque esse departamento no cadastro de empresas para que elas apareçam aqui.`}
+                    </TableCell>
+                  </TableRow>
+                )}
             </TableBody>
           </Table>
         </div>
