@@ -70,6 +70,8 @@ export function useSavePonto(mes: string) {
     onError: (_error, _record, context) => {
       if (context?.prev) queryClient.setQueryData(queryKey, context.prev);
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey }),
+    onSettled: () =>
+      // Invalida o mês e também "all" (usado para manter "Desativado" fixo).
+      queryClient.invalidateQueries({ queryKey: pontoKeys.all }),
   });
 }
