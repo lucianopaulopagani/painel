@@ -18,6 +18,7 @@ import {
 import { useFiscalDashboard } from "@/hooks/use-fiscal-dashboard";
 import { isSituacaoFinalizada } from "@/lib/fiscal";
 import { cn } from "@/lib/utils";
+import SocietarioDashboard from "./societario/SocietarioDashboard";
 import {
   defaultReferenceMonth,
   readStoredMonth,
@@ -155,6 +156,8 @@ export default function GeneralDashboard() {
               </>
             )}
           </>
+        ) : active === "societario" ? (
+          <SocietarioDashboard />
         ) : (
           <Card className="border-dashed">
             <CardHeader>
