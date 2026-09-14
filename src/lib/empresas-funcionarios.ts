@@ -3,6 +3,7 @@ export const EMPRESAS_FUNC_STATUS_OPTIONS = [
   "Concluído",
   "Pendente",
   "Em Andamento",
+  "Em Ajuste",
   "Desativado",
 ] as const;
 

@@ -294,6 +294,7 @@ export default function EmpresasFuncionarios() {
       "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
     "Em Andamento":
       "bg-status-warning text-status-warning-foreground hover:bg-status-warning/90",
+    "Em Ajuste": "bg-primary/10 text-primary hover:bg-primary/15",
     Desativado: "bg-muted text-muted-foreground hover:bg-muted/80",
   };
   const ENVIO_TONE = {
