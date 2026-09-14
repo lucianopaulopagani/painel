@@ -71,27 +71,6 @@ export default function DepartmentPanel() {
     },
   ].filter((panel): panel is AvailablePanel => Boolean(panel));
 
-  // Navegação do Dashboard geral: itens para cada painel de departamento.
-  const dashboardNav = availablePanels
-    .filter((panel) => panel.key !== "dashboard")
-    .map((panel) => ({ key: panel.key, label: panel.label }));
-
-  const panels = availablePanels.map((panel) =>
-    panel.key === "dashboard"
-      ? {
-          ...panel,
-          panel: (
-            <GeneralDashboard
-              navItems={dashboardNav}
-              onNavigate={(key) =>
-                setActivePanel(key as AvailablePanel["key"])
-              }
-            />
-          ),
-        }
-      : panel
-  );
-
   // Nenhum painel específico disponível: mantém o placeholder original.
   if (availablePanels.length === 0) {
     const firstName =
@@ -150,19 +129,20 @@ export default function DepartmentPanel() {
 
   // Um único painel: renderiza direto.
   if (availablePanels.length === 1) {
-    return panels[0].panel;
+    return availablePanels[0].panel;
   }
 
   // Vários painéis disponíveis: barra para escolher.
-  const active = activePanel ?? panels[0].key;
+  const active = activePanel ?? availablePanels[0].key;
   const current =
-    panels.find((panel) => panel.key === active) ?? panels[0];
+    availablePanels.find((panel) => panel.key === active) ??
+    availablePanels[0];
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <div className="border-b bg-background/90 backdrop-blur">
         <div className="mx-auto flex w-full max-w-[1600px] items-center gap-1 overflow-x-auto px-4 py-2 sm:px-6">
-          {panels.map((panel) => (
+          {availablePanels.map((panel) => (
             <button
               key={panel.key}
               type="button"
