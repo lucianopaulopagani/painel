@@ -368,7 +368,9 @@ export default function EmpresasFiscal() {
                     <SelectContent>
                       <SelectItem value="todos">Todos</SelectItem>
                       <SelectItem value="branco">Em branco</SelectItem>
-                      {EMPRESAS_FISCAL_STATUS_OPTIONS.map((option) => (
+                      {EMPRESAS_FISCAL_STATUS_OPTIONS.filter(
+                        (option) => option !== "Desativado"
+                      ).map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>
@@ -454,7 +456,9 @@ export default function EmpresasFiscal() {
                     <SelectContent>
                       <SelectItem value="todos">Todos</SelectItem>
                       <SelectItem value="branco">Em branco</SelectItem>
-                      {EMPRESAS_FISCAL_ENVIO_OPTIONS.map((option) => (
+                      {EMPRESAS_FISCAL_ENVIO_OPTIONS.filter(
+                        (option) => option !== "Desativado"
+                      ).map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>
