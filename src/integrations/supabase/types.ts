@@ -3531,6 +3531,70 @@ export type Database = {
           },
         ]
       }
+      empresas_funcionarios: {
+        Row: {
+          company_id: string
+          created_at: string
+          data_base: string | null
+          dctfweb: string | null
+          emprestimo: string | null
+          envio: string | null
+          fgts: string | null
+          folha: string | null
+          id: string
+          info_sindicato: string | null
+          info_sindicato_patronal: string | null
+          mes_referencia: string
+          observacao: string | null
+          status: string | null
+          taxa_sindical: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          data_base?: string | null
+          dctfweb?: string | null
+          emprestimo?: string | null
+          envio?: string | null
+          fgts?: string | null
+          folha?: string | null
+          id?: string
+          info_sindicato?: string | null
+          info_sindicato_patronal?: string | null
+          mes_referencia: string
+          observacao?: string | null
+          status?: string | null
+          taxa_sindical?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          data_base?: string | null
+          dctfweb?: string | null
+          emprestimo?: string | null
+          envio?: string | null
+          fgts?: string | null
+          folha?: string | null
+          id?: string
+          info_sindicato?: string | null
+          info_sindicato_patronal?: string | null
+          mes_referencia?: string
+          observacao?: string | null
+          status?: string | null
+          taxa_sindical?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empresas_funcionarios_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       movimento_fiscal: {
         Row: {
           antecipacao: string | null

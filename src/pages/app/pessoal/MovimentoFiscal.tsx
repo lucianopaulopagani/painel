@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import EmpresasFiscal from "./EmpresasFiscal";
+import EmpresasFuncionarios from "./EmpresasFuncionarios";
 import Ponto from "./Ponto";
 import type { PessoalSubMenuKey } from "./pessoal-modules";
 
@@ -31,38 +32,7 @@ export default function MovimentoFiscal({ active }: MovimentoFiscalProps) {
   }
 
   if (active === "empresas-funcionarios") {
-    return (
-      <div className="space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold">
-            Empresas com funcionários
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Folha de Pagamento Mensal — empresas e funcionários.
-          </p>
-        </div>
-
-        <Card className="border-dashed">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Construction className="h-5 w-5 text-muted-foreground" />
-              Empresas com funcionários
-            </CardTitle>
-            <CardDescription>
-              Esta área está reservada para as empresas com funcionários do
-              departamento Pessoal. As funcionalidades serão implementadas em
-              breve.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Aguarde as próximas etapas para a gestão das empresas e seus
-              funcionários.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <EmpresasFuncionarios />;
   }
 
   const title = PLACEHOLDERS[active];

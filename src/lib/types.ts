@@ -138,3 +138,28 @@ export type EmpresasFiscalInput = Omit<
   EmpresasFiscalRecord,
   "id" | "created_at" | "updated_at"
 >;
+
+/** Registro do submenu Empresas com Funcionários (folha mensal). */
+export interface EmpresasFuncionariosRecord {
+  id: string;
+  company_id: string;
+  mes_referencia: string;
+  status: string | null;
+  data_base: string | null;
+  folha: string | null;
+  emprestimo: string | null;
+  fgts: string | null;
+  taxa_sindical: string | null;
+  dctfweb: string | null;
+  envio: string | null;
+  observacao: string | null;
+  info_sindicato: string | null;
+  info_sindicato_patronal: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type EmpresasFuncionariosInput = Omit<
+  EmpresasFuncionariosRecord,
+  "id" | "created_at" | "updated_at"
+>;

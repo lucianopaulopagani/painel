@@ -1,0 +1,35 @@
+create table if not exists public.empresas_funcionarios (
+  id uuid primary key default gen_random_uuid(),
+  company_id uuid not null references public.companies(id) on delete cascade,
+  mes_referencia text not null,
+  status text,
+  data_base text,
+  folha text,
+  emprestimo text,
+  fgts text,
+  taxa_sindical text,
+  dctfweb text,
+  envio text,
+  observacao text,
+  info_sindicato text,
+  info_sindicato_patronal text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (company_id, mes_referencia)
+);
+
+alter table public.empresas_funcionarios enable row level security;
+
+create policy "empresas_funcionarios_admin_all" on public.empresas_funcionarios
+  for all using (public.is_admin()) with check (public.is_admin());
+
+create policy "empresas_funcionarios_member_all" on public.empresas_funcionarios
+  for all
+  using (exists (
+    select 1 from public.company_departments cd
+    join public.profile_departments pd on pd.department_id = cd.department_id
+    where cd.company_id = empresas_funcionarios.company_id and pd.profile_id = auth.uid()))
+  with check (exists (
+    select 1 from public.company_departments cd
+    join public.profile_departments pd on pd.department_id = cd.department_id
+    where cd.company_id = empresas_funcionarios.company_id and pd.profile_id = auth.uid()));
