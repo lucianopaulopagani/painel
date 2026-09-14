@@ -100,16 +100,26 @@ export default function EmpresasFiscal() {
   );
 
   /**
-   * Status/Envio efetivos no mês: usa o registro do mês; se não existir,
-   * mantém "Desativado" fixo caso o mês anterior mais recente seja Desativado
-   * (em status ou envio) até ser alterado novamente.
+   * Valores efetivos no mês: usa o registro do mês; se não existir, carrega do
+   * mês anterior mais recente — mantém "Desativado" fixo (status/envio) e
+   * herda "informações de fechamento" e DCTFWEB.
    */
   const effectiveFields = (
     companyId: string
-  ): { status: string | null; envio: string | null } => {
+  ): {
+    status: string | null;
+    envio: string | null;
+    informacoes: string | null;
+    dctfweb: string | null;
+  } => {
     const current = recordByCompany.get(companyId);
     if (current) {
-      return { status: current.status, envio: current.envio };
+      return {
+        status: current.status,
+        envio: current.envio,
+        informacoes: current.informacoes,
+        dctfweb: current.dctfweb,
+      };
     }
     const prior = (allRecords ?? [])
       .filter(
@@ -121,6 +131,8 @@ export default function EmpresasFiscal() {
     return {
       status: latest?.status === "Desativado" ? "Desativado" : null,
       envio: latest?.envio === "Desativado" ? "Desativado" : null,
+      informacoes: latest?.informacoes ?? null,
+      dctfweb: latest?.dctfweb ?? null,
     };
   };
 
@@ -130,8 +142,8 @@ export default function EmpresasFiscal() {
   };
 
   const filteredRows = rows.filter((company) => {
-    const { status, envio } = effectiveFields(company.id);
-    const record = recordByCompany.get(company.id);
+    const { status, envio, informacoes, dctfweb } =
+      effectiveFields(company.id);
     const match = (
       value: string | null | undefined,
       query: string
@@ -152,8 +164,8 @@ export default function EmpresasFiscal() {
       match(company.numero, busca.numero) &&
       match(company.name, busca.empresa) &&
       match(company.documento, busca.cnpj) &&
-      match(record?.informacoes, busca.informacoes) &&
-      selectOrBlank(record?.dctfweb, busca.dctfweb) &&
+      match(informacoes, busca.informacoes) &&
+      selectOrBlank(dctfweb, busca.dctfweb) &&
       selectOrBlank(envio, busca.envio)
     );
   });
@@ -166,19 +178,15 @@ export default function EmpresasFiscal() {
   );
 
   const save = (companyId: string, patch: Record<string, unknown>) => {
-    const current = recordByCompany.get(companyId);
-    const base: Partial<EmpresasFiscalRecord> = current ?? {};
-    const {
-      id: _id,
-      created_at: _createdAt,
-      updated_at: _updatedAt,
-      ...fields
-    } = base;
+    const eff = effectiveFields(companyId);
     saveMutation.mutate(
       {
         company_id: companyId,
         mes_referencia: mes,
-        ...fields,
+        status: eff.status ?? null,
+        envio: eff.envio ?? null,
+        informacoes: eff.informacoes ?? null,
+        dctfweb: eff.dctfweb ?? null,
         ...patch,
       } as unknown as EmpresasFiscalInput,
       {
@@ -201,10 +209,14 @@ export default function EmpresasFiscal() {
   };
 
   const renderRow = (company: (typeof rows)[number]) => {
-    const record = recordByCompany.get(company.id);
-    const { status: statusEff, envio: envioEff } = effectiveFields(company.id);
+    const {
+      status: statusEff,
+      envio: envioEff,
+      informacoes: infoEff,
+      dctfweb: dctfwebEff,
+    } = effectiveFields(company.id);
     const status = statusEff ?? "";
-    const dctfweb = record?.dctfweb ?? "";
+    const dctfweb = dctfwebEff ?? "";
     const envio = envioEff ?? "";
     return (
       <TableRow key={company.id}>
@@ -252,8 +264,8 @@ export default function EmpresasFiscal() {
         <TableCell className={CELL}>
           <Input
             key={`${company.id}:${mes}`}
-            defaultValue={record?.informacoes ?? ""}
-            title={record?.informacoes ?? ""}
+            defaultValue={infoEff ?? ""}
+            title={infoEff ?? ""}
             onBlur={(event) =>
               save(company.id, {
                 informacoes: event.target.value.trim() || null,
