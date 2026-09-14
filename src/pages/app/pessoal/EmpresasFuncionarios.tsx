@@ -65,12 +65,12 @@ function readStoredMes(): string {
 const CELL = "px-1 py-1 text-[11px]";
 const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
 
-/* Colunas fixas até "Empresa": offsets acompanham w-40 (160px) + w-14 (56px). */
+/* Colunas fixas até "Empresa": offsets acompanham w-32 (128px) + w-10 (40px). */
 const STICKY_HEAD = "sticky top-0 z-20 bg-muted";
 const VHEAD = "sticky top-0 z-10 bg-muted";
 const STICKY_CELL = "sticky z-10 bg-background";
-const N_LEFT = "left-[160px]";
-const EMPRESA_LEFT = "left-[216px]";
+const N_LEFT = "left-[128px]";
+const EMPRESA_LEFT = "left-[168px]";
 const EMPRESA_EDGE = "border-r border-border";
 
 export default function EmpresasFuncionarios() {
@@ -88,9 +88,7 @@ export default function EmpresasFuncionarios() {
     taxaSindical: "",
     dctfweb: "",
     envio: "",
-    observacao: "",
-    infoSindicato: "",
-    infoSindicatoPatronal: "",
+    notas: "",
   });
 
   const setBuscaField = (key: keyof typeof busca, value: string) => {
@@ -116,9 +114,9 @@ export default function EmpresasFuncionarios() {
   /* Diálogo de edição das notas (obs. fechamento, info. sindicato etc.). */
   const [noteDialog, setNoteDialog] = useState<{
     companyId: string;
-    patchKey: string;
-    label: string;
-    value: string;
+    observacao: string;
+    infoSindicato: string;
+    infoSindicatoPatronal: string;
   } | null>(null);
 
   useLayoutEffect(() => {
@@ -194,7 +192,10 @@ export default function EmpresasFuncionarios() {
   const handleNoteSave = () => {
     if (!noteDialog) return;
     save(noteDialog.companyId, {
-      [noteDialog.patchKey]: noteDialog.value.trim() || null,
+      observacao: noteDialog.observacao.trim() || null,
+      info_sindicato: noteDialog.infoSindicato.trim() || null,
+      info_sindicato_patronal:
+        noteDialog.infoSindicatoPatronal.trim() || null,
     });
     setNoteDialog(null);
   };
@@ -303,9 +304,12 @@ export default function EmpresasFuncionarios() {
       selectOrBlank(record?.taxa_sindical, busca.taxaSindical) &&
       selectOrBlank(record?.dctfweb, busca.dctfweb) &&
       selectOrBlank(record?.envio, busca.envio) &&
-      match(record?.observacao, busca.observacao) &&
-      match(record?.info_sindicato, busca.infoSindicato) &&
-      match(record?.info_sindicato_patronal, busca.infoSindicatoPatronal)
+      match(
+        [record?.observacao, record?.info_sindicato, record?.info_sindicato_patronal]
+          .filter(Boolean)
+          .join(" "),
+        busca.notas
+      )
     );
   });
 
@@ -387,28 +391,30 @@ export default function EmpresasFuncionarios() {
     </Select>
   );
 
-  const renderNoteCell = (
-    companyId: string,
-    value: string | null,
-    patchKey: string,
-    label: string
-  ) => (
-    <TableCell className={`${CELL} w-40`}>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        title={`${label}: ${value ?? ""}`}
-        onClick={() =>
-          setNoteDialog({ companyId, patchKey, label, value: value ?? "" })
-        }
-        className="h-7 w-full justify-start gap-1.5 px-1.5 text-[11px] font-normal"
-      >
-        <Pencil className="h-3 w-3 shrink-0 text-muted-foreground" />
-        <span className="truncate">{value || "—"}</span>
-      </Button>
-    </TableCell>
-  );
+  const renderActionsCell = (company: (typeof rows)[number]) => {
+    const record = recordByCompany.get(company.id);
+    return (
+      <TableCell className={`${CELL} w-20 text-center`}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          title="Editar notas (obs. fechamento, sindicato)"
+          onClick={() =>
+            setNoteDialog({
+              companyId: company.id,
+              observacao: record?.observacao ?? "",
+              infoSindicato: record?.info_sindicato ?? "",
+              infoSindicatoPatronal: record?.info_sindicato_patronal ?? "",
+            })
+          }
+          className="h-7 w-7"
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </Button>
+      </TableCell>
+    );
+  };
 
   const renderFilterSelect = (
     key: keyof typeof busca,
@@ -477,7 +483,7 @@ export default function EmpresasFuncionarios() {
     const record = recordByCompany.get(company.id);
     return (
       <TableRow key={company.id}>
-        <TableCell className={`${CELL} w-40 left-0 ${STICKY_CELL}`}>
+        <TableCell className={`${CELL} w-32 left-0 ${STICKY_CELL}`}>
           {renderSelectCell(
             company.id,
             effectiveStatus(company.id) ?? "",
@@ -487,21 +493,23 @@ export default function EmpresasFuncionarios() {
           )}
         </TableCell>
         <TableCell
-          className={`${CELL} w-14 whitespace-nowrap text-center font-medium ${STICKY_CELL} ${N_LEFT}`}
+          className={`${CELL} w-10 whitespace-nowrap text-center font-medium ${STICKY_CELL} ${N_LEFT}`}
         >
           {company.numero || "—"}
         </TableCell>
         <TableCell
-          className={`${CELL} w-40 ${STICKY_CELL} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`}
+          className={`${CELL} w-24 ${STICKY_CELL} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`}
         >
           <span className="block truncate font-medium" title={company.name}>
             {company.name}
           </span>
         </TableCell>
-        <TableCell className={`${CELL} whitespace-nowrap text-muted-foreground`}>
-          {formatCpfCnpj(company.documento)}
+        <TableCell className={`${CELL} text-muted-foreground`}>
+          <span className="block truncate" title={company.documento}>
+            {formatCpfCnpj(company.documento)}
+          </span>
         </TableCell>
-        <TableCell className={`${CELL} w-32`}>
+        <TableCell className={`${CELL} w-24`}>
           <span
             className="block truncate"
             title={company.tributacao ?? undefined}
@@ -509,7 +517,7 @@ export default function EmpresasFuncionarios() {
             {company.tributacao || "—"}
           </span>
         </TableCell>
-        <TableCell className={`${CELL} w-24`}>
+        <TableCell className={`${CELL} w-20`}>
           {renderSelectCell(
             company.id,
             effectiveDataBase(company.id) ?? "",
@@ -517,7 +525,7 @@ export default function EmpresasFuncionarios() {
             "data_base"
           )}
         </TableCell>
-        <TableCell className={`${CELL} w-28`}>
+        <TableCell className={`${CELL} w-24`}>
           {renderSelectCell(
             company.id,
             record?.folha ?? "",
@@ -525,7 +533,7 @@ export default function EmpresasFuncionarios() {
             "folha"
           )}
         </TableCell>
-        <TableCell className={`${CELL} w-28`}>
+        <TableCell className={`${CELL} w-24`}>
           {renderSelectCell(
             company.id,
             effectiveEmprestimo(company.id) ?? "",
@@ -533,7 +541,7 @@ export default function EmpresasFuncionarios() {
             "emprestimo"
           )}
         </TableCell>
-        <TableCell className={`${CELL} w-28`}>
+        <TableCell className={`${CELL} w-20`}>
           {renderSelectCell(
             company.id,
             record?.fgts ?? "",
@@ -541,7 +549,7 @@ export default function EmpresasFuncionarios() {
             "fgts"
           )}
         </TableCell>
-        <TableCell className={`${CELL} w-28`}>
+        <TableCell className={`${CELL} w-24`}>
           {renderSelectCell(
             company.id,
             record?.taxa_sindical ?? "",
@@ -549,7 +557,7 @@ export default function EmpresasFuncionarios() {
             "taxa_sindical"
           )}
         </TableCell>
-        <TableCell className={`${CELL} w-28`}>
+        <TableCell className={`${CELL} w-20`}>
           {renderSelectCell(
             company.id,
             record?.dctfweb ?? "",
@@ -557,7 +565,7 @@ export default function EmpresasFuncionarios() {
             "dctfweb"
           )}
         </TableCell>
-        <TableCell className={`${CELL} w-28`}>
+        <TableCell className={`${CELL} w-20`}>
           {renderSelectCell(
             company.id,
             record?.envio ?? "",
@@ -566,24 +574,7 @@ export default function EmpresasFuncionarios() {
             ENVIO_TONE
           )}
         </TableCell>
-        {renderNoteCell(
-          company.id,
-          record?.observacao ?? null,
-          "observacao",
-          "Obs. Fechamento"
-        )}
-        {renderNoteCell(
-          company.id,
-          record?.info_sindicato ?? null,
-          "info_sindicato",
-          "Info. Sindicato"
-        )}
-        {renderNoteCell(
-          company.id,
-          record?.info_sindicato_patronal ?? null,
-          "info_sindicato_patronal",
-          "Info. Sindicato Patronal"
-        )}
+        {renderActionsCell(company)}
       </TableRow>
     );
   };
@@ -629,24 +620,22 @@ export default function EmpresasFuncionarios() {
             }
             className="overflow-x-auto rounded-lg border [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-          <Table className="table-fixed min-w-[1912px]">
+          <Table className="table-fixed min-w-[1144px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
-                {renderFilterSelect("status", "Status", EMPRESAS_FUNC_STATUS_OPTIONS, "w-40", `${STICKY_HEAD} left-0`)}
-                {renderFilterInput("numero", "Nº", "w-14", `${STICKY_HEAD} ${N_LEFT}`)}
-                {renderFilterInput("empresa", "Empresa", "w-40", `${STICKY_HEAD} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`)}
-                {renderFilterInput("cnpj", "CNPJ", "w-36")}
-                {renderFilterInput("tributacao", "Regime Tributário", "w-32")}
-                {renderFilterSelect("dataBase", "Data Base", EMPRESAS_FUNC_MESES_OPTIONS)}
-                {renderFilterSelect("folha", "Folha", EMPRESAS_FUNC_FOLHA_OPTIONS)}
-                {renderFilterSelect("emprestimo", "Empréstimo", EMPRESAS_FUNC_EMPRESTIMO_OPTIONS)}
-                {renderFilterSelect("fgts", "FGTS", EMPRESAS_FUNC_FGTS_OPTIONS)}
-                {renderFilterSelect("taxaSindical", "Taxa Sindical", EMPRESAS_FUNC_FLAG_OPTIONS)}
-                {renderFilterSelect("dctfweb", "DCTFWEB", EMPRESAS_FUNC_DCTFWEB_OPTIONS)}
-                {renderFilterSelect("envio", "Envio", EMPRESAS_FUNC_ENVIO_OPTIONS)}
-                {renderFilterInput("observacao", "Obs. Fechamento", "w-40")}
-                {renderFilterInput("infoSindicato", "Info. Sindicato", "w-40")}
-                {renderFilterInput("infoSindicatoPatronal", "Info. Sindicato Patronal", "w-40")}
+                {renderFilterSelect("status", "Status", EMPRESAS_FUNC_STATUS_OPTIONS, "w-32", `${STICKY_HEAD} left-0`)}
+                {renderFilterInput("numero", "Nº", "w-10", `${STICKY_HEAD} ${N_LEFT}`)}
+                {renderFilterInput("empresa", "Empresa", "w-24", `${STICKY_HEAD} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`)}
+                {renderFilterInput("cnpj", "CNPJ", "w-24")}
+                {renderFilterInput("tributacao", "Tributação", "w-24")}
+                {renderFilterSelect("dataBase", "Data Base", EMPRESAS_FUNC_MESES_OPTIONS, "w-20")}
+                {renderFilterSelect("folha", "Folha", EMPRESAS_FUNC_FOLHA_OPTIONS, "w-24")}
+                {renderFilterSelect("emprestimo", "Empréstimo", EMPRESAS_FUNC_EMPRESTIMO_OPTIONS, "w-24")}
+                {renderFilterSelect("fgts", "FGTS", EMPRESAS_FUNC_FGTS_OPTIONS, "w-20")}
+                {renderFilterSelect("taxaSindical", "Taxa Sindical", EMPRESAS_FUNC_FLAG_OPTIONS, "w-24")}
+                {renderFilterSelect("dctfweb", "DCTFWEB", EMPRESAS_FUNC_DCTFWEB_OPTIONS, "w-20")}
+                {renderFilterSelect("envio", "Envio", EMPRESAS_FUNC_ENVIO_OPTIONS, "w-20")}
+                {renderFilterInput("notas", "Notas", "w-20")}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -654,7 +643,7 @@ export default function EmpresasFuncionarios() {
               {inactiveRows.length > 0 && (
                 <TableRow className="bg-muted/50">
                   <TableCell
-                    colSpan={15}
+                    colSpan={13}
                     className="px-2 py-1.5 text-xs font-semibold text-muted-foreground"
                   >
                     Empresas desativadas
@@ -665,7 +654,7 @@ export default function EmpresasFuncionarios() {
               {filteredRows.length === 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={15}
+                    colSpan={13}
                     className={`${CELL} py-8 text-center text-muted-foreground`}
                   >
                     {Object.values(busca).some(Boolean) && rows.length > 0
@@ -704,23 +693,65 @@ export default function EmpresasFuncionarios() {
         open={!!noteDialog}
         onOpenChange={(open) => !open && setNoteDialog(null)}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{noteDialog?.label}</DialogTitle>
+            <DialogTitle>Notas da empresa</DialogTitle>
             <DialogDescription>
               {noteDialogCompany?.name ?? "Empresa"}
             </DialogDescription>
           </DialogHeader>
-          <Textarea
-            value={noteDialog?.value ?? ""}
-            onChange={(event) =>
-              setNoteDialog((prev) =>
-                prev ? { ...prev, value: event.target.value } : prev
-              )
-            }
-            placeholder="Digite o texto..."
-            rows={5}
-          />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="nota-obs">Obs. Fechamento</Label>
+              <Textarea
+                id="nota-obs"
+                value={noteDialog?.observacao ?? ""}
+                onChange={(event) =>
+                  setNoteDialog((prev) =>
+                    prev
+                      ? { ...prev, observacao: event.target.value }
+                      : prev
+                  )
+                }
+                placeholder="Observações do fechamento"
+                rows={3}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="nota-sind">Info. Sindicato</Label>
+              <Textarea
+                id="nota-sind"
+                value={noteDialog?.infoSindicato ?? ""}
+                onChange={(event) =>
+                  setNoteDialog((prev) =>
+                    prev
+                      ? { ...prev, infoSindicato: event.target.value }
+                      : prev
+                  )
+                }
+                placeholder="Informações do sindicato"
+                rows={3}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="nota-sind-patronal">
+                Info. Sindicato Patronal
+              </Label>
+              <Textarea
+                id="nota-sind-patronal"
+                value={noteDialog?.infoSindicatoPatronal ?? ""}
+                onChange={(event) =>
+                  setNoteDialog((prev) =>
+                    prev
+                      ? { ...prev, infoSindicatoPatronal: event.target.value }
+                      : prev
+                  )
+                }
+                placeholder="Informações do sindicato patronal"
+                rows={3}
+              />
+            </div>
+          </div>
           <DialogFooter>
             <Button
               type="button"

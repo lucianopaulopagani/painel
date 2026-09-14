@@ -17,7 +17,7 @@ export default function PessoalPanel() {
     <div className="flex min-h-screen flex-col bg-background">
       <PanelHeader title="Depart. Pessoal" subtitle="Painel do departamento" />
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
+      <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-8 sm:px-6">
         <div className="group relative mb-6 w-fit">
           <Button type="button" variant="outline" className="gap-2">
             Folha de Pagamento Mensal
