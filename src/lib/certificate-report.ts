@@ -147,3 +147,89 @@ export function printCertificateReport(
   win.print();
   return true;
 }
+
+/** Gera o arquivo Excel (.xls) do relatório de certificados por vencimento. */
+export function downloadCertificateReportExcel(
+  rows: CertificateRow[],
+  filters: CertificateReportFilters
+): void {
+  const sorted = [...rows].sort((a, b) => {
+    const aDue = a.certificate?.vencimento ?? null;
+    const bDue = b.certificate?.vencimento ?? null;
+    if (!aDue && !bDue) {
+      return a.company.name.localeCompare(b.company.name, "pt-BR");
+    }
+    if (!aDue) return 1;
+    if (!bDue) return -1;
+    return (
+      aDue.localeCompare(bDue) ||
+      a.company.name.localeCompare(b.company.name, "pt-BR")
+    );
+  });
+
+  const body = sorted
+    .map((row) => {
+      const status = getCertificateStatus(row.certificate?.vencimento);
+      const avisado =
+        row.certificate?.avisado === true
+          ? "Sim"
+          : row.certificate?.avisado === false
+            ? "Não"
+            : "—";
+      return `<tr>
+        <td>${escapeHtml(row.company.name)}</td>
+        <td>${escapeHtml((row.certificate?.produtos ?? []).join(", ") || "—")}</td>
+        <td>${escapeHtml(formatDateOnlyBr(row.certificate?.vencimento))}</td>
+        <td>${escapeHtml(status.situacao)}</td>
+        <td>${escapeHtml(status.status)}</td>
+        <td>${escapeHtml(avisado)}</td>
+        <td>${escapeHtml(formatDateTimeBr(row.certificate?.agendamento_at))}</td>
+        <td>${escapeHtml(row.certificate?.observacoes ?? "—")}</td>
+      </tr>`;
+    })
+    .join("");
+
+  const filterLines = buildFilterSummary(filters);
+  const filterHtml =
+    filterLines.length > 0
+      ? `<p style="font-size:12px;color:#334155;margin:0 0 8px;">${filterLines
+          .map(escapeHtml)
+          .join(" | ")}</p>`
+      : "";
+
+  const now = new Date();
+  const stamp =
+    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-` +
+    `${String(now.getDate()).padStart(2, "0")}`;
+
+  const html = `<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8" /><title>Certificados por vencimento</title></head>
+<body>
+  <h1 style="font-size:16px;margin:0 0 4px;">Relatório de certificados por vencimento</h1>
+  <p style="font-size:12px;color:#475569;margin:0 0 4px;">Gerado em ${stamp} — ${sorted.length} registro(s)</p>
+  ${filterHtml}
+  <table border="1" cellspacing="0" cellpadding="4" style="border-collapse:collapse;font-size:12px;">
+    <thead>
+      <tr style="background:#ffe599;font-weight:bold;">
+        <th>Empresa</th><th>Produto</th><th>Vencimento</th><th>Situação</th><th>Status</th>
+        <th>Avisado</th><th>Agendamento</th><th>Observações</th>
+      </tr>
+    </thead>
+    <tbody>${body || '<tr><td colspan="8">Nenhum registro.</td></tr>'}</tbody>
+  </table>
+</body>
+</html>`;
+
+  const blob = new Blob(["\ufeff" + html], {
+    type: "application/vnd.ms-excel;charset=utf-8",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `certificados-vencimento-${stamp}.xls`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}

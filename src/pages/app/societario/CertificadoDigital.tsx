@@ -1,8 +1,14 @@
 import { useState } from "react";
-import { FileText, Loader2, Pencil, X } from "lucide-react";
+import { ChevronDown, FileSpreadsheet, FileText, Loader2, Pencil, X } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -28,7 +34,7 @@ import {
   type CertificateStatusLevel,
 } from "@/lib/certificate-status";
 import { CERTIFICATE_PRODUCTS } from "@/lib/certificate-products";
-import { printCertificateReport } from "@/lib/certificate-report";
+import { printCertificateReport, downloadCertificateReportExcel } from "@/lib/certificate-report";
 import {
   SOCIETARIO_DEPARTMENT_NAME,
   findDepartmentByName,
@@ -81,6 +87,8 @@ export default function CertificadoDigital() {
 
   const [filtros, setFiltros] = useState({
     vencimento: "",
+    vencimentoDe: "",
+    vencimentoAte: "",
     situacao: "",
     status: "",
     empresa: "",
@@ -138,8 +146,13 @@ export default function CertificadoDigital() {
       if (query === "branco") return !value;
       return !query || value === query;
     };
+    const vencimentoRaw = row.certificate?.vencimento ?? "";
+    const inVencimentoRange =
+      (!filtros.vencimentoDe || vencimentoRaw >= filtros.vencimentoDe) &&
+      (!filtros.vencimentoAte || vencimentoRaw <= filtros.vencimentoAte);
 
     return (
+      inVencimentoRange &&
       match(vencimento, filtros.vencimento) &&
       selectOrBlank(LEVEL_SITUACAO[status.level], filtros.situacao) &&
       selectOrBlank(LEVEL_STATUS[status.level], filtros.status) &&
@@ -166,6 +179,8 @@ export default function CertificadoDigital() {
   const clearFilters = () => {
     setFiltros({
       vencimento: "",
+      vencimentoDe: "",
+      vencimentoAte: "",
       situacao: "",
       status: "",
       empresa: "",
@@ -176,17 +191,23 @@ export default function CertificadoDigital() {
     });
   };
 
-  const handleReport = () => {
-    const opened = printCertificateReport(filteredRows, {
-      empresa: filtros.empresa.trim() || undefined,
-      vencimentoDe: undefined,
-      vencimentoAte: undefined,
-      agendamentoDe: undefined,
-      agendamentoAte: undefined,
-    });
+  const reportFilters = {
+    empresa: filtros.empresa.trim() || undefined,
+    vencimentoDe: filtros.vencimentoDe || undefined,
+    vencimentoAte: filtros.vencimentoAte || undefined,
+    agendamentoDe: undefined,
+    agendamentoAte: undefined,
+  };
+
+  const handleReportPdf = () => {
+    const opened = printCertificateReport(filteredRows, reportFilters);
     if (!opened) {
       toast.error("Permita pop-ups no navegador para gerar o relatório.");
     }
+  };
+
+  const handleReportExcel = () => {
+    downloadCertificateReportExcel(filteredRows, reportFilters);
   };
 
   const filterInput = (
@@ -248,7 +269,64 @@ export default function CertificadoDigital() {
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs text-muted-foreground">
+            Vencimento entre
+          </span>
+          <div className="flex items-center gap-2">
+            <Input
+              type="date"
+              aria-label="Vencimento de"
+              value={filtros.vencimentoDe}
+              onChange={(e) =>
+                setFiltros((prev) => ({
+                  ...prev,
+                  vencimentoDe: e.target.value,
+                }))
+              }
+              className="h-8 w-40"
+            />
+            <span className="text-xs text-muted-foreground">até</span>
+            <Input
+              type="date"
+              aria-label="Vencimento até"
+              value={filtros.vencimentoAte}
+              onChange={(e) =>
+                setFiltros((prev) => ({
+                  ...prev,
+                  vencimentoAte: e.target.value,
+                }))
+              }
+              className="h-8 w-40"
+            />
+          </div>
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" disabled={filteredRows.length === 0}>
+              <FileText className="h-4 w-4" />
+              Relatório por vencimento
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleReportPdf}>
+              <FileText className="h-4 w-4" />
+              Gerar em PDF
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleReportExcel}>
+              <FileSpreadsheet className="h-4 w-4" />
+              Gerar em Excel
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <span className="text-xs text-muted-foreground">
+          {filteredRows.length} de {rows.length} registro(s)
+        </span>
+
         <Button
           variant="outline"
           size="sm"
@@ -258,17 +336,6 @@ export default function CertificadoDigital() {
           <X className="h-4 w-4" />
           Limpar filtros
         </Button>
-        <Button
-          size="sm"
-          onClick={handleReport}
-          disabled={filteredRows.length === 0}
-        >
-          <FileText className="h-4 w-4" />
-          Relatório por vencimento
-        </Button>
-        <span className="text-xs text-muted-foreground">
-          {filteredRows.length} de {rows.length} registro(s)
-        </span>
       </div>
 
       {isLoading && (
