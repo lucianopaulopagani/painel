@@ -18,13 +18,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { usePonto, useSavePonto } from "@/hooks/use-ponto";
+import { usePonto, usePontoAll, useSavePonto } from "@/hooks/use-ponto";
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
-import {
-  defaultReferenceMonth,
-} from "@/lib/fiscal-month";
+import { defaultReferenceMonth } from "@/lib/fiscal-month";
 import { PONTO_ENVIO_OPTIONS } from "@/lib/ponto";
 import { cn } from "@/lib/utils";
 import type { PontoInput } from "@/lib/types";
@@ -49,6 +47,7 @@ export default function Ponto() {
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: records } = usePonto(mes);
+  const { data: allRecords } = usePontoAll();
   const saveMutation = useSavePonto(mes);
 
   const pessoal = findDepartmentByName(departments, PESSOAL_DEPARTMENT_NAME);
@@ -74,11 +73,33 @@ export default function Ponto() {
     (records ?? []).map((record) => [record.company_id, record])
   );
 
+  /**
+   * Status efetivo da empresa no mês: usa o registro do mês; se não existir,
+   * mantém "Desativado" fixo caso o mês anterior mais recente seja Desativado.
+   */
+  const effectiveEnvio = (companyId: string): string | null => {
+    const current = recordByCompany.get(companyId);
+    if (current) return current.envio;
+    const prior = (allRecords ?? [])
+      .filter(
+        (record) => record.company_id === companyId && record.mes_referencia < mes
+      )
+      .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia));
+    return prior[0]?.envio === "Desativado" ? "Desativado" : null;
+  };
+
   const filteredRows = rows.filter((company) => {
-    const envio = recordByCompany.get(company.id)?.envio ?? "";
+    const envio = effectiveEnvio(company.id) ?? "";
     if (buscaEnvio === "branco") return !envio;
     return !buscaEnvio || envio === buscaEnvio;
   });
+
+  const activeRows = filteredRows.filter(
+    (company) => effectiveEnvio(company.id) !== "Desativado"
+  );
+  const inactiveRows = filteredRows.filter(
+    (company) => effectiveEnvio(company.id) === "Desativado"
+  );
 
   const save = (companyId: string, envio: string | null) => {
     saveMutation.mutate(
@@ -104,6 +125,55 @@ export default function Ponto() {
     } catch {
       // ignora armazenamento indisponível
     }
+  };
+
+  const renderRow = (company: (typeof rows)[number]) => {
+    const envio = effectiveEnvio(company.id) ?? "";
+    return (
+      <TableRow key={company.id}>
+        <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
+          {company.numero || "—"}
+        </TableCell>
+        <TableCell className={CELL}>
+          <span
+            className="block truncate font-medium"
+            title={company.name}
+          >
+            {company.name}
+          </span>
+        </TableCell>
+        <TableCell className={CELL}>
+          <Select
+            value={envio === "" ? "none" : envio}
+            onValueChange={(value) =>
+              save(company.id, value === "none" ? null : value)
+            }
+          >
+            <SelectTrigger
+              className={cn(
+                "h-7 w-full min-w-0 px-1 text-xs font-semibold",
+                envio === "Enviado" &&
+                  "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+                envio === "Pendente" &&
+                  "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
+                envio === "Desativado" &&
+                  "bg-muted text-muted-foreground hover:bg-muted/80"
+              )}
+            >
+              <SelectValue placeholder="—" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">—</SelectItem>
+              {PONTO_ENVIO_OPTIONS.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </TableCell>
+      </TableRow>
+    );
   };
 
   return (
@@ -170,54 +240,19 @@ export default function Ponto() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredRows.length > 0 ? (
-                filteredRows.map((company) => {
-                  const envio = recordByCompany.get(company.id)?.envio ?? "";
-                  return (
-                    <TableRow key={company.id}>
-                      <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
-                        {company.numero || "—"}
-                      </TableCell>
-                      <TableCell className={CELL}>
-                        <span
-                          className="block truncate font-medium"
-                          title={company.name}
-                        >
-                          {company.name}
-                        </span>
-                      </TableCell>
-                      <TableCell className={CELL}>
-                        <Select
-                          value={envio === "" ? "none" : envio}
-                          onValueChange={(value) =>
-                            save(company.id, value === "none" ? null : value)
-                          }
-                        >
-                          <SelectTrigger
-                            className={cn(
-                              "h-7 w-full min-w-0 px-1 text-xs font-semibold",
-                              envio === "Enviado" &&
-                                "bg-status-success text-status-success-foreground hover:bg-status-success/90",
-                              envio === "Pendente" &&
-                                "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90"
-                            )}
-                          >
-                            <SelectValue placeholder="—" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">—</SelectItem>
-                            {PONTO_ENVIO_OPTIONS.map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              ) : (
+              {activeRows.map(renderRow)}
+              {inactiveRows.length > 0 && (
+                <TableRow className="bg-muted/50">
+                  <TableCell
+                    colSpan={3}
+                    className="px-2 py-1.5 text-xs font-semibold text-muted-foreground"
+                  >
+                    Empresas desativadas
+                  </TableCell>
+                </TableRow>
+              )}
+              {inactiveRows.map(renderRow)}
+              {activeRows.length === 0 && inactiveRows.length === 0 && (
                 <TableRow>
                   <TableCell
                     colSpan={3}

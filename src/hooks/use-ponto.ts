@@ -21,6 +21,18 @@ export function usePonto(mes: string) {
   });
 }
 
+/** Todos os registros de Ponto (usado para manter "Desativado" fixo entre meses). */
+export function usePontoAll() {
+  return useQuery({
+    queryKey: ["ponto", "all"] as const,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("ponto").select("*");
+      if (error) throw error;
+      return data as PontoRecord[];
+    },
+  });
+}
+
 /** Grava (cria ou atualiza) o envio de Ponto de uma empresa no mês. */
 export function useSavePonto(mes: string) {
   const queryClient = useQueryClient();
