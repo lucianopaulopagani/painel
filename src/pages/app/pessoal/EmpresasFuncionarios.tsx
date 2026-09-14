@@ -357,7 +357,7 @@ export default function EmpresasFuncionarios() {
     const record = recordByCompany.get(company.id);
     return (
       <TableRow key={company.id}>
-        <TableCell className={`${CELL} w-40 ${STICKY_CELL}`}>
+        <TableCell className={`${CELL} w-40 left-0 ${STICKY_CELL}`}>
           {renderSelectCell(
             company.id,
             effectiveStatus(company.id) ?? "",
@@ -504,7 +504,7 @@ export default function EmpresasFuncionarios() {
           <Table className="table-fixed min-w-[2200px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
-                {renderFilterSelect("status", "Status", EMPRESAS_FUNC_STATUS_OPTIONS, "w-40", STICKY_HEAD)}
+                {renderFilterSelect("status", "Status", EMPRESAS_FUNC_STATUS_OPTIONS, "w-40", `${STICKY_HEAD} left-0`)}
                 {renderFilterInput("numero", "Nº", "w-14", `${STICKY_HEAD} ${N_LEFT}`)}
                 {renderFilterInput("empresa", "Empresa", "w-40", `${STICKY_HEAD} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`)}
                 {renderFilterInput("cnpj", "CNPJ", "w-36")}
