@@ -4,7 +4,13 @@ import { toast } from "@/components/ui/sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -21,6 +27,7 @@ import {
   getCertificateStatus,
   type CertificateStatusLevel,
 } from "@/lib/certificate-status";
+import { CERTIFICATE_PRODUCTS } from "@/lib/certificate-products";
 import { printCertificateReport } from "@/lib/certificate-report";
 import {
   SOCIETARIO_DEPARTMENT_NAME,
@@ -29,7 +36,6 @@ import {
 import {
   formatDateOnlyBr,
   formatDateTimeBr,
-  splitDateTimeLocal,
 } from "@/lib/utils";
 import type { CertificateRow } from "@/lib/types";
 
@@ -49,13 +55,22 @@ const PRODUCT_CLASS: Record<string, string> = {
   "e-CPF A1 12 meses": "bg-zinc-200 text-zinc-800 hover:bg-zinc-200",
 };
 
-const agendamentoDateOf = (row: CertificateRow): string =>
-  row.certificate?.agendamento_at
-    ? splitDateTimeLocal(row.certificate.agendamento_at).date
-    : "";
-
 const CELL = "px-1 py-1 text-[11px]";
 const HEAD = "h-auto px-1 py-1 text-[11px] font-medium text-muted-foreground";
+
+/** Rótulos dos filtros de situação e status (por nível). */
+const LEVEL_SITUACAO: Record<CertificateStatusLevel, string> = {
+  vencido: "Vencido",
+  renovar: "Vence hoje",
+  ativo: "Ativo",
+  "sem-vencimento": "Sem vencimento",
+};
+const LEVEL_STATUS: Record<CertificateStatusLevel, string> = {
+  vencido: "VENCIDO",
+  renovar: "RENOVAR",
+  ativo: "ATIVO",
+  "sem-vencimento": "SEM VENCIMENTO",
+};
 
 export default function CertificadoDigital() {
   const { data: departments } = useDepartments();
@@ -64,11 +79,16 @@ export default function CertificadoDigital() {
 
   const [editing, setEditing] = useState<CertificateRow | null>(null);
 
-  const [empresa, setEmpresa] = useState("");
-  const [vencimentoDe, setVencimentoDe] = useState("");
-  const [vencimentoAte, setVencimentoAte] = useState("");
-  const [agendamentoDe, setAgendamentoDe] = useState("");
-  const [agendamentoAte, setAgendamentoAte] = useState("");
+  const [filtros, setFiltros] = useState({
+    vencimento: "",
+    situacao: "",
+    status: "",
+    empresa: "",
+    produto: "",
+    avisado: "",
+    agendamento: "",
+    observacoes: "",
+  });
 
   const societario = findDepartmentByName(
     departments,
@@ -105,50 +125,119 @@ export default function CertificadoDigital() {
     });
 
   const filteredRows = rows.filter((row) => {
-    if (
-      empresa.trim() &&
-      !row.company.name
-        .toLowerCase()
-        .includes(empresa.trim().toLowerCase())
-    ) {
-      return false;
-    }
-    const vencimento = row.certificate?.vencimento ?? "";
-    if (vencimentoDe && (!vencimento || vencimento < vencimentoDe)) return false;
-    if (vencimentoAte && (!vencimento || vencimento > vencimentoAte))
-      return false;
-    const agendamento = agendamentoDateOf(row);
-    if (agendamentoDe && (!agendamento || agendamento < agendamentoDe))
-      return false;
-    if (agendamentoAte && (!agendamento || agendamento > agendamentoAte))
-      return false;
-    return true;
+    const status = getCertificateStatus(row.certificate?.vencimento);
+    const vencimento = formatDateOnlyBr(row.certificate?.vencimento);
+    const agendamento = row.certificate?.agendamento_at
+      ? formatDateTimeBr(row.certificate.agendamento_at)
+      : "";
+    const produtos = row.certificate?.produtos ?? [];
+
+    const match = (value: string, query: string): boolean =>
+      !query || value.toLowerCase().includes(query.toLowerCase());
+    const selectOrBlank = (value: string, query: string): boolean => {
+      if (query === "branco") return !value;
+      return !query || value === query;
+    };
+
+    return (
+      match(vencimento, filtros.vencimento) &&
+      selectOrBlank(LEVEL_SITUACAO[status.level], filtros.situacao) &&
+      selectOrBlank(LEVEL_STATUS[status.level], filtros.status) &&
+      match(row.company.name, filtros.empresa) &&
+      (filtros.produto === ""
+        ? true
+        : filtros.produto === "branco"
+          ? produtos.length === 0
+          : produtos.includes(filtros.produto)) &&
+      (filtros.avisado === ""
+        ? true
+        : filtros.avisado === "branco"
+          ? row.certificate?.avisado == null
+          : filtros.avisado === "sim"
+            ? row.certificate?.avisado === true
+            : row.certificate?.avisado === false) &&
+      match(agendamento, filtros.agendamento) &&
+      match(row.certificate?.observacoes ?? "", filtros.observacoes)
+    );
   });
 
-  const hasFilters = Boolean(
-    empresa || vencimentoDe || vencimentoAte || agendamentoDe || agendamentoAte
-  );
+  const hasFilters = Object.values(filtros).some(Boolean);
 
   const clearFilters = () => {
-    setEmpresa("");
-    setVencimentoDe("");
-    setVencimentoAte("");
-    setAgendamentoDe("");
-    setAgendamentoAte("");
+    setFiltros({
+      vencimento: "",
+      situacao: "",
+      status: "",
+      empresa: "",
+      produto: "",
+      avisado: "",
+      agendamento: "",
+      observacoes: "",
+    });
   };
 
   const handleReport = () => {
     const opened = printCertificateReport(filteredRows, {
-      empresa: empresa.trim() || undefined,
-      vencimentoDe: vencimentoDe || undefined,
-      vencimentoAte: vencimentoAte || undefined,
-      agendamentoDe: agendamentoDe || undefined,
-      agendamentoAte: agendamentoAte || undefined,
+      empresa: filtros.empresa.trim() || undefined,
+      vencimentoDe: undefined,
+      vencimentoAte: undefined,
+      agendamentoDe: undefined,
+      agendamentoAte: undefined,
     });
     if (!opened) {
       toast.error("Permita pop-ups no navegador para gerar o relatório.");
     }
   };
+
+  const filterInput = (
+    key: keyof typeof filtros,
+    label: string,
+    widthClass = ""
+  ) => (
+    <TableHead className={`${HEAD} ${widthClass} align-bottom`}>
+      <span className="mb-1 block whitespace-nowrap">{label}</span>
+      <Input
+        value={filtros[key]}
+        onChange={(e) =>
+          setFiltros((prev) => ({ ...prev, [key]: e.target.value }))
+        }
+        placeholder="Filtrar"
+        className="h-6 w-full min-w-0 px-1 text-xs"
+      />
+    </TableHead>
+  );
+
+  const filterSelect = (
+    key: keyof typeof filtros,
+    label: string,
+    options: readonly string[]
+  ) => (
+    <TableHead className={`${HEAD} align-bottom`}>
+      <span className="mb-1 block whitespace-nowrap">{label}</span>
+      <Select
+        value={filtros[key] === "" ? "todos" : filtros[key]}
+        onValueChange={(value) =>
+          setFiltros((prev) => ({
+            ...prev,
+            [key]: value === "todos" ? "" : value,
+          }))
+        }
+      >
+        <SelectTrigger className="h-6 w-full min-w-0 px-1 text-xs">
+          <SelectValue placeholder="Todos" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todos</SelectItem>
+          <SelectItem value="branco">Em branco</SelectItem>
+          {options.map((option) => (
+            <SelectItem key={option} value={option}>
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </TableHead>
+  );
 
   return (
     <div className="space-y-4">
@@ -159,82 +248,27 @@ export default function CertificadoDigital() {
         </p>
       </div>
 
-      <div className="rounded-lg border p-4">
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-          <div className="flex flex-col gap-1.5">
-            <Label
-              htmlFor="filtro-empresa"
-              className="text-xs text-muted-foreground"
-            >
-              Empresa
-            </Label>
-            <Input
-              id="filtro-empresa"
-              value={empresa}
-              onChange={(e) => setEmpresa(e.target.value)}
-              placeholder="Buscar por nome"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs text-muted-foreground">Vencimento</Label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="date"
-                aria-label="Vencimento de"
-                value={vencimentoDe}
-                onChange={(e) => setVencimentoDe(e.target.value)}
-              />
-              <span className="text-xs text-muted-foreground">até</span>
-              <Input
-                type="date"
-                aria-label="Vencimento até"
-                value={vencimentoAte}
-                onChange={(e) => setVencimentoAte(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs text-muted-foreground">Agendamento</Label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="date"
-                aria-label="Agendamento de"
-                value={agendamentoDe}
-                onChange={(e) => setAgendamentoDe(e.target.value)}
-              />
-              <span className="text-xs text-muted-foreground">até</span>
-              <Input
-                type="date"
-                aria-label="Agendamento até"
-                value={agendamentoAte}
-                onChange={(e) => setAgendamentoAte(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={clearFilters}
-            disabled={!hasFilters}
-          >
-            <X className="h-4 w-4" />
-            Limpar filtros
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleReport}
-            disabled={filteredRows.length === 0}
-          >
-            <FileText className="h-4 w-4" />
-            Relatório por vencimento
-          </Button>
-          <span className="text-xs text-muted-foreground">
-            {filteredRows.length} de {rows.length} registro(s)
-          </span>
-        </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={clearFilters}
+          disabled={!hasFilters}
+        >
+          <X className="h-4 w-4" />
+          Limpar filtros
+        </Button>
+        <Button
+          size="sm"
+          onClick={handleReport}
+          disabled={filteredRows.length === 0}
+        >
+          <FileText className="h-4 w-4" />
+          Relatório por vencimento
+        </Button>
+        <span className="text-xs text-muted-foreground">
+          {filteredRows.length} de {rows.length} registro(s)
+        </span>
       </div>
 
       {isLoading && (
@@ -254,15 +288,17 @@ export default function CertificadoDigital() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className={HEAD}>Vencimento</TableHead>
-                <TableHead className={HEAD}>Situação</TableHead>
-                <TableHead className={HEAD}>Status</TableHead>
-                <TableHead className={HEAD}>Empresa</TableHead>
-                <TableHead className={HEAD}>Produto</TableHead>
-                <TableHead className={HEAD}>Avisado</TableHead>
-                <TableHead className={HEAD}>Agendamento</TableHead>
-                <TableHead className={HEAD}>Observações</TableHead>
-                <TableHead className={`${HEAD} w-20 text-right`}>Ações</TableHead>
+                {filterInput("vencimento", "Vencimento")}
+                {filterSelect("situacao", "Situação", Object.values(LEVEL_SITUACAO))}
+                {filterSelect("status", "Status", Object.values(LEVEL_STATUS))}
+                {filterInput("empresa", "Empresa")}
+                {filterSelect("produto", "Produto", CERTIFICATE_PRODUCTS)}
+                {filterSelect("avisado", "Avisado", ["Sim", "Não"])}
+                {filterInput("agendamento", "Agendamento")}
+                {filterInput("observacoes", "Observações")}
+                <TableHead className={`${HEAD} w-20 text-right align-bottom`}>
+                  <span className="mb-1 block">Ações</span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
