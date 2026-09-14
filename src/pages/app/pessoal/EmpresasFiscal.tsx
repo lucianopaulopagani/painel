@@ -49,6 +49,11 @@ function readStoredMes(): string {
 const CELL = "px-1 py-1 text-[11px]";
 const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
 
+/** Opções de envio exibidas nas linhas e filtros (sem "Desativado"). */
+const ENVIO_SELECT_OPTIONS = EMPRESAS_FISCAL_ENVIO_OPTIONS.filter(
+  (option) => option !== "Desativado"
+);
+
 export default function EmpresasFiscal() {
   const [mes, setMes] = useState<string>(readStoredMes);
   const [busca, setBusca] = useState({
@@ -305,12 +310,12 @@ export default function EmpresasFiscal() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">—</SelectItem>
-              {EMPRESAS_FISCAL_ENVIO_OPTIONS.map((option) => (
-                <SelectItem key={option} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
+                      {ENVIO_SELECT_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
           </Select>
         </TableCell>
       </TableRow>
@@ -368,9 +373,7 @@ export default function EmpresasFiscal() {
                     <SelectContent>
                       <SelectItem value="todos">Todos</SelectItem>
                       <SelectItem value="branco">Em branco</SelectItem>
-                      {EMPRESAS_FISCAL_STATUS_OPTIONS.filter(
-                        (option) => option !== "Desativado"
-                      ).map((option) => (
+                      {EMPRESAS_FISCAL_STATUS_OPTIONS.map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>
@@ -456,9 +459,7 @@ export default function EmpresasFiscal() {
                     <SelectContent>
                       <SelectItem value="todos">Todos</SelectItem>
                       <SelectItem value="branco">Em branco</SelectItem>
-                      {EMPRESAS_FISCAL_ENVIO_OPTIONS.filter(
-                        (option) => option !== "Desativado"
-                      ).map((option) => (
+                      {ENVIO_SELECT_OPTIONS.map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>

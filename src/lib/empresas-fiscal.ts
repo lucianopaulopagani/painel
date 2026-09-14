@@ -4,7 +4,6 @@ import { PONTO_ENVIO_OPTIONS } from "@/lib/ponto";
 export const EMPRESAS_FISCAL_STATUS_OPTIONS = [
   "Concluído",
   "Pendente",
-  "Desativado",
 ] as const;
 
 export const EMPRESAS_FISCAL_DCTFWEB_OPTIONS = ["OK"] as const;
