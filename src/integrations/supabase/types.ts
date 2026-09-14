@@ -3488,6 +3488,49 @@ export type Database = {
         }
         Relationships: []
       }
+      empresas_fiscal: {
+        Row: {
+          company_id: string
+          created_at: string
+          dctfweb: string | null
+          envio: string | null
+          id: string
+          informacoes: string | null
+          mes_referencia: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          dctfweb?: string | null
+          envio?: string | null
+          id?: string
+          informacoes?: string | null
+          mes_referencia: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          dctfweb?: string | null
+          envio?: string | null
+          id?: string
+          informacoes?: string | null
+          mes_referencia?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empresas_fiscal_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       movimento_fiscal: {
         Row: {
           antecipacao: string | null

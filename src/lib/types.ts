@@ -119,3 +119,22 @@ export interface PontoRecord {
 }
 
 export type PontoInput = Omit<PontoRecord, "id" | "created_at" | "updated_at">;
+
+/** Registro do submenu Empresas Fiscal (folha mensal) de uma empresa. */
+export interface EmpresasFiscalRecord {
+  id: string;
+  company_id: string;
+  /** Mês de referência (YYYY-MM). */
+  mes_referencia: string;
+  status: string | null;
+  informacoes: string | null;
+  dctfweb: string | null;
+  envio: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type EmpresasFiscalInput = Omit<
+  EmpresasFiscalRecord,
+  "id" | "created_at" | "updated_at"
+>;
