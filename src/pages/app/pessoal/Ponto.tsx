@@ -44,6 +44,7 @@ const HEAD = "px-2 py-1 text-xs font-medium text-muted-foreground";
 
 export default function Ponto() {
   const [mes, setMes] = useState<string>(readPontoMonth);
+  const [buscaEnvio, setBuscaEnvio] = useState("");
 
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
@@ -72,6 +73,12 @@ export default function Ponto() {
   const recordByCompany = new Map(
     (records ?? []).map((record) => [record.company_id, record])
   );
+
+  const filteredRows = rows.filter((company) => {
+    const envio = recordByCompany.get(company.id)?.envio ?? "";
+    if (buscaEnvio === "branco") return !envio;
+    return !buscaEnvio || envio === buscaEnvio;
+  });
 
   const save = (companyId: string, envio: string | null) => {
     saveMutation.mutate(
@@ -138,12 +145,33 @@ export default function Ponto() {
               <TableRow className="bg-muted hover:bg-muted">
                 <TableHead className={`${HEAD} w-16`}>Nº</TableHead>
                 <TableHead className={HEAD}>Empresa</TableHead>
-                <TableHead className={`${HEAD} w-32`}>Envio</TableHead>
+                <TableHead className={`${HEAD} w-36`}>
+                  <div className="mb-1">Envio</div>
+                  <Select
+                    value={buscaEnvio === "" ? "todos" : buscaEnvio}
+                    onValueChange={(value) =>
+                      setBuscaEnvio(value === "todos" ? "" : value)
+                    }
+                  >
+                    <SelectTrigger className="h-6 w-full min-w-0 px-1 text-xs">
+                      <SelectValue placeholder="Todos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="branco">Em branco</SelectItem>
+                      {PONTO_ENVIO_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.length > 0 ? (
-                rows.map((company) => {
+              {filteredRows.length > 0 ? (
+                filteredRows.map((company) => {
                   const envio = recordByCompany.get(company.id)?.envio ?? "";
                   return (
                     <TableRow key={company.id}>
@@ -195,9 +223,9 @@ export default function Ponto() {
                     colSpan={3}
                     className={`${CELL} py-8 text-center text-muted-foreground`}
                   >
-                    Nenhuma empresa vinculada ao departamento{" "}
-                    {PESSOAL_DEPARTMENT_NAME}. Marque esse departamento no
-                    cadastro de empresas para que elas apareçam aqui.
+                    {buscaEnvio && rows.length > 0
+                      ? "Nenhuma empresa encontrada com o filtro."
+                      : `Nenhuma empresa vinculada ao departamento ${PESSOAL_DEPARTMENT_NAME}. Marque esse departamento no cadastro de empresas para que elas apareçam aqui.`}
                   </TableCell>
                 </TableRow>
               )}
