@@ -248,9 +248,10 @@ export default function EmpresasFuncionarios() {
   const renderFilterSelect = (
     key: keyof typeof busca,
     label: string,
-    options: readonly string[]
+    options: readonly string[],
+    widthClass = "w-28"
   ) => (
-    <TableHead className={`${HEAD} w-28 align-bottom`}>
+    <TableHead className={`${HEAD} ${widthClass} align-bottom`}>
       <span className="mb-1 block whitespace-nowrap">{label}</span>
       <Select
         value={busca[key] === "" ? "todos" : busca[key]}
@@ -304,7 +305,7 @@ export default function EmpresasFuncionarios() {
     const record = recordByCompany.get(company.id);
     return (
       <TableRow key={company.id}>
-        <TableCell className={`${CELL} w-28`}>
+        <TableCell className={`${CELL} w-40`}>
           {renderSelectCell(
             company.id,
             effectiveStatus(company.id) ?? "",
@@ -437,7 +438,7 @@ export default function EmpresasFuncionarios() {
           <Table className="table-fixed min-w-[1600px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
-                {renderFilterSelect("status", "Status", EMPRESAS_FUNC_STATUS_OPTIONS)}
+                {renderFilterSelect("status", "Status", EMPRESAS_FUNC_STATUS_OPTIONS, "w-40")}
                 {renderFilterInput("numero", "Nº")}
                 {renderFilterInput("empresa", "Empresa")}
                 {renderFilterInput("cnpj", "CNPJ")}
