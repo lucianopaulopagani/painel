@@ -163,3 +163,19 @@ export type EmpresasFuncionariosInput = Omit<
   EmpresasFuncionariosRecord,
   "id" | "created_at" | "updated_at"
 >;
+
+/** Registro do submenu Complemento INSS (folha mensal). */
+export interface ComplementoInssRecord {
+  id: string;
+  company_id: string;
+  mes_referencia: string;
+  darf: string | null;
+  envio: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type ComplementoInssInput = Omit<
+  ComplementoInssRecord,
+  "id" | "created_at" | "updated_at"
+>;

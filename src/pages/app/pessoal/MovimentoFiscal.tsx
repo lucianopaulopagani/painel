@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import ComplementoInss from "./ComplementoInss";
 import EmpresasFiscal from "./EmpresasFiscal";
 import EmpresasFuncionarios from "./EmpresasFuncionarios";
 import Ponto from "./Ponto";
@@ -19,7 +20,6 @@ const PLACEHOLDERS: Partial<Record<PessoalSubMenuKey, string>> = {
   "empresas-fiscal": "Empresas Fiscal",
   domesticas: "Domésticas",
   ponto: "Ponto",
-  "complemento-inss": "Complemento INSS",
 };
 
 export default function MovimentoFiscal({ active }: MovimentoFiscalProps) {
@@ -33,6 +33,10 @@ export default function MovimentoFiscal({ active }: MovimentoFiscalProps) {
 
   if (active === "empresas-funcionarios") {
     return <EmpresasFuncionarios />;
+  }
+
+  if (active === "complemento-inss") {
+    return <ComplementoInss />;
   }
 
   const title = PLACEHOLDERS[active];

@@ -3467,6 +3467,43 @@ export type Database = {
           },
         ]
       }
+      complemento_inss: {
+        Row: {
+          company_id: string
+          created_at: string
+          darf: string | null
+          envio: string | null
+          id: string
+          mes_referencia: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          darf?: string | null
+          envio?: string | null
+          id?: string
+          mes_referencia: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          darf?: string | null
+          envio?: string | null
+          id?: string
+          mes_referencia?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complemento_inss_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departments: {
         Row: {
           created_at: string
