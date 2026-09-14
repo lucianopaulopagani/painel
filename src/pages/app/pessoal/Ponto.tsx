@@ -26,6 +26,7 @@ import {
   defaultReferenceMonth,
 } from "@/lib/fiscal-month";
 import { PONTO_ENVIO_OPTIONS } from "@/lib/ponto";
+import { cn } from "@/lib/utils";
 import type { PontoInput } from "@/lib/types";
 
 const STORAGE_KEY = "pessoal:ponto-mes";
@@ -164,7 +165,15 @@ export default function Ponto() {
                             save(company.id, value === "none" ? null : value)
                           }
                         >
-                          <SelectTrigger className="h-7 w-full min-w-0 px-1 text-xs">
+                          <SelectTrigger
+                            className={cn(
+                              "h-7 w-full min-w-0 px-1 text-xs",
+                              envio === "Enviado" &&
+                                "font-semibold text-status-success",
+                              envio === "Pendente" &&
+                                "font-semibold text-status-danger"
+                            )}
+                          >
                             <SelectValue placeholder="—" />
                           </SelectTrigger>
                           <SelectContent>
