@@ -211,3 +211,30 @@ export type DomesticaMovimentoInput = Omit<
   DomesticaMovimentoRecord,
   "id" | "created_at" | "updated_at"
 >;
+
+/** Registro anual do Balancete/Balanço (Contábil). */
+export interface BalanceteBalancoRecord {
+  id: string;
+  company_id: string;
+  ano: string;
+  jan: string | null;
+  fev: string | null;
+  mar: string | null;
+  abr: string | null;
+  mai: string | null;
+  jun: string | null;
+  jul: string | null;
+  ago: string | null;
+  set: string | null;
+  out: string | null;
+  nov: string | null;
+  dez: string | null;
+  fechamento: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type BalanceteBalancoInput = Omit<
+  BalanceteBalancoRecord,
+  "id" | "created_at" | "updated_at"
+>;

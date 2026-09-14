@@ -23,6 +23,7 @@ import { DepartmentDashboard } from "./DepartmentDashboard";
 import GeneralDashboard from "./general-dashboard";
 import FiscalDashboard from "./fiscal/FiscalDashboard";
 import { MovimentoFiscal as FiscalMovimento } from "./fiscal/MovimentoFiscal";
+import BalanceteBalanco from "./contabil/BalanceteBalanco";
 import CertificadoDigital from "./societario/CertificadoDigital";
 import ComplementoInss from "./pessoal/ComplementoInss";
 import Domesticas from "./pessoal/Domesticas";
@@ -71,6 +72,7 @@ const DEPT_MODULES: Record<AvailablePanelKey, ModuleDef[]> = {
   ],
   contabil: [
     { key: "dashboard", label: "Dashboard", render: () => <DepartmentDashboard title="Contábil" /> },
+    { key: "balancete-balanco", label: "Balancete/Balanço", render: () => <BalanceteBalanco /> },
   ],
   "nota-fiscal": [
     { key: "dashboard", label: "Dashboard", render: () => <DepartmentDashboard title="Nota Fiscal" /> },

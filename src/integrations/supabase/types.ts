@@ -3360,6 +3360,76 @@ export type Database = {
   }
   public: {
     Tables: {
+      balancete_balanco: {
+        Row: {
+          abr: string | null
+          ago: string | null
+          ano: string
+          company_id: string
+          created_at: string
+          dez: string | null
+          fechamento: string | null
+          fev: string | null
+          id: string
+          jan: string | null
+          jul: string | null
+          jun: string | null
+          mai: string | null
+          mar: string | null
+          nov: string | null
+          out: string | null
+          set: string | null
+          updated_at: string
+        }
+        Insert: {
+          abr?: string | null
+          ago?: string | null
+          ano: string
+          company_id: string
+          created_at?: string
+          dez?: string | null
+          fechamento?: string | null
+          fev?: string | null
+          id?: string
+          jan?: string | null
+          jul?: string | null
+          jun?: string | null
+          mai?: string | null
+          mar?: string | null
+          nov?: string | null
+          out?: string | null
+          set?: string | null
+          updated_at?: string
+        }
+        Update: {
+          abr?: string | null
+          ago?: string | null
+          ano?: string
+          company_id?: string
+          created_at?: string
+          dez?: string | null
+          fechamento?: string | null
+          fev?: string | null
+          id?: string
+          jan?: string | null
+          jul?: string | null
+          jun?: string | null
+          mai?: string | null
+          mar?: string | null
+          nov?: string | null
+          out?: string | null
+          set?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "balancete_balanco_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certificates: {
         Row: {
           agendamento_at: string | null
