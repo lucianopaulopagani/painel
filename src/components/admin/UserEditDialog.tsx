@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -39,6 +40,7 @@ export default function UserEditDialog({
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("member");
   const [departmentIds, setDepartmentIds] = useState<string[]>([]);
+  const [dashboardAccess, setDashboardAccess] = useState(false);
 
   useEffect(() => {
     if (open && user) {
@@ -46,6 +48,7 @@ export default function UserEditDialog({
       setEmail(user.email);
       setRole(user.role);
       setDepartmentIds(user.departments.map((d) => d.id));
+      setDashboardAccess(user.dashboard_access);
     }
   }, [open, user]);
 
@@ -63,6 +66,7 @@ export default function UserEditDialog({
         email: email.trim(),
         role,
         department_ids: departmentIds,
+        dashboard_access: dashboardAccess,
       });
       toast.success("Usuário atualizado.");
       onOpenChange(false);
@@ -124,6 +128,21 @@ export default function UserEditDialog({
               Marque um ou mais departamentos. Sem vínculo, o usuário não
               acessa nenhum departamento.
             </p>
+          </div>
+          <div className="flex items-center justify-between gap-4 rounded-md border p-3">
+            <div>
+              <Label htmlFor="edit-dashboard" className="text-sm font-medium">
+                Dashboard geral
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Permite visualizar o dashboard geral (empresas do Fiscal).
+              </p>
+            </div>
+            <Switch
+              id="edit-dashboard"
+              checked={dashboardAccess}
+              onCheckedChange={setDashboardAccess}
+            />
           </div>
           <DialogFooter>
             <Button

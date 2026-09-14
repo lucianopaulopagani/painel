@@ -17,6 +17,7 @@ export interface Profile {
   email: string;
   full_name: string;
   role: Role;
+  dashboard_access: boolean;
   created_at: string;
 }
 

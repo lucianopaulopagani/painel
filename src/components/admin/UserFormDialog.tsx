@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -38,6 +39,7 @@ export default function UserFormDialog({
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>("member");
   const [departmentIds, setDepartmentIds] = useState<string[]>([]);
+  const [dashboardAccess, setDashboardAccess] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -46,6 +48,7 @@ export default function UserFormDialog({
       setPassword("");
       setRole("member");
       setDepartmentIds([]);
+      setDashboardAccess(false);
     }
   }, [open]);
 
@@ -66,6 +69,7 @@ export default function UserFormDialog({
         password,
         role,
         department_ids: departmentIds,
+        dashboard_access: dashboardAccess,
       });
       toast.success("Usuário criado com sucesso.");
       onOpenChange(false);
@@ -141,6 +145,21 @@ export default function UserFormDialog({
               Marque um ou mais departamentos. Sem vínculo, o usuário não
               acessa nenhum departamento.
             </p>
+          </div>
+          <div className="flex items-center justify-between gap-4 rounded-md border p-3">
+            <div>
+              <Label htmlFor="user-dashboard" className="text-sm font-medium">
+                Dashboard geral
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Permite visualizar o dashboard geral (empresas do Fiscal).
+              </p>
+            </div>
+            <Switch
+              id="user-dashboard"
+              checked={dashboardAccess}
+              onCheckedChange={setDashboardAccess}
+            />
           </div>
           <DialogFooter>
             <Button

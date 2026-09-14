@@ -77,6 +77,7 @@ export interface CreateUserInput {
   password: string;
   role: Role;
   department_ids: string[];
+  dashboard_access?: boolean;
 }
 
 export function useCreateUser() {
@@ -102,6 +103,7 @@ export interface UpdateUserInput {
   email?: string;
   role?: Role;
   department_ids?: string[];
+  dashboard_access?: boolean;
 }
 
 export function useUpdateUser() {

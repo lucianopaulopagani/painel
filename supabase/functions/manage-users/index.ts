@@ -145,6 +145,7 @@ Deno.serve(async (req) => {
           full_name,
           role = "member",
           department_ids,
+          dashboard_access = false,
         } = payload;
         if (!email || !password || !full_name) {
           return json({ ok: false, error: "Informe nome, e-mail e senha." });
@@ -169,6 +170,7 @@ Deno.serve(async (req) => {
           email,
           full_name,
           role,
+          dashboard_access: dashboard_access === true,
         });
         if (profileError) {
           await admin.auth.admin.deleteUser(created.user.id);
@@ -185,7 +187,8 @@ Deno.serve(async (req) => {
       }
 
       case "update-user": {
-        const { id, full_name, email, role, department_ids } = payload;
+        const { id, full_name, email, role, department_ids, dashboard_access } =
+          payload;
         if (!id) return json({ ok: false, error: "Usuário não informado." });
         if (role !== undefined && !VALID_ROLES.includes(role)) {
           return json({ ok: false, error: "Papel inválido." });
@@ -202,6 +205,9 @@ Deno.serve(async (req) => {
         if (full_name !== undefined) profileUpdate.full_name = full_name;
         if (role !== undefined) profileUpdate.role = role;
         if (email !== undefined) profileUpdate.email = email;
+        if (dashboard_access !== undefined) {
+          profileUpdate.dashboard_access = dashboard_access === true;
+        }
         if (Object.keys(profileUpdate).length > 0) {
           const { error: profileError } = await admin
             .from("profiles")

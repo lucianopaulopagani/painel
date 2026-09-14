@@ -47,8 +47,9 @@ export default function DepartmentPanel() {
     profile.departments.some((d) => d.name === PESSOAL_DEPARTMENT_NAME);
 
   const availablePanels: AvailablePanel[] = [
-    // Dashboard geral (todas as empresas do Fiscal) — apenas administradores.
-    profile.role === "admin" && {
+    // Dashboard geral (todas as empresas do Fiscal) — administradores ou
+    // usuários com permissão concedida no cadastro.
+    (profile.role === "admin" || profile.dashboard_access) && {
       key: "dashboard",
       label: "Dashboard",
       panel: <GeneralDashboard />,
