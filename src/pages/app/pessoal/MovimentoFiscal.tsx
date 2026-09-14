@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { DepartmentDashboard } from "../DepartmentDashboard";
 import ComplementoInss from "./ComplementoInss";
 import Domesticas from "./Domesticas";
 import EmpresasFiscal from "./EmpresasFiscal";
@@ -23,6 +24,10 @@ const PLACEHOLDERS: Partial<Record<PessoalSubMenuKey, string>> = {
 };
 
 export default function MovimentoFiscal({ active }: MovimentoFiscalProps) {
+  if (active === "dashboard") {
+    return <DepartmentDashboard title="Pessoal" />;
+  }
+
   if (active === "ponto") {
     return <Ponto />;
   }

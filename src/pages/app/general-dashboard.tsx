@@ -32,6 +32,8 @@ const DASHBOARDS = [
   { key: "fiscal", label: "Fiscal" },
   { key: "pessoal", label: "Pessoal" },
   { key: "societario", label: "Societário" },
+  { key: "contabil", label: "Contábil" },
+  { key: "nota-fiscal", label: "Nota Fiscal" },
 ] as const;
 
 type DashboardKey = (typeof DASHBOARDS)[number]["key"];

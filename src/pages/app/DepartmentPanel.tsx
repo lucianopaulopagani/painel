@@ -12,18 +12,28 @@ import {
 import { PanelHeader } from "@/components/shell/panel-header";
 import { useAuth } from "@/context/auth";
 import {
+  CONTABIL_DEPARTMENT_NAME,
   FISCAL_DEPARTMENT_NAME,
+  NOTA_FISCAL_DEPARTMENT_NAME,
   PESSOAL_DEPARTMENT_NAME,
   SOCIETARIO_DEPARTMENT_NAME,
 } from "@/lib/departments";
 import { cn } from "@/lib/utils";
+import ContabilPanel from "./ContabilPanel";
 import FiscalPanel from "./fiscal/FiscalPanel";
 import GeneralDashboard from "./general-dashboard";
+import NotaFiscalPanel from "./NotaFiscalPanel";
 import PessoalPanel from "./pessoal/PessoalPanel";
 import SocietarioPanel from "./societario/SocietarioPanel";
 
 interface AvailablePanel {
-  key: "dashboard" | "fiscal" | "pessoal" | "societario";
+  key:
+    | "dashboard"
+    | "fiscal"
+    | "pessoal"
+    | "societario"
+    | "contabil"
+    | "nota-fiscal";
   label: string;
   panel: JSX.Element;
 }
@@ -45,6 +55,12 @@ export default function DepartmentPanel() {
   const hasPessoalAccess =
     profile.role === "admin" ||
     profile.departments.some((d) => d.name === PESSOAL_DEPARTMENT_NAME);
+  const hasContabilAccess =
+    profile.role === "admin" ||
+    profile.departments.some((d) => d.name === CONTABIL_DEPARTMENT_NAME);
+  const hasNotaFiscalAccess =
+    profile.role === "admin" ||
+    profile.departments.some((d) => d.name === NOTA_FISCAL_DEPARTMENT_NAME);
 
   const availablePanels: AvailablePanel[] = [
     // Dashboard geral (visão por departamento) — administradores ou
@@ -68,6 +84,16 @@ export default function DepartmentPanel() {
       key: "societario",
       label: "Societário",
       panel: <SocietarioPanel />,
+    },
+    hasContabilAccess && {
+      key: "contabil",
+      label: "Contábil",
+      panel: <ContabilPanel />,
+    },
+    hasNotaFiscalAccess && {
+      key: "nota-fiscal",
+      label: "Nota Fiscal",
+      panel: <NotaFiscalPanel />,
     },
   ].filter((panel): panel is AvailablePanel => Boolean(panel));
 
