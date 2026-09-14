@@ -25,6 +25,7 @@ import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments
 import {
   EMPRESAS_FUNC_ENVIO_OPTIONS,
   EMPRESAS_FUNC_FLAG_OPTIONS,
+  EMPRESAS_FUNC_FOLHA_OPTIONS,
   EMPRESAS_FUNC_MESES_OPTIONS,
   EMPRESAS_FUNC_STATUS_OPTIONS,
 } from "@/lib/empresas-funcionarios";
@@ -360,8 +361,13 @@ export default function EmpresasFuncionarios() {
             "data_base"
           )}
         </TableCell>
-        <TableCell className={CELL}>
-          {renderTextCell(company.id, record?.folha ?? null, "folha")}
+        <TableCell className={`${CELL} w-28`}>
+          {renderSelectCell(
+            company.id,
+            record?.folha ?? "",
+            EMPRESAS_FUNC_FOLHA_OPTIONS,
+            "folha"
+          )}
         </TableCell>
         <TableCell className={`${CELL} w-28`}>
           {renderSelectCell(
@@ -468,7 +474,7 @@ export default function EmpresasFuncionarios() {
                 {renderFilterInput("cnpj", "CNPJ")}
                 {renderFilterInput("tributacao", "Regime Tributário")}
                 {renderFilterSelect("dataBase", "Data Base", EMPRESAS_FUNC_MESES_OPTIONS)}
-                {renderFilterInput("folha", "Folha")}
+                {renderFilterSelect("folha", "Folha", EMPRESAS_FUNC_FOLHA_OPTIONS)}
                 {renderFilterSelect("emprestimo", "Empréstimo", EMPRESAS_FUNC_FLAG_OPTIONS)}
                 {renderFilterSelect("fgts", "FGTS", EMPRESAS_FUNC_FLAG_OPTIONS)}
                 {renderFilterSelect("taxaSindical", "Taxa Sindical", EMPRESAS_FUNC_FLAG_OPTIONS)}

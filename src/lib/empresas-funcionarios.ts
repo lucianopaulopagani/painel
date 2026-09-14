@@ -33,3 +33,6 @@ export const EMPRESAS_FUNC_MESES_OPTIONS = [
   "NOV",
   "DEZ",
 ] as const;
+
+/** Opções do campo Folha (apenas o mês atual). */
+export const EMPRESAS_FUNC_FOLHA_OPTIONS = ["OK - GABI"] as const;
