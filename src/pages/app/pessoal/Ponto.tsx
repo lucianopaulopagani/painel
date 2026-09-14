@@ -195,11 +195,11 @@ export default function Ponto() {
                         >
                           <SelectTrigger
                             className={cn(
-                              "h-7 w-full min-w-0 px-1 text-xs",
+                              "h-7 w-full min-w-0 px-1 text-xs font-semibold",
                               envio === "Enviado" &&
-                                "font-semibold text-status-success",
+                                "bg-status-success text-status-success-foreground hover:bg-status-success/90",
                               envio === "Pendente" &&
-                                "font-semibold text-status-danger"
+                                "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90"
                             )}
                           >
                             <SelectValue placeholder="—" />
