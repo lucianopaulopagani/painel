@@ -135,7 +135,8 @@ export default function UserEditDialog({
                 Dashboard geral
               </Label>
               <p className="text-xs text-muted-foreground">
-                Permite visualizar o dashboard geral (empresas do Fiscal).
+                Permite visualizar o dashboard geral com a visão de cada
+                departamento (Fiscal, Pessoal e Societário).
               </p>
             </div>
             <Switch
