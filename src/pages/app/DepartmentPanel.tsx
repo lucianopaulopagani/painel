@@ -214,14 +214,14 @@ export default function DepartmentPanel() {
                 </button>
 
                 <div className="invisible absolute left-0 top-full z-50 pt-1 opacity-0 transition-all group-hover:visible group-hover:opacity-100">
-                  <div className="min-w-48 rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
+                  <div className="min-w-56 rounded-md border bg-popover p-1.5 text-popover-foreground shadow-md">
                     {deptModules.map((module) => (
                       <button
                         key={module.key}
                         type="button"
                         onClick={() => selectModule(panel.key, module.key)}
                         className={cn(
-                          "flex w-full items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-muted",
+                          "flex w-full items-center whitespace-nowrap rounded-sm px-3 py-2 text-left text-sm outline-none transition-colors hover:bg-muted",
                           active === panel.key &&
                             currentModuleKey === module.key &&
                             "bg-muted font-medium"
