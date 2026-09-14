@@ -312,8 +312,12 @@ export default function EmpresasFuncionarios() {
     </TableHead>
   );
 
-  const renderFilterInput = (key: keyof typeof busca, label: string) => (
-    <TableHead className={`${HEAD} align-bottom`}>
+  const renderFilterInput = (
+    key: keyof typeof busca,
+    label: string,
+    widthClass = ""
+  ) => (
+    <TableHead className={`${HEAD} ${widthClass} align-bottom`}>
       <span className="mb-1 block whitespace-nowrap">{label}</span>
       <Input
         value={busca[key]}
@@ -352,7 +356,7 @@ export default function EmpresasFuncionarios() {
             STATUS_TONE
           )}
         </TableCell>
-        <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
+        <TableCell className={`${CELL} whitespace-nowrap text-center font-medium`}>
           {company.numero || "—"}
         </TableCell>
         <TableCell className={`${CELL} w-40`}>
@@ -483,14 +487,14 @@ export default function EmpresasFuncionarios() {
 
       {!isLoading && !isError && (
         <div className="overflow-x-auto rounded-lg border">
-          <Table className="table-fixed min-w-[1600px]">
+          <Table className="table-fixed min-w-[2200px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
                 {renderFilterSelect("status", "Status", EMPRESAS_FUNC_STATUS_OPTIONS, "w-40")}
-                {renderFilterInput("numero", "Nº")}
-                {renderFilterInput("empresa", "Empresa")}
-                {renderFilterInput("cnpj", "CNPJ")}
-                {renderFilterInput("tributacao", "Regime Tributário")}
+                {renderFilterInput("numero", "Nº", "w-14")}
+                {renderFilterInput("empresa", "Empresa", "w-40")}
+                {renderFilterInput("cnpj", "CNPJ", "w-36")}
+                {renderFilterInput("tributacao", "Regime Tributário", "w-32")}
                 {renderFilterSelect("dataBase", "Data Base", EMPRESAS_FUNC_MESES_OPTIONS)}
                 {renderFilterSelect("folha", "Folha", EMPRESAS_FUNC_FOLHA_OPTIONS)}
                 {renderFilterSelect("emprestimo", "Empréstimo", EMPRESAS_FUNC_EMPRESTIMO_OPTIONS)}
@@ -498,9 +502,9 @@ export default function EmpresasFuncionarios() {
                 {renderFilterSelect("taxaSindical", "Taxa Sindical", EMPRESAS_FUNC_FLAG_OPTIONS)}
                 {renderFilterSelect("dctfweb", "DCTFWEB", EMPRESAS_FUNC_FLAG_OPTIONS)}
                 {renderFilterSelect("envio", "Envio", EMPRESAS_FUNC_ENVIO_OPTIONS)}
-                {renderFilterInput("observacao", "Obs. Fechamento")}
-                {renderFilterInput("infoSindicato", "Info. Sindicato")}
-                {renderFilterInput("infoSindicatoPatronal", "Info. Sindicato Patronal")}
+                {renderFilterInput("observacao", "Obs. Fechamento", "w-64")}
+                {renderFilterInput("infoSindicato", "Info. Sindicato", "w-64")}
+                {renderFilterInput("infoSindicatoPatronal", "Info. Sindicato Patronal", "w-64")}
               </TableRow>
             </TableHeader>
             <TableBody>
