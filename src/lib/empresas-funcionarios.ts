@@ -23,6 +23,13 @@ export const EMPRESAS_FUNC_EMPRESTIMO_OPTIONS = [
   "Possui",
 ] as const;
 
+/** Opções do campo FGTS. */
+export const EMPRESAS_FUNC_FGTS_OPTIONS = [
+  "OK",
+  "Não Possui",
+  "Possui",
+] as const;
+
 export const EMPRESAS_FUNC_ENVIO_OPTIONS = ["Enviado", "Pendente"] as const;
 
 /** Meses do ano em 3 letras maiúsculas (Data Base). */

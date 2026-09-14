@@ -25,6 +25,7 @@ import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments
 import {
   EMPRESAS_FUNC_EMPRESTIMO_OPTIONS,
   EMPRESAS_FUNC_ENVIO_OPTIONS,
+  EMPRESAS_FUNC_FGTS_OPTIONS,
   EMPRESAS_FUNC_FLAG_OPTIONS,
   EMPRESAS_FUNC_FOLHA_OPTIONS,
   EMPRESAS_FUNC_MESES_OPTIONS,
@@ -403,7 +404,7 @@ export default function EmpresasFuncionarios() {
           {renderSelectCell(
             company.id,
             record?.fgts ?? "",
-            EMPRESAS_FUNC_FLAG_OPTIONS,
+            EMPRESAS_FUNC_FGTS_OPTIONS,
             "fgts"
           )}
         </TableCell>
@@ -498,7 +499,7 @@ export default function EmpresasFuncionarios() {
                 {renderFilterSelect("dataBase", "Data Base", EMPRESAS_FUNC_MESES_OPTIONS)}
                 {renderFilterSelect("folha", "Folha", EMPRESAS_FUNC_FOLHA_OPTIONS)}
                 {renderFilterSelect("emprestimo", "Empréstimo", EMPRESAS_FUNC_EMPRESTIMO_OPTIONS)}
-                {renderFilterSelect("fgts", "FGTS", EMPRESAS_FUNC_FLAG_OPTIONS)}
+                {renderFilterSelect("fgts", "FGTS", EMPRESAS_FUNC_FGTS_OPTIONS)}
                 {renderFilterSelect("taxaSindical", "Taxa Sindical", EMPRESAS_FUNC_FLAG_OPTIONS)}
                 {renderFilterSelect("dctfweb", "DCTFWEB", EMPRESAS_FUNC_FLAG_OPTIONS)}
                 {renderFilterSelect("envio", "Envio", EMPRESAS_FUNC_ENVIO_OPTIONS)}
