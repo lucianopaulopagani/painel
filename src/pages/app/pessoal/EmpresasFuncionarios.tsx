@@ -50,7 +50,8 @@ const CELL = "px-1 py-1 text-[11px]";
 const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
 
 /* Colunas fixas até "Empresa": offsets acompanham w-40 (160px) + w-14 (56px). */
-const STICKY_HEAD = "sticky z-10 bg-muted";
+const STICKY_HEAD = "sticky top-0 z-20 bg-muted";
+const VHEAD = "sticky top-0 z-10 bg-muted";
 const STICKY_CELL = "sticky z-10 bg-background";
 const N_LEFT = "left-[160px]";
 const EMPRESA_LEFT = "left-[216px]";
@@ -297,7 +298,7 @@ export default function EmpresasFuncionarios() {
     widthClass = "w-28",
     stickyClass = ""
   ) => (
-    <TableHead className={`${HEAD} ${widthClass} ${stickyClass} align-bottom`}>
+    <TableHead className={`${HEAD} ${widthClass} ${stickyClass || VHEAD} align-bottom`}>
       <span className="mb-1 block whitespace-nowrap">{label}</span>
       <Select
         value={busca[key] === "" ? "todos" : busca[key]}
@@ -327,7 +328,7 @@ export default function EmpresasFuncionarios() {
     widthClass = "",
     stickyClass = ""
   ) => (
-    <TableHead className={`${HEAD} ${widthClass} ${stickyClass} align-bottom`}>
+    <TableHead className={`${HEAD} ${widthClass} ${stickyClass || VHEAD} align-bottom`}>
       <span className="mb-1 block whitespace-nowrap">{label}</span>
       <Input
         value={busca[key]}
@@ -500,7 +501,7 @@ export default function EmpresasFuncionarios() {
       )}
 
       {!isLoading && !isError && (
-        <div className="overflow-x-auto rounded-lg border">
+        <div className="max-h-[calc(100dvh-24rem)] overflow-auto rounded-lg border">
           <Table className="table-fixed min-w-[2200px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
