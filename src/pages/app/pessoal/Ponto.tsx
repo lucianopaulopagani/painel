@@ -42,7 +42,11 @@ const HEAD = "px-2 py-1 text-xs font-medium text-muted-foreground";
 
 export default function Ponto() {
   const [mes, setMes] = useState<string>(readPontoMonth);
-  const [buscaEnvio, setBuscaEnvio] = useState("");
+  const [busca, setBusca] = useState({ numero: "", empresa: "", envio: "" });
+
+  const setBuscaField = (key: keyof typeof busca, value: string) => {
+    setBusca((prev) => ({ ...prev, [key]: value }));
+  };
 
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
@@ -90,8 +94,26 @@ export default function Ponto() {
 
   const filteredRows = rows.filter((company) => {
     const envio = effectiveEnvio(company.id) ?? "";
-    if (buscaEnvio === "branco") return !envio;
-    return !buscaEnvio || envio === buscaEnvio;
+    const match = (
+      value: string | null | undefined,
+      query: string
+    ): boolean =>
+      !query ||
+      (value ?? "")
+        .toLocaleLowerCase("pt-BR")
+        .includes(query.toLocaleLowerCase("pt-BR"));
+    const envioFilter = (
+      value: string | null | undefined,
+      query: string
+    ): boolean => {
+      if (query === "branco") return !value;
+      return !query || (value ?? "") === query;
+    };
+    return (
+      match(company.numero, busca.numero) &&
+      match(company.name, busca.empresa) &&
+      envioFilter(envio, busca.envio)
+    );
   });
 
   const activeRows = filteredRows.filter(
@@ -213,14 +235,34 @@ export default function Ponto() {
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
-                <TableHead className={`${HEAD} w-16`}>Nº</TableHead>
-                <TableHead className={HEAD}>Empresa</TableHead>
-                <TableHead className={`${HEAD} w-36`}>
+                <TableHead className={`${HEAD} w-16 align-bottom`}>
+                  <span className="mb-1 block">Nº</span>
+                  <Input
+                    value={busca.numero}
+                    onChange={(e) =>
+                      setBuscaField("numero", e.target.value)
+                    }
+                    placeholder="Filtrar"
+                    className="h-6 w-full min-w-0 px-1 text-xs"
+                  />
+                </TableHead>
+                <TableHead className={`${HEAD} align-bottom`}>
+                  <span className="mb-1 block">Empresa</span>
+                  <Input
+                    value={busca.empresa}
+                    onChange={(e) =>
+                      setBuscaField("empresa", e.target.value)
+                    }
+                    placeholder="Filtrar"
+                    className="h-6 w-full min-w-0 px-1 text-xs"
+                  />
+                </TableHead>
+                <TableHead className={`${HEAD} w-36 align-bottom`}>
                   <div className="mb-1">Envio</div>
                   <Select
-                    value={buscaEnvio === "" ? "todos" : buscaEnvio}
+                    value={busca.envio === "" ? "todos" : busca.envio}
                     onValueChange={(value) =>
-                      setBuscaEnvio(value === "todos" ? "" : value)
+                      setBuscaField("envio", value === "todos" ? "" : value)
                     }
                   >
                     <SelectTrigger className="h-6 w-full min-w-0 px-1 text-xs">
@@ -258,8 +300,8 @@ export default function Ponto() {
                     colSpan={3}
                     className={`${CELL} py-8 text-center text-muted-foreground`}
                   >
-                    {buscaEnvio && rows.length > 0
-                      ? "Nenhuma empresa encontrada com o filtro."
+                    {Object.values(busca).some(Boolean) && rows.length > 0
+                      ? "Nenhuma empresa encontrada com os filtros."
                       : `Nenhuma empresa vinculada ao departamento ${PESSOAL_DEPARTMENT_NAME}. Marque esse departamento no cadastro de empresas para que elas apareçam aqui.`}
                   </TableCell>
                 </TableRow>
