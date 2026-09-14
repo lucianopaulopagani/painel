@@ -274,6 +274,25 @@ export default function EmpresasFuncionarios() {
     return prior[0]?.emprestimo ?? null;
   };
 
+  /**
+   * Notas efetivas: usa o registro do mês; se não existir, herda a do mês
+   * anterior mais recente (levadas para os meses seguintes).
+   */
+  const effectiveNote = (
+    companyId: string,
+    field: "observacao" | "info_sindicato" | "info_sindicato_patronal"
+  ): string | null => {
+    const current = recordByCompany.get(companyId);
+    if (current) return current[field];
+    const prior = (allRecords ?? [])
+      .filter(
+        (record) =>
+          record.company_id === companyId && record.mes_referencia < mes
+      )
+      .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia));
+    return prior[0]?.[field] ?? null;
+  };
+
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
     const match = (
@@ -305,7 +324,11 @@ export default function EmpresasFuncionarios() {
       selectOrBlank(record?.dctfweb, busca.dctfweb) &&
       selectOrBlank(record?.envio, busca.envio) &&
       match(
-        [record?.observacao, record?.info_sindicato, record?.info_sindicato_patronal]
+        [
+          effectiveNote(company.id, "observacao"),
+          effectiveNote(company.id, "info_sindicato"),
+          effectiveNote(company.id, "info_sindicato_patronal"),
+        ]
           .filter(Boolean)
           .join(" "),
         busca.notas
@@ -338,6 +361,10 @@ export default function EmpresasFuncionarios() {
         status: effStatus ?? null,
         data_base: effectiveDataBase(companyId) ?? null,
         emprestimo: effectiveEmprestimo(companyId) ?? null,
+        observacao: effectiveNote(companyId, "observacao") ?? null,
+        info_sindicato: effectiveNote(companyId, "info_sindicato") ?? null,
+        info_sindicato_patronal:
+          effectiveNote(companyId, "info_sindicato_patronal") ?? null,
         ...patch,
       } as unknown as EmpresasFuncionariosInput,
       {
@@ -392,7 +419,6 @@ export default function EmpresasFuncionarios() {
   );
 
   const renderActionsCell = (company: (typeof rows)[number]) => {
-    const record = recordByCompany.get(company.id);
     return (
       <TableCell className={`${CELL} w-20 text-center`}>
         <Button
@@ -403,9 +429,10 @@ export default function EmpresasFuncionarios() {
           onClick={() =>
             setNoteDialog({
               companyId: company.id,
-              observacao: record?.observacao ?? "",
-              infoSindicato: record?.info_sindicato ?? "",
-              infoSindicatoPatronal: record?.info_sindicato_patronal ?? "",
+              observacao: effectiveNote(company.id, "observacao") ?? "",
+              infoSindicato: effectiveNote(company.id, "info_sindicato") ?? "",
+              infoSindicatoPatronal:
+                effectiveNote(company.id, "info_sindicato_patronal") ?? "",
             })
           }
           className="h-7 w-7"
