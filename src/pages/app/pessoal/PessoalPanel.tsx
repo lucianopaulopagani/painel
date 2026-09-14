@@ -20,7 +20,7 @@ export default function PessoalPanel() {
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
         <div className="group relative mb-6 w-fit">
           <Button type="button" variant="outline" className="gap-2">
-            Movimento Fiscal
+            Folha de Pagamento Mensal
             <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
           </Button>
 
