@@ -16,6 +16,13 @@ export const EMPRESAS_FUNC_FLAG_OPTIONS = [
   "Oposição",
 ] as const;
 
+/** Opções do campo Empréstimo (herdado para os próximos meses). */
+export const EMPRESAS_FUNC_EMPRESTIMO_OPTIONS = [
+  "OK",
+  "Não Possui",
+  "Possui",
+] as const;
+
 export const EMPRESAS_FUNC_ENVIO_OPTIONS = ["Enviado", "Pendente"] as const;
 
 /** Meses do ano em 3 letras maiúsculas (Data Base). */

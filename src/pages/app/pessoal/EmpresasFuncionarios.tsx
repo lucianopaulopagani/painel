@@ -23,6 +23,7 @@ import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import {
+  EMPRESAS_FUNC_EMPRESTIMO_OPTIONS,
   EMPRESAS_FUNC_ENVIO_OPTIONS,
   EMPRESAS_FUNC_FLAG_OPTIONS,
   EMPRESAS_FUNC_FOLHA_OPTIONS,
@@ -135,6 +136,22 @@ export default function EmpresasFuncionarios() {
     return prior[0]?.data_base ?? null;
   };
 
+  /**
+   * Empréstimo efetivo: usa o registro do mês; se não existir, herda o do
+   * mês anterior mais recente (levado para os meses seguintes).
+   */
+  const effectiveEmprestimo = (companyId: string): string | null => {
+    const current = recordByCompany.get(companyId);
+    if (current) return current.emprestimo;
+    const prior = (allRecords ?? [])
+      .filter(
+        (record) =>
+          record.company_id === companyId && record.mes_referencia < mes
+      )
+      .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia));
+    return prior[0]?.emprestimo ?? null;
+  };
+
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
     const match = (
@@ -160,7 +177,7 @@ export default function EmpresasFuncionarios() {
       match(company.tributacao, busca.tributacao) &&
       match(effectiveDataBase(company.id), busca.dataBase) &&
       match(record?.folha, busca.folha) &&
-      selectOrBlank(record?.emprestimo, busca.emprestimo) &&
+      selectOrBlank(effectiveEmprestimo(company.id), busca.emprestimo) &&
       selectOrBlank(record?.fgts, busca.fgts) &&
       selectOrBlank(record?.taxa_sindical, busca.taxaSindical) &&
       selectOrBlank(record?.dctfweb, busca.dctfweb) &&
@@ -195,6 +212,7 @@ export default function EmpresasFuncionarios() {
         ...fields,
         status: effStatus ?? null,
         data_base: effectiveDataBase(companyId) ?? null,
+        emprestimo: effectiveEmprestimo(companyId) ?? null,
         ...patch,
       } as unknown as EmpresasFuncionariosInput,
       {
@@ -372,8 +390,8 @@ export default function EmpresasFuncionarios() {
         <TableCell className={`${CELL} w-28`}>
           {renderSelectCell(
             company.id,
-            record?.emprestimo ?? "",
-            EMPRESAS_FUNC_FLAG_OPTIONS,
+            effectiveEmprestimo(company.id) ?? "",
+            EMPRESAS_FUNC_EMPRESTIMO_OPTIONS,
             "emprestimo"
           )}
         </TableCell>
@@ -475,7 +493,7 @@ export default function EmpresasFuncionarios() {
                 {renderFilterInput("tributacao", "Regime Tributário")}
                 {renderFilterSelect("dataBase", "Data Base", EMPRESAS_FUNC_MESES_OPTIONS)}
                 {renderFilterSelect("folha", "Folha", EMPRESAS_FUNC_FOLHA_OPTIONS)}
-                {renderFilterSelect("emprestimo", "Empréstimo", EMPRESAS_FUNC_FLAG_OPTIONS)}
+                {renderFilterSelect("emprestimo", "Empréstimo", EMPRESAS_FUNC_EMPRESTIMO_OPTIONS)}
                 {renderFilterSelect("fgts", "FGTS", EMPRESAS_FUNC_FLAG_OPTIONS)}
                 {renderFilterSelect("taxaSindical", "Taxa Sindical", EMPRESAS_FUNC_FLAG_OPTIONS)}
                 {renderFilterSelect("dctfweb", "DCTFWEB", EMPRESAS_FUNC_FLAG_OPTIONS)}
