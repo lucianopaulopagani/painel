@@ -105,3 +105,17 @@ export type MovementFiscalInput = Omit<
   MovementFiscalRecord,
   "id" | "created_at" | "updated_at"
 >;
+
+/** Registro do Ponto (folha mensal) de uma empresa em um mês. */
+export interface PontoRecord {
+  id: string;
+  company_id: string;
+  /** Mês de referência (YYYY-MM). */
+  mes_referencia: string;
+  /** Status de envio (ex.: "Enviado"). */
+  envio: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type PontoInput = Omit<PontoRecord, "id" | "created_at" | "updated_at">;

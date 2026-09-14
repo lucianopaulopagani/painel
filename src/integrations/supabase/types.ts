@@ -3552,6 +3552,40 @@ export type Database = {
           },
         ]
       }
+      ponto: {
+        Row: {
+          company_id: string
+          created_at: string
+          envio: string | null
+          id: string
+          mes_referencia: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          envio?: string | null
+          id?: string
+          mes_referencia: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          envio?: string | null
+          id?: string
+          mes_referencia?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ponto_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_departments: {
         Row: {
           created_at: string
