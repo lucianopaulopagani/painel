@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/table";
 import {
   useComplementoInss,
+  useComplementoInssAll,
   useSaveComplementoInss,
 } from "@/hooks/use-complemento-inss";
 import { useCompanies } from "@/hooks/use-companies";
@@ -62,6 +63,7 @@ export default function ComplementoInss() {
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: records } = useComplementoInss(mes);
+  const { data: allRecords } = useComplementoInssAll();
   const saveMutation = useSaveComplementoInss(mes);
 
   const pessoal = findDepartmentByName(departments, PESSOAL_DEPARTMENT_NAME);
@@ -87,8 +89,28 @@ export default function ComplementoInss() {
     (records ?? []).map((record) => [record.company_id, record])
   );
 
+  /**
+   * Envio efetivo: usa o registro do mês; se não existir, mantém "Desativado"
+   * fixo caso o mês anterior mais recente seja Desativado.
+   */
+  const effectiveEnvio = (companyId: string): string | null => {
+    const current = recordByCompany.get(companyId);
+    if (current) return current.envio;
+    const prior = (allRecords ?? [])
+      .filter(
+        (record) =>
+          record.company_id === companyId && record.mes_referencia < mes
+      )
+      .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia));
+    return prior[0]?.envio === "Desativado" ? "Desativado" : null;
+  };
+
+  const isDesativada = (companyId: string): boolean =>
+    effectiveEnvio(companyId) === "Desativado";
+
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
+    const envio = effectiveEnvio(company.id) ?? "";
     const match = (
       value: string | null | undefined,
       query: string
@@ -108,24 +130,25 @@ export default function ComplementoInss() {
       match(company.numero, busca.numero) &&
       match(company.name, busca.empresa) &&
       selectOrBlank(record?.darf, busca.darf) &&
-      selectOrBlank(record?.envio, busca.envio)
+      selectOrBlank(envio, busca.envio)
     );
   });
 
+  const activeRows = filteredRows.filter(
+    (company) => !isDesativada(company.id)
+  );
+  const inactiveRows = filteredRows.filter((company) =>
+    isDesativada(company.id)
+  );
+
   const save = (companyId: string, patch: Record<string, unknown>) => {
     const current = recordByCompany.get(companyId);
-    const base = current ?? {};
-    const {
-      id: _id,
-      created_at: _createdAt,
-      updated_at: _updatedAt,
-      ...fields
-    } = base;
     saveMutation.mutate(
       {
         company_id: companyId,
         mes_referencia: mes,
-        ...fields,
+        envio: effectiveEnvio(companyId) ?? null,
+        darf: current?.darf ?? null,
         ...patch,
       } as unknown as ComplementoInssInput,
       {
@@ -184,6 +207,7 @@ export default function ComplementoInss() {
       "bg-status-success text-status-success-foreground hover:bg-status-success/90",
     Pendente:
       "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
+    Desativado: "bg-muted text-muted-foreground hover:bg-muted/80",
   };
 
   const renderFilterSelect = (
@@ -214,6 +238,40 @@ export default function ComplementoInss() {
       </Select>
     </TableHead>
   );
+
+  const renderRow = (company: (typeof rows)[number]) => {
+    const record = recordByCompany.get(company.id);
+    const envio = effectiveEnvio(company.id) ?? "";
+    return (
+      <TableRow key={company.id}>
+        <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
+          {company.numero || "—"}
+        </TableCell>
+        <TableCell className={`${CELL}`}>
+          <span className="block truncate font-medium" title={company.name}>
+            {company.name}
+          </span>
+        </TableCell>
+        <TableCell className={`${CELL} w-24`}>
+          {renderSelectCell(
+            company.id,
+            record?.darf ?? "",
+            COMPLEMENTO_INSS_DARF_OPTIONS,
+            "darf"
+          )}
+        </TableCell>
+        <TableCell className={`${CELL} w-28`}>
+          {renderSelectCell(
+            company.id,
+            envio,
+            COMPLEMENTO_INSS_ENVIO_OPTIONS,
+            "envio",
+            ENVIO_TONE
+          )}
+        </TableCell>
+      </TableRow>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -275,41 +333,18 @@ export default function ComplementoInss() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredRows.map((company) => {
-                const record = recordByCompany.get(company.id);
-                return (
-                  <TableRow key={company.id}>
-                    <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
-                      {company.numero || "—"}
-                    </TableCell>
-                    <TableCell className={`${CELL}`}>
-                      <span
-                        className="block truncate font-medium"
-                        title={company.name}
-                      >
-                        {company.name}
-                      </span>
-                    </TableCell>
-                    <TableCell className={`${CELL} w-24`}>
-                      {renderSelectCell(
-                        company.id,
-                        record?.darf ?? "",
-                        COMPLEMENTO_INSS_DARF_OPTIONS,
-                        "darf"
-                      )}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-28`}>
-                      {renderSelectCell(
-                        company.id,
-                        record?.envio ?? "",
-                        COMPLEMENTO_INSS_ENVIO_OPTIONS,
-                        "envio",
-                        ENVIO_TONE
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {activeRows.map(renderRow)}
+              {inactiveRows.length > 0 && (
+                <TableRow className="bg-muted/50">
+                  <TableCell
+                    colSpan={4}
+                    className="px-2 py-1.5 text-xs font-semibold text-muted-foreground"
+                  >
+                    Empresas desativadas
+                  </TableCell>
+                </TableRow>
+              )}
+              {inactiveRows.map(renderRow)}
               {filteredRows.length === 0 && (
                 <TableRow>
                   <TableCell

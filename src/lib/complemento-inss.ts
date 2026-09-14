@@ -8,4 +8,5 @@ export const COMPLEMENTO_INSS_DARF_OPTIONS = [
 export const COMPLEMENTO_INSS_ENVIO_OPTIONS = [
   "Enviado",
   "Pendente",
+  "Desativado",
 ] as const;
