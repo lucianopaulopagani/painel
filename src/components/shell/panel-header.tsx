@@ -23,7 +23,7 @@ export function PanelHeader({ title, subtitle, children }: PanelHeaderProps) {
 
   return (
     <header className="sticky top-0 z-20 border-b bg-card/80 backdrop-blur">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 w-full max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
           <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg ring-1 ring-border">
             <img

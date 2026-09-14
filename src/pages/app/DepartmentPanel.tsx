@@ -84,7 +84,7 @@ export default function DepartmentPanel() {
       <div className="flex min-h-screen flex-col bg-background">
         <PanelHeader title="Meu Departamento" subtitle={departmentLabel} />
 
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
+        <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-8 sm:px-6">
           <div className="mb-8">
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
@@ -140,7 +140,7 @@ export default function DepartmentPanel() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <div className="border-b bg-background/90 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center gap-1 overflow-x-auto px-4 py-2 sm:px-6">
+        <div className="mx-auto flex w-full max-w-[1600px] items-center gap-1 overflow-x-auto px-4 py-2 sm:px-6">
           {availablePanels.map((panel) => (
             <button
               key={panel.key}

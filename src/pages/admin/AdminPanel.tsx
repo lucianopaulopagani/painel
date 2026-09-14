@@ -19,7 +19,7 @@ export default function AdminPanel() {
         title="Painel de Administração"
         subtitle="Central de usuários, departamentos e dashboards"
       />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
+      <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-8 sm:px-6">
         <div className="flex flex-col gap-6 lg:flex-row">
           <aside className="lg:w-56 lg:shrink-0">
             <AdminSidebar active={section} onSelect={setSection} />

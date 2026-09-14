@@ -19,7 +19,7 @@ export default function FiscalPanel() {
     <div className="flex min-h-screen flex-col bg-background">
       <PanelHeader title="Fiscal" subtitle="Painel do departamento" />
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
+      <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-8 sm:px-6">
         <ModuleNav
           modules={MODULES}
           active={active}

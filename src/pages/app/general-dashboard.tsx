@@ -67,7 +67,7 @@ export default function GeneralDashboard() {
         subtitle="Todas as empresas do departamento Fiscal"
       />
 
-      <main className="mx-auto w-full max-w-6xl flex-1 space-y-4 px-4 py-8 sm:px-6">
+      <main className="mx-auto w-full max-w-[1600px] flex-1 space-y-4 px-4 py-8 sm:px-6">
         <div className="max-w-xs">
           <Label htmlFor="geral-mes">Mês de referência</Label>
           <Input
