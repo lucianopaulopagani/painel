@@ -1,0 +1,55 @@
+create table if not exists public.domesticas (
+  id uuid primary key default gen_random_uuid(),
+  numero text,
+  nome text not null,
+  cpf text,
+  senha text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.domestica_movimento (
+  id uuid primary key default gen_random_uuid(),
+  domestica_id uuid not null references public.domesticas(id) on delete cascade,
+  mes_referencia text not null,
+  status text,
+  data_base text,
+  folha text,
+  dae text,
+  envio text,
+  ponto text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (domestica_id, mes_referencia)
+);
+
+alter table public.domesticas enable row level security;
+alter table public.domestica_movimento enable row level security;
+
+create policy "domesticas_admin_all" on public.domesticas
+  for all using (public.is_admin()) with check (public.is_admin());
+
+create policy "domestica_movimento_admin_all" on public.domestica_movimento
+  for all using (public.is_admin()) with check (public.is_admin());
+
+create policy "domesticas_pessoal_all" on public.domesticas
+  for all
+  using (exists (
+    select 1 from public.profile_departments pd
+    join public.departments d on d.id = pd.department_id
+    where pd.profile_id = auth.uid() and d.name = 'Depart. Pessoal'))
+  with check (exists (
+    select 1 from public.profile_departments pd
+    join public.departments d on d.id = pd.department_id
+    where pd.profile_id = auth.uid() and d.name = 'Depart. Pessoal'));
+
+create policy "domestica_movimento_pessoal_all" on public.domestica_movimento
+  for all
+  using (exists (
+    select 1 from public.profile_departments pd
+    join public.departments d on d.id = pd.department_id
+    where pd.profile_id = auth.uid() and d.name = 'Depart. Pessoal'))
+  with check (exists (
+    select 1 from public.profile_departments pd
+    join public.departments d on d.id = pd.department_id
+    where pd.profile_id = auth.uid() and d.name = 'Depart. Pessoal'));

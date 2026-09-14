@@ -179,3 +179,34 @@ export type ComplementoInssInput = Omit<
   ComplementoInssRecord,
   "id" | "created_at" | "updated_at"
 >;
+
+/** Cadastro de domésticas (pessoas físicas atendidas pelo Pessoal). */
+export interface DomesticasRecord {
+  id: string;
+  numero: string | null;
+  nome: string;
+  cpf: string | null;
+  senha: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Movimento mensal de uma doméstica (folha mensal). */
+export interface DomesticaMovimentoRecord {
+  id: string;
+  domestica_id: string;
+  mes_referencia: string;
+  status: string | null;
+  data_base: string | null;
+  folha: string | null;
+  dae: string | null;
+  envio: string | null;
+  ponto: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type DomesticaMovimentoInput = Omit<
+  DomesticaMovimentoRecord,
+  "id" | "created_at" | "updated_at"
+>;

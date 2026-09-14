@@ -3525,6 +3525,85 @@ export type Database = {
         }
         Relationships: []
       }
+      domestica_movimento: {
+        Row: {
+          created_at: string
+          dae: string | null
+          data_base: string | null
+          domestica_id: string
+          envio: string | null
+          folha: string | null
+          id: string
+          mes_referencia: string
+          ponto: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dae?: string | null
+          data_base?: string | null
+          domestica_id: string
+          envio?: string | null
+          folha?: string | null
+          id?: string
+          mes_referencia: string
+          ponto?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dae?: string | null
+          data_base?: string | null
+          domestica_id?: string
+          envio?: string | null
+          folha?: string | null
+          id?: string
+          mes_referencia?: string
+          ponto?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "domestica_movimento_domestica_id_fkey"
+            columns: ["domestica_id"]
+            referencedRelation: "domesticas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      domesticas: {
+        Row: {
+          cpf: string | null
+          created_at: string
+          id: string
+          nome: string
+          numero: string | null
+          senha: string | null
+          updated_at: string
+        }
+        Insert: {
+          cpf?: string | null
+          created_at?: string
+          id?: string
+          nome: string
+          numero?: string | null
+          senha?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cpf?: string | null
+          created_at?: string
+          id?: string
+          nome?: string
+          numero?: string | null
+          senha?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       empresas_fiscal: {
         Row: {
           company_id: string
