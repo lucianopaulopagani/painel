@@ -25,6 +25,7 @@ import FiscalDashboard from "./fiscal/FiscalDashboard";
 import { MovimentoFiscal as FiscalMovimento } from "./fiscal/MovimentoFiscal";
 import BalanceteBalanco from "./contabil/BalanceteBalanco";
 import CertificadoDigital from "./societario/CertificadoDigital";
+import SocietarioDashboard from "./societario/SocietarioDashboard";
 import ComplementoInss from "./pessoal/ComplementoInss";
 import Domesticas from "./pessoal/Domesticas";
 import EmpresasFiscal from "./pessoal/EmpresasFiscal";
@@ -67,7 +68,7 @@ const DEPT_MODULES: Record<AvailablePanelKey, ModuleDef[]> = {
     { key: "complemento-inss", label: "Complemento INSS", render: () => <ComplementoInss /> },
   ],
   societario: [
-    { key: "dashboard", label: "Dashboard", render: () => <DepartmentDashboard title="Societário" /> },
+    { key: "dashboard", label: "Dashboard", render: () => <SocietarioDashboard /> },
     { key: "certificado-digital", label: "Certificado digital", render: () => <CertificadoDigital /> },
   ],
   contabil: [
