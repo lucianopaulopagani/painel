@@ -132,7 +132,8 @@ export default function EmpresasFiscal() {
       status: latest?.status === "Desativado" ? "Desativado" : null,
       envio: latest?.envio === "Desativado" ? "Desativado" : null,
       informacoes: latest?.informacoes ?? null,
-      dctfweb: latest?.dctfweb ?? null,
+      // DCTFWEB não herda: fica apenas no mês em que foi marcado.
+      dctfweb: null,
     };
   };
 
@@ -179,6 +180,8 @@ export default function EmpresasFiscal() {
 
   const save = (companyId: string, patch: Record<string, unknown>) => {
     const eff = effectiveFields(companyId);
+    // DCTFWEB usa apenas o valor do mês atual (não é herdado).
+    const currentDctfweb = recordByCompany.get(companyId)?.dctfweb ?? null;
     saveMutation.mutate(
       {
         company_id: companyId,
@@ -186,7 +189,7 @@ export default function EmpresasFiscal() {
         status: eff.status ?? null,
         envio: eff.envio ?? null,
         informacoes: eff.informacoes ?? null,
-        dctfweb: eff.dctfweb ?? null,
+        dctfweb: currentDctfweb,
         ...patch,
       } as unknown as EmpresasFiscalInput,
       {
