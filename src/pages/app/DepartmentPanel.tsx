@@ -193,8 +193,8 @@ export default function DepartmentPanel() {
     <div className="flex min-h-screen flex-col bg-background">
       <PanelHeader title={activeLabel} subtitle="Painel do departamento" />
 
-      <nav className="border-b bg-background/90 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-[1600px] items-center gap-1 overflow-x-auto px-4 py-2 sm:px-6">
+      <nav className="bg-background/90 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center gap-1 px-4 py-2 sm:px-6">
           {availablePanels.map((panel) => {
             const deptModules = DEPT_MODULES[panel.key];
             return (
