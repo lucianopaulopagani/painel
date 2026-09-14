@@ -4,10 +4,20 @@ import {
   useRef,
   useState,
 } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Pencil } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -103,6 +113,14 @@ export default function EmpresasFuncionarios() {
   });
   const [scrollLeft, setScrollLeft] = useState(0);
 
+  /* Diálogo de edição das notas (obs. fechamento, info. sindicato etc.). */
+  const [noteDialog, setNoteDialog] = useState<{
+    companyId: string;
+    patchKey: string;
+    label: string;
+    value: string;
+  } | null>(null);
+
   useLayoutEffect(() => {
     const el = tableScrollRef.current;
     if (!el) return;
@@ -167,6 +185,18 @@ export default function EmpresasFuncionarios() {
     if (dragRef.current?.pointerId === event.pointerId) {
       dragRef.current = null;
     }
+  };
+
+  const noteDialogCompany = noteDialog
+    ? companies?.find((company) => company.id === noteDialog.companyId)
+    : null;
+
+  const handleNoteSave = () => {
+    if (!noteDialog) return;
+    save(noteDialog.companyId, {
+      [noteDialog.patchKey]: noteDialog.value.trim() || null,
+    });
+    setNoteDialog(null);
   };
 
   const pessoal = findDepartmentByName(departments, PESSOAL_DEPARTMENT_NAME);
@@ -357,20 +387,27 @@ export default function EmpresasFuncionarios() {
     </Select>
   );
 
-  const renderTextCell = (
+  const renderNoteCell = (
     companyId: string,
     value: string | null,
-    patchKey: string
+    patchKey: string,
+    label: string
   ) => (
-    <Input
-      key={`${companyId}:${mes}:${patchKey}`}
-      defaultValue={value ?? ""}
-      title={value ?? ""}
-      onBlur={(event) =>
-        save(companyId, { [patchKey]: event.target.value.trim() || null })
-      }
-      className="h-7 w-full min-w-0 px-1 text-[11px]"
-    />
+    <TableCell className={`${CELL} w-40`}>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        title={`${label}: ${value ?? ""}`}
+        onClick={() =>
+          setNoteDialog({ companyId, patchKey, label, value: value ?? "" })
+        }
+        className="h-7 w-full justify-start gap-1.5 px-1.5 text-[11px] font-normal"
+      >
+        <Pencil className="h-3 w-3 shrink-0 text-muted-foreground" />
+        <span className="truncate">{value || "—"}</span>
+      </Button>
+    </TableCell>
   );
 
   const renderFilterSelect = (
@@ -529,23 +566,24 @@ export default function EmpresasFuncionarios() {
             ENVIO_TONE
           )}
         </TableCell>
-        <TableCell className={`${CELL} w-64`}>
-          {renderTextCell(company.id, record?.observacao ?? null, "observacao")}
-        </TableCell>
-        <TableCell className={`${CELL} w-64`}>
-          {renderTextCell(
-            company.id,
-            record?.info_sindicato ?? null,
-            "info_sindicato"
-          )}
-        </TableCell>
-        <TableCell className={`${CELL} w-64`}>
-          {renderTextCell(
-            company.id,
-            record?.info_sindicato_patronal ?? null,
-            "info_sindicato_patronal"
-          )}
-        </TableCell>
+        {renderNoteCell(
+          company.id,
+          record?.observacao ?? null,
+          "observacao",
+          "Obs. Fechamento"
+        )}
+        {renderNoteCell(
+          company.id,
+          record?.info_sindicato ?? null,
+          "info_sindicato",
+          "Info. Sindicato"
+        )}
+        {renderNoteCell(
+          company.id,
+          record?.info_sindicato_patronal ?? null,
+          "info_sindicato_patronal",
+          "Info. Sindicato Patronal"
+        )}
       </TableRow>
     );
   };
@@ -591,7 +629,7 @@ export default function EmpresasFuncionarios() {
             }
             className="overflow-x-auto rounded-lg border [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-          <Table className="table-fixed min-w-[2200px]">
+          <Table className="table-fixed min-w-[1912px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
                 {renderFilterSelect("status", "Status", EMPRESAS_FUNC_STATUS_OPTIONS, "w-40", `${STICKY_HEAD} left-0`)}
@@ -606,9 +644,9 @@ export default function EmpresasFuncionarios() {
                 {renderFilterSelect("taxaSindical", "Taxa Sindical", EMPRESAS_FUNC_FLAG_OPTIONS)}
                 {renderFilterSelect("dctfweb", "DCTFWEB", EMPRESAS_FUNC_DCTFWEB_OPTIONS)}
                 {renderFilterSelect("envio", "Envio", EMPRESAS_FUNC_ENVIO_OPTIONS)}
-                {renderFilterInput("observacao", "Obs. Fechamento", "w-64")}
-                {renderFilterInput("infoSindicato", "Info. Sindicato", "w-64")}
-                {renderFilterInput("infoSindicatoPatronal", "Info. Sindicato Patronal", "w-64")}
+                {renderFilterInput("observacao", "Obs. Fechamento", "w-40")}
+                {renderFilterInput("infoSindicato", "Info. Sindicato", "w-40")}
+                {renderFilterInput("infoSindicatoPatronal", "Info. Sindicato Patronal", "w-40")}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -661,6 +699,42 @@ export default function EmpresasFuncionarios() {
           )}
         </>
       )}
+
+      <Dialog
+        open={!!noteDialog}
+        onOpenChange={(open) => !open && setNoteDialog(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{noteDialog?.label}</DialogTitle>
+            <DialogDescription>
+              {noteDialogCompany?.name ?? "Empresa"}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={noteDialog?.value ?? ""}
+            onChange={(event) =>
+              setNoteDialog((prev) =>
+                prev ? { ...prev, value: event.target.value } : prev
+              )
+            }
+            placeholder="Digite o texto..."
+            rows={5}
+          />
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setNoteDialog(null)}
+            >
+              Cancelar
+            </Button>
+            <Button type="button" onClick={handleNoteSave}>
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
