@@ -1,4 +1,9 @@
-import { useState } from "react";
+import {
+  type PointerEvent as ReactPointerEvent,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { Input } from "@/components/ui/input";
@@ -86,6 +91,82 @@ export default function EmpresasFuncionarios() {
   const { data: records } = useEmpresasFuncionarios(mes);
   const { data: allRecords } = useEmpresasFuncionariosAll();
   const saveMutation = useSaveEmpresasFuncionarios(mes);
+
+  /* Barra horizontal fixa no rodapé da tela (customizada, sempre visível). */
+  const tableScrollRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{ pointerId: number; offsetX: number } | null>(null);
+  const [tableMetrics, setTableMetrics] = useState({
+    scrollWidth: 0,
+    clientWidth: 0,
+  });
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  useLayoutEffect(() => {
+    const el = tableScrollRef.current;
+    if (!el) return;
+    const update = () =>
+      setTableMetrics({
+        scrollWidth: el.scrollWidth,
+        clientWidth: el.clientWidth,
+      });
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isLoading]);
+
+  const hasOverflow = tableMetrics.scrollWidth > tableMetrics.clientWidth;
+  const maxScroll = Math.max(
+    0,
+    tableMetrics.scrollWidth - tableMetrics.clientWidth
+  );
+  const thumbWidthPct =
+    tableMetrics.scrollWidth > 0
+      ? Math.max(
+          16,
+          (tableMetrics.clientWidth / tableMetrics.scrollWidth) * 100
+        )
+      : 100;
+  const thumbLeftPct =
+    maxScroll > 0 ? (scrollLeft / maxScroll) * (100 - thumbWidthPct) : 0;
+
+  const scrollTableTo = (targetLeft: number) => {
+    const table = tableScrollRef.current;
+    if (!table) return;
+    table.scrollLeft = Math.max(0, Math.min(targetLeft, maxScroll));
+  };
+
+  const handleTrackPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const track = trackRef.current;
+    if (!track || maxScroll <= 0) return;
+    const rect = track.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const thumbStart = (thumbLeftPct / 100) * rect.width;
+    const thumbWidth = (thumbWidthPct / 100) * rect.width;
+    const clickedOnThumb = x >= thumbStart && x <= thumbStart + thumbWidth;
+    dragRef.current = {
+      pointerId: event.pointerId,
+      offsetX: clickedOnThumb ? x - thumbStart : thumbWidth / 2,
+    };
+    track.setPointerCapture(event.pointerId);
+    if (!clickedOnThumb) scrollTableTo((x / rect.width) * maxScroll);
+  };
+
+  const handleTrackPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    const track = trackRef.current;
+    if (!drag || !track || drag.pointerId !== event.pointerId) return;
+    const rect = track.getBoundingClientRect();
+    const x = event.clientX - rect.left - drag.offsetX;
+    scrollTableTo((x / rect.width) * maxScroll);
+  };
+
+  const handleTrackPointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (dragRef.current?.pointerId === event.pointerId) {
+      dragRef.current = null;
+    }
+  };
 
   const pessoal = findDepartmentByName(departments, PESSOAL_DEPARTMENT_NAME);
 
@@ -501,7 +582,14 @@ export default function EmpresasFuncionarios() {
       )}
 
       {!isLoading && !isError && (
-        <div className="max-h-[calc(100dvh-24rem)] overflow-auto rounded-lg border">
+        <>
+          <div
+            ref={tableScrollRef}
+            onScroll={(event) =>
+              setScrollLeft(event.currentTarget.scrollLeft)
+            }
+            className="overflow-x-auto rounded-lg border [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
           <Table className="table-fixed min-w-[2200px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
@@ -549,7 +637,28 @@ export default function EmpresasFuncionarios() {
               )}
             </TableBody>
           </Table>
-        </div>
+          </div>
+          {hasOverflow && (
+            <div className="sticky bottom-0 z-10 bg-background py-2">
+              <div
+                ref={trackRef}
+                onPointerDown={handleTrackPointerDown}
+                onPointerMove={handleTrackPointerMove}
+                onPointerUp={handleTrackPointerUp}
+                onPointerCancel={handleTrackPointerUp}
+                className="relative h-2 w-full cursor-pointer select-none touch-none rounded-full bg-muted"
+              >
+                <div
+                  className="absolute top-0 h-full rounded-full bg-primary/70"
+                  style={{
+                    left: `${thumbLeftPct}%`,
+                    width: `${thumbWidthPct}%`,
+                  }}
+                />
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
