@@ -49,6 +49,13 @@ function readStoredMes(): string {
 const CELL = "px-1 py-1 text-[11px]";
 const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
 
+/* Colunas fixas até "Empresa": offsets acompanham w-40 (160px) + w-14 (56px). */
+const STICKY_HEAD = "sticky z-10 bg-muted";
+const STICKY_CELL = "sticky z-10 bg-background";
+const N_LEFT = "left-[160px]";
+const EMPRESA_LEFT = "left-[216px]";
+const EMPRESA_EDGE = "border-r border-border";
+
 export default function EmpresasFuncionarios() {
   const [mes, setMes] = useState<string>(readStoredMes);
   const [busca, setBusca] = useState({
@@ -287,9 +294,10 @@ export default function EmpresasFuncionarios() {
     key: keyof typeof busca,
     label: string,
     options: readonly string[],
-    widthClass = "w-28"
+    widthClass = "w-28",
+    stickyClass = ""
   ) => (
-    <TableHead className={`${HEAD} ${widthClass} align-bottom`}>
+    <TableHead className={`${HEAD} ${widthClass} ${stickyClass} align-bottom`}>
       <span className="mb-1 block whitespace-nowrap">{label}</span>
       <Select
         value={busca[key] === "" ? "todos" : busca[key]}
@@ -316,9 +324,10 @@ export default function EmpresasFuncionarios() {
   const renderFilterInput = (
     key: keyof typeof busca,
     label: string,
-    widthClass = ""
+    widthClass = "",
+    stickyClass = ""
   ) => (
-    <TableHead className={`${HEAD} ${widthClass} align-bottom`}>
+    <TableHead className={`${HEAD} ${widthClass} ${stickyClass} align-bottom`}>
       <span className="mb-1 block whitespace-nowrap">{label}</span>
       <Input
         value={busca[key]}
@@ -348,7 +357,7 @@ export default function EmpresasFuncionarios() {
     const record = recordByCompany.get(company.id);
     return (
       <TableRow key={company.id}>
-        <TableCell className={`${CELL} w-40`}>
+        <TableCell className={`${CELL} w-40 ${STICKY_CELL}`}>
           {renderSelectCell(
             company.id,
             effectiveStatus(company.id) ?? "",
@@ -357,10 +366,14 @@ export default function EmpresasFuncionarios() {
             STATUS_TONE
           )}
         </TableCell>
-        <TableCell className={`${CELL} whitespace-nowrap text-center font-medium`}>
+        <TableCell
+          className={`${CELL} w-14 whitespace-nowrap text-center font-medium ${STICKY_CELL} ${N_LEFT}`}
+        >
           {company.numero || "—"}
         </TableCell>
-        <TableCell className={`${CELL} w-40`}>
+        <TableCell
+          className={`${CELL} w-40 ${STICKY_CELL} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`}
+        >
           <span className="block truncate font-medium" title={company.name}>
             {company.name}
           </span>
@@ -491,9 +504,9 @@ export default function EmpresasFuncionarios() {
           <Table className="table-fixed min-w-[2200px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
-                {renderFilterSelect("status", "Status", EMPRESAS_FUNC_STATUS_OPTIONS, "w-40")}
-                {renderFilterInput("numero", "Nº", "w-14")}
-                {renderFilterInput("empresa", "Empresa", "w-40")}
+                {renderFilterSelect("status", "Status", EMPRESAS_FUNC_STATUS_OPTIONS, "w-40", STICKY_HEAD)}
+                {renderFilterInput("numero", "Nº", "w-14", `${STICKY_HEAD} ${N_LEFT}`)}
+                {renderFilterInput("empresa", "Empresa", "w-40", `${STICKY_HEAD} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`)}
                 {renderFilterInput("cnpj", "CNPJ", "w-36")}
                 {renderFilterInput("tributacao", "Regime Tributário", "w-32")}
                 {renderFilterSelect("dataBase", "Data Base", EMPRESAS_FUNC_MESES_OPTIONS)}
