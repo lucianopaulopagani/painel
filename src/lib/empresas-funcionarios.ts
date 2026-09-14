@@ -3,6 +3,7 @@ export const EMPRESAS_FUNC_STATUS_OPTIONS = [
   "Concluído",
   "Pendente",
   "Em Andamento",
+  "Desativado",
 ] as const;
 
 /** Opções comuns das colunas de marcação (Empréstimo, FGTS, Taxa, DCTFWEB). */

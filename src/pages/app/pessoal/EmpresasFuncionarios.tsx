@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useEmpresasFuncionarios, useSaveEmpresasFuncionarios } from "@/hooks/use-empresas-funcionarios";
+import { useEmpresasFuncionarios, useEmpresasFuncionariosAll, useSaveEmpresasFuncionarios } from "@/hooks/use-empresas-funcionarios";
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
@@ -72,6 +72,7 @@ export default function EmpresasFuncionarios() {
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: records } = useEmpresasFuncionarios(mes);
+  const { data: allRecords } = useEmpresasFuncionariosAll();
   const saveMutation = useSaveEmpresasFuncionarios(mes);
 
   const pessoal = findDepartmentByName(departments, PESSOAL_DEPARTMENT_NAME);
@@ -97,6 +98,25 @@ export default function EmpresasFuncionarios() {
     (records ?? []).map((record) => [record.company_id, record])
   );
 
+  /**
+   * Status efetivo: usa o registro do mês; se não existir, mantém
+   * "Desativado" fixo caso o mês anterior mais recente seja Desativado.
+   */
+  const effectiveStatus = (companyId: string): string | null => {
+    const current = recordByCompany.get(companyId);
+    if (current) return current.status;
+    const prior = (allRecords ?? [])
+      .filter(
+        (record) =>
+          record.company_id === companyId && record.mes_referencia < mes
+      )
+      .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia));
+    return prior[0]?.status === "Desativado" ? "Desativado" : null;
+  };
+
+  const isDesativada = (companyId: string): boolean =>
+    effectiveStatus(companyId) === "Desativado";
+
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
     const match = (
@@ -115,7 +135,7 @@ export default function EmpresasFuncionarios() {
       return !query || (value ?? "") === query;
     };
     return (
-      selectOrBlank(record?.status, busca.status) &&
+      selectOrBlank(effectiveStatus(company.id), busca.status) &&
       match(company.numero, busca.numero) &&
       match(company.name, busca.empresa) &&
       match(company.documento, busca.cnpj) &&
@@ -133,7 +153,15 @@ export default function EmpresasFuncionarios() {
     );
   });
 
+  const activeRows = filteredRows.filter(
+    (company) => !isDesativada(company.id)
+  );
+  const inactiveRows = filteredRows.filter((company) =>
+    isDesativada(company.id)
+  );
+
   const save = (companyId: string, patch: Record<string, unknown>) => {
+    const effStatus = effectiveStatus(companyId);
     const current = recordByCompany.get(companyId);
     const base = current ?? {};
     const {
@@ -147,6 +175,7 @@ export default function EmpresasFuncionarios() {
         company_id: companyId,
         mes_referencia: mes,
         ...fields,
+        status: effStatus ?? null,
         ...patch,
       } as unknown as EmpresasFuncionariosInput,
       {
@@ -258,13 +287,117 @@ export default function EmpresasFuncionarios() {
   );
 
   const STATUS_TONE = {
-    Concluído: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
-    Pendente: "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
-    "Em Andamento": "bg-status-warning text-status-warning-foreground hover:bg-status-warning/90",
+    Concluído:
+      "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+    Pendente:
+      "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
+    "Em Andamento":
+      "bg-status-warning-foreground text-status-warning hover:bg-status-warning-foreground/90",
+    Desativado: "bg-muted text-muted-foreground hover:bg-muted/80",
   };
   const ENVIO_TONE = {
     Enviado: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
     Pendente: "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
+  };
+
+  const renderRow = (company: (typeof rows)[number]) => {
+    const record = recordByCompany.get(company.id);
+    return (
+      <TableRow key={company.id}>
+        <TableCell className={`${CELL} w-28`}>
+          {renderSelectCell(
+            company.id,
+            effectiveStatus(company.id) ?? "",
+            EMPRESAS_FUNC_STATUS_OPTIONS,
+            "status",
+            STATUS_TONE
+          )}
+        </TableCell>
+        <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
+          {company.numero || "—"}
+        </TableCell>
+        <TableCell className={`${CELL} w-40`}>
+          <span className="block truncate font-medium" title={company.name}>
+            {company.name}
+          </span>
+        </TableCell>
+        <TableCell className={`${CELL} whitespace-nowrap text-muted-foreground`}>
+          {formatCpfCnpj(company.documento)}
+        </TableCell>
+        <TableCell className={`${CELL} w-32`}>
+          <span
+            className="block truncate"
+            title={company.tributacao ?? undefined}
+          >
+            {company.tributacao || "—"}
+          </span>
+        </TableCell>
+        <TableCell className={CELL}>
+          {renderTextCell(company.id, record?.data_base ?? null, "data_base")}
+        </TableCell>
+        <TableCell className={CELL}>
+          {renderTextCell(company.id, record?.folha ?? null, "folha")}
+        </TableCell>
+        <TableCell className={`${CELL} w-28`}>
+          {renderSelectCell(
+            company.id,
+            record?.emprestimo ?? "",
+            EMPRESAS_FUNC_FLAG_OPTIONS,
+            "emprestimo"
+          )}
+        </TableCell>
+        <TableCell className={`${CELL} w-28`}>
+          {renderSelectCell(
+            company.id,
+            record?.fgts ?? "",
+            EMPRESAS_FUNC_FLAG_OPTIONS,
+            "fgts"
+          )}
+        </TableCell>
+        <TableCell className={`${CELL} w-28`}>
+          {renderSelectCell(
+            company.id,
+            record?.taxa_sindical ?? "",
+            EMPRESAS_FUNC_FLAG_OPTIONS,
+            "taxa_sindical"
+          )}
+        </TableCell>
+        <TableCell className={`${CELL} w-28`}>
+          {renderSelectCell(
+            company.id,
+            record?.dctfweb ?? "",
+            EMPRESAS_FUNC_FLAG_OPTIONS,
+            "dctfweb"
+          )}
+        </TableCell>
+        <TableCell className={`${CELL} w-28`}>
+          {renderSelectCell(
+            company.id,
+            record?.envio ?? "",
+            EMPRESAS_FUNC_ENVIO_OPTIONS,
+            "envio",
+            ENVIO_TONE
+          )}
+        </TableCell>
+        <TableCell className={`${CELL} w-64`}>
+          {renderTextCell(company.id, record?.observacao ?? null, "observacao")}
+        </TableCell>
+        <TableCell className={`${CELL} w-64`}>
+          {renderTextCell(
+            company.id,
+            record?.info_sindicato ?? null,
+            "info_sindicato"
+          )}
+        </TableCell>
+        <TableCell className={`${CELL} w-64`}>
+          {renderTextCell(
+            company.id,
+            record?.info_sindicato_patronal ?? null,
+            "info_sindicato_patronal"
+          )}
+        </TableCell>
+      </TableRow>
+    );
   };
 
   return (
@@ -322,68 +455,18 @@ export default function EmpresasFuncionarios() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredRows.map((company) => {
-                const record = recordByCompany.get(company.id);
-                return (
-                  <TableRow key={company.id}>
-                    <TableCell className={`${CELL} w-28`}>
-                      {renderSelectCell(
-                        company.id,
-                        record?.status ?? "",
-                        EMPRESAS_FUNC_STATUS_OPTIONS,
-                        "status",
-                        STATUS_TONE
-                      )}
-                    </TableCell>
-                    <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
-                      {company.numero || "—"}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-40`}>
-                      <span className="block truncate font-medium" title={company.name}>
-                        {company.name}
-                      </span>
-                    </TableCell>
-                    <TableCell className={`${CELL} whitespace-nowrap text-muted-foreground`}>
-                      {formatCpfCnpj(company.documento)}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-32`}>
-                      <span className="block truncate" title={company.tributacao ?? undefined}>
-                        {company.tributacao || "—"}
-                      </span>
-                    </TableCell>
-                    <TableCell className={CELL}>
-                      {renderTextCell(company.id, record?.data_base ?? null, "data_base")}
-                    </TableCell>
-                    <TableCell className={CELL}>
-                      {renderTextCell(company.id, record?.folha ?? null, "folha")}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-28`}>
-                      {renderSelectCell(company.id, record?.emprestimo ?? "", EMPRESAS_FUNC_FLAG_OPTIONS, "emprestimo")}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-28`}>
-                      {renderSelectCell(company.id, record?.fgts ?? "", EMPRESAS_FUNC_FLAG_OPTIONS, "fgts")}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-28`}>
-                      {renderSelectCell(company.id, record?.taxa_sindical ?? "", EMPRESAS_FUNC_FLAG_OPTIONS, "taxa_sindical")}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-28`}>
-                      {renderSelectCell(company.id, record?.dctfweb ?? "", EMPRESAS_FUNC_FLAG_OPTIONS, "dctfweb")}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-28`}>
-                      {renderSelectCell(company.id, record?.envio ?? "", EMPRESAS_FUNC_ENVIO_OPTIONS, "envio", ENVIO_TONE)}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-64`}>
-                      {renderTextCell(company.id, record?.observacao ?? null, "observacao")}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-64`}>
-                      {renderTextCell(company.id, record?.info_sindicato ?? null, "info_sindicato")}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-64`}>
-                      {renderTextCell(company.id, record?.info_sindicato_patronal ?? null, "info_sindicato_patronal")}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {activeRows.map(renderRow)}
+              {inactiveRows.length > 0 && (
+                <TableRow className="bg-muted/50">
+                  <TableCell
+                    colSpan={15}
+                    className="px-2 py-1.5 text-xs font-semibold text-muted-foreground"
+                  >
+                    Empresas desativadas
+                  </TableCell>
+                </TableRow>
+              )}
+              {inactiveRows.map(renderRow)}
               {filteredRows.length === 0 && (
                 <TableRow>
                   <TableCell
