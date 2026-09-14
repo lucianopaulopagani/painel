@@ -25,6 +25,7 @@ import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments
 import {
   EMPRESAS_FUNC_ENVIO_OPTIONS,
   EMPRESAS_FUNC_FLAG_OPTIONS,
+  EMPRESAS_FUNC_MESES_OPTIONS,
   EMPRESAS_FUNC_STATUS_OPTIONS,
 } from "@/lib/empresas-funcionarios";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
@@ -117,6 +118,22 @@ export default function EmpresasFuncionarios() {
   const isDesativada = (companyId: string): boolean =>
     effectiveStatus(companyId) === "Desativado";
 
+  /**
+   * Data Base efetiva: usa o registro do mês; se não existir, herda a do mês
+   * anterior mais recente (levada para os meses seguintes).
+   */
+  const effectiveDataBase = (companyId: string): string | null => {
+    const current = recordByCompany.get(companyId);
+    if (current) return current.data_base;
+    const prior = (allRecords ?? [])
+      .filter(
+        (record) =>
+          record.company_id === companyId && record.mes_referencia < mes
+      )
+      .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia));
+    return prior[0]?.data_base ?? null;
+  };
+
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
     const match = (
@@ -140,7 +157,7 @@ export default function EmpresasFuncionarios() {
       match(company.name, busca.empresa) &&
       match(company.documento, busca.cnpj) &&
       match(company.tributacao, busca.tributacao) &&
-      match(record?.data_base, busca.dataBase) &&
+      match(effectiveDataBase(company.id), busca.dataBase) &&
       match(record?.folha, busca.folha) &&
       selectOrBlank(record?.emprestimo, busca.emprestimo) &&
       selectOrBlank(record?.fgts, busca.fgts) &&
@@ -176,6 +193,7 @@ export default function EmpresasFuncionarios() {
         mes_referencia: mes,
         ...fields,
         status: effStatus ?? null,
+        data_base: effectiveDataBase(companyId) ?? null,
         ...patch,
       } as unknown as EmpresasFuncionariosInput,
       {
@@ -334,8 +352,13 @@ export default function EmpresasFuncionarios() {
             {company.tributacao || "—"}
           </span>
         </TableCell>
-        <TableCell className={CELL}>
-          {renderTextCell(company.id, record?.data_base ?? null, "data_base")}
+        <TableCell className={`${CELL} w-24`}>
+          {renderSelectCell(
+            company.id,
+            effectiveDataBase(company.id) ?? "",
+            EMPRESAS_FUNC_MESES_OPTIONS,
+            "data_base"
+          )}
         </TableCell>
         <TableCell className={CELL}>
           {renderTextCell(company.id, record?.folha ?? null, "folha")}
@@ -444,7 +467,7 @@ export default function EmpresasFuncionarios() {
                 {renderFilterInput("empresa", "Empresa")}
                 {renderFilterInput("cnpj", "CNPJ")}
                 {renderFilterInput("tributacao", "Regime Tributário")}
-                {renderFilterInput("dataBase", "Data Base")}
+                {renderFilterSelect("dataBase", "Data Base", EMPRESAS_FUNC_MESES_OPTIONS)}
                 {renderFilterInput("folha", "Folha")}
                 {renderFilterSelect("emprestimo", "Empréstimo", EMPRESAS_FUNC_FLAG_OPTIONS)}
                 {renderFilterSelect("fgts", "FGTS", EMPRESAS_FUNC_FLAG_OPTIONS)}

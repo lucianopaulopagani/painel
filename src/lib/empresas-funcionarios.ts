@@ -17,3 +17,19 @@ export const EMPRESAS_FUNC_FLAG_OPTIONS = [
 ] as const;
 
 export const EMPRESAS_FUNC_ENVIO_OPTIONS = ["Enviado", "Pendente"] as const;
+
+/** Meses do ano em 3 letras maiúsculas (Data Base). */
+export const EMPRESAS_FUNC_MESES_OPTIONS = [
+  "JAN",
+  "FEV",
+  "MAR",
+  "ABR",
+  "MAI",
+  "JUN",
+  "JUL",
+  "AGO",
+  "SET",
+  "OUT",
+  "NOV",
+  "DEZ",
+] as const;
