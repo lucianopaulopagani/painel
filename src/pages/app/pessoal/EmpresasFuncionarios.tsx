@@ -292,7 +292,7 @@ export default function EmpresasFuncionarios() {
     Pendente:
       "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
     "Em Andamento":
-      "bg-status-warning-foreground text-status-warning hover:bg-status-warning-foreground/90",
+      "bg-status-warning text-status-warning-foreground hover:bg-status-warning/90",
     Desativado: "bg-muted text-muted-foreground hover:bg-muted/80",
   };
   const ENVIO_TONE = {
