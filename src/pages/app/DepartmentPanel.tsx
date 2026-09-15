@@ -196,7 +196,7 @@ export default function DepartmentPanel() {
     <div className="flex min-h-screen flex-col bg-background">
       <PanelHeader title={activeLabel} subtitle="Painel do departamento" />
 
-      <nav className="relative z-50 bg-background/90 backdrop-blur">
+      <nav className="relative z-30 bg-background/90 backdrop-blur">
         <div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center gap-1 px-4 py-2 sm:px-6">
           {availablePanels.map((panel) => {
             const deptModules = DEPT_MODULES[panel.key];
