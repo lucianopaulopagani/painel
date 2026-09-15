@@ -108,6 +108,10 @@ export default function SocietarioManual() {
         <p className="text-sm text-muted-foreground">
           Guia de uso do departamento Societário.
         </p>
+        <p className="text-xs text-muted-foreground">
+          Última atualização: setembro/2026 — este manual acompanha as versões
+          desenvolvidas do departamento.
+        </p>
       </div>
 
       {SECTIONS.map((section, index) => {
