@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useCompanies, useDeleteCompany } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
-import { useUsers } from "@/hooks/use-users";
+import { useAllUsers } from "@/hooks/use-all-users";
 import { useAuth } from "@/context/auth";
 import CompanyFormDialog from "@/components/admin/CompanyFormDialog";
 import CompanyImportDialog from "@/components/admin/CompanyImportDialog";
@@ -49,7 +49,7 @@ export default function CompaniesTab() {
 
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: departments } = useDepartments();
-  const { data: users } = useUsers();
+  const { data: users } = useAllUsers();
   const deleteMutation = useDeleteCompany();
 
   const [dialogOpen, setDialogOpen] = useState(false);

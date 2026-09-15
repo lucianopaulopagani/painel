@@ -21,8 +21,8 @@ import {
 } from "@/components/ui/select";
 import { MultiSelectDropdown } from "@/components/ui/multi-select-dropdown";
 import { useBulkUpdateCompanies } from "@/hooks/use-companies";
+import { useAllUsers } from "@/hooks/use-all-users";
 import { useDepartments } from "@/hooks/use-departments";
-import { useUsers } from "@/hooks/use-users";
 import { TRIBUTACOES } from "@/lib/companies";
 import { UFS } from "@/lib/ufs";
 import type { EmpresaPermissionKey } from "@/lib/empresas-permissions";
@@ -52,7 +52,7 @@ export default function CompanyBulkEditDialog({
 }: CompanyBulkEditDialogProps) {
   const bulkUpdate = useBulkUpdateCompanies();
   const { data: departments } = useDepartments();
-  const { data: users } = useUsers();
+  const { data: users } = useAllUsers();
 
   /** Campo liberado quando não há restrição (admin) ou consta na lista. */
   const canEdit = (key: EmpresaPermissionKey): boolean =>

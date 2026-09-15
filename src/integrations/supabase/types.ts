@@ -3957,6 +3957,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      all_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          full_name: string
+          id: string
+        }[]
+      }
       contabil_usuarios: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -3982,6 +3989,14 @@ export type Database = {
       }
       month_is_released: {
         Args: { mes: string }
+        Returns: boolean
+      }
+      user_can_create_company: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      user_can_edit_companies: {
+        Args: Record<PropertyKey, never>
         Returns: boolean
       }
     }

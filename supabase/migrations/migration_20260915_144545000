@@ -1,0 +1,4 @@
+grant execute on function public.user_can_edit_companies() to authenticated;
+grant execute on function public.user_can_create_company() to authenticated;
+grant execute on function public.all_users() to authenticated;
+revoke execute on function public.all_users() from anon;

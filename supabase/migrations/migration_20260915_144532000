@@ -1,0 +1,50 @@
+create or replace function public.user_can_edit_companies()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid() and (p.role = 'admin' or p.empresas_access = true)
+  );
+$$;
+
+create or replace function public.user_can_create_company()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid() and (p.role = 'admin' or p.empresas_criar = true)
+  );
+$$;
+
+create or replace function public.all_users()
+returns table (id uuid, full_name text)
+language sql
+security definer
+set search_path = public
+as $$
+  select p.id, p.full_name
+  from public.profiles p
+  where exists (
+    select 1 from public.profiles me
+    where me.id = auth.uid() and (me.role = 'admin' or me.empresas_access = true)
+  )
+  order by p.full_name;
+$$;
+
+create policy "companies_empresas_select" on public.companies
+  for select using (public.user_can_edit_companies());
+
+create policy "companies_empresas_update" on public.companies
+  for update using (public.user_can_edit_companies()) with check (public.user_can_edit_companies());
+
+create policy "companies_empresas_insert" on public.companies
+  for insert with check (public.user_can_create_company());
+
+create policy "company_departments_empresas_all" on public.company_departments
+  for all using (public.user_can_edit_companies()) with check (public.user_can_edit_companies());

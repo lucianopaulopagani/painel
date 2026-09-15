@@ -7,7 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useUsers } from "@/hooks/use-users";
+import { useAllUsers } from "@/hooks/use-all-users";
 
 interface UserMultiSelectProps {
   value: string[];
@@ -25,7 +25,7 @@ export function UserMultiSelect({
   placeholder = "Selecionar responsáveis",
   className,
 }: UserMultiSelectProps) {
-  const { data: users } = useUsers();
+  const { data: users } = useAllUsers();
   const [open, setOpen] = useState(false);
 
   const userList = users ?? [];
