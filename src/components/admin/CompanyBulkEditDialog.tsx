@@ -23,6 +23,7 @@ import { MultiSelectDropdown } from "@/components/ui/multi-select-dropdown";
 import { useBulkUpdateCompanies } from "@/hooks/use-companies";
 import { useAllUsersWithDepartments } from "@/hooks/use-all-users";
 import { useDepartments } from "@/hooks/use-departments";
+import { useAuth } from "@/context/auth";
 import { TRIBUTACOES } from "@/lib/companies";
 import { UFS } from "@/lib/ufs";
 import type { EmpresaPermissionKey } from "@/lib/empresas-permissions";
@@ -53,6 +54,12 @@ export default function CompanyBulkEditDialog({
   const bulkUpdate = useBulkUpdateCompanies();
   const { data: departments } = useDepartments();
   const { data: usersWithDepartments } = useAllUsersWithDepartments();
+  const { profile } = useAuth();
+
+  const isAdmin = profile?.role === "admin";
+  const myDepartmentIds = new Set(
+    (profile?.departments ?? []).map((department) => department.id)
+  );
 
   /** Campo liberado quando não há restrição (admin) ou consta na lista. */
   const canEdit = (key: EmpresaPermissionKey): boolean =>
@@ -212,6 +219,8 @@ export default function CompanyBulkEditDialog({
                     deptActions[department.id]?.action ?? "none";
                   const responsibleIds =
                     deptActions[department.id]?.responsibleIds ?? [];
+                  const editableDepartment =
+                    isAdmin || myDepartmentIds.has(department.id);
                   return (
                     <div
                       key={department.id}
@@ -228,7 +237,9 @@ export default function CompanyBulkEditDialog({
                               action: value as DeptActionValue,
                             })
                           }
-                          disabled={!canEdit("departments")}
+                          disabled={
+                            !canEdit("departments") || !editableDepartment
+                          }
                         >
                           <SelectTrigger className="h-8 w-36">
                             <SelectValue />
@@ -258,7 +269,9 @@ export default function CompanyBulkEditDialog({
                               })
                             }
                             placeholder="Responsáveis (opcional)"
-                            disabled={!canEdit("responsaveis")}
+                            disabled={
+                              !canEdit("responsaveis") || !editableDepartment
+                            }
                             className="w-full sm:w-60"
                           />
                         )}

@@ -23,6 +23,7 @@ import { UserMultiSelect } from "@/components/admin/user-multi-select";
 import { useCreateCompany, useUpdateCompany } from "@/hooks/use-companies";
 import { useAllUsersWithDepartments } from "@/hooks/use-all-users";
 import { useDepartments } from "@/hooks/use-departments";
+import { useAuth } from "@/context/auth";
 import { TRIBUTACOES } from "@/lib/companies";
 import { UFS } from "@/lib/ufs";
 import type { EmpresaPermissionKey } from "@/lib/empresas-permissions";
@@ -52,7 +53,13 @@ export default function CompanyFormDialog({
   const updateMutation = useUpdateCompany();
   const { data: departments } = useDepartments();
   const { data: usersWithDepartments } = useAllUsersWithDepartments();
+  const { profile } = useAuth();
   const isEditing = !!company;
+
+  const isAdmin = profile?.role === "admin";
+  const myDepartmentIds = new Set(
+    (profile?.departments ?? []).map((department) => department.id)
+  );
 
   /** Campo liberado quando não há restrição (admin) ou consta na lista. */
   const canEdit = (key: EmpresaPermissionKey): boolean =>
@@ -273,6 +280,8 @@ export default function CompanyFormDialog({
                     selected: false,
                     profileIds: [],
                   };
+                  const editableDepartment =
+                    isAdmin || myDepartmentIds.has(department.id);
                   return (
                     <div
                       key={department.id}
@@ -281,7 +290,9 @@ export default function CompanyFormDialog({
                       <label className="flex cursor-pointer items-center gap-2 text-sm">
                         <Checkbox
                           checked={assignment.selected}
-                          disabled={!canEdit("departments")}
+                          disabled={
+                            !canEdit("departments") || !editableDepartment
+                          }
                           onCheckedChange={(checked) =>
                             updateAssignment(department.id, {
                               selected: checked === true,
@@ -296,7 +307,9 @@ export default function CompanyFormDialog({
                           updateAssignment(department.id, { profileIds: ids })
                         }
                         disabled={
-                          !assignment.selected || !canEdit("responsaveis")
+                          !assignment.selected ||
+                          !canEdit("responsaveis") ||
+                          !editableDepartment
                         }
                         users={(usersWithDepartments ?? []).filter((user) =>
                           user.department_ids.includes(department.id)
