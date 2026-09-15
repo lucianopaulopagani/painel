@@ -80,6 +80,9 @@ export interface CreateUserInput {
   dashboard_access?: boolean;
   empresas_access?: boolean;
   empresas_fields?: string[];
+  empresas_criar?: boolean;
+  empresas_importar?: boolean;
+  empresas_bulk?: boolean;
 }
 
 export function useCreateUser() {
@@ -108,6 +111,9 @@ export interface UpdateUserInput {
   dashboard_access?: boolean;
   empresas_access?: boolean;
   empresas_fields?: string[];
+  empresas_criar?: boolean;
+  empresas_importar?: boolean;
+  empresas_bulk?: boolean;
 }
 
 export function useUpdateUser() {

@@ -14,6 +14,9 @@ export interface RawProfileRow {
   dashboard_access: boolean;
   empresas_access: boolean;
   empresas_fields: string[];
+  empresas_criar: boolean;
+  empresas_importar: boolean;
+  empresas_bulk: boolean;
   created_at: string;
   profile_departments?: { departments: DepartmentRef | null }[] | null;
 }
@@ -30,6 +33,9 @@ export function toProfileWithDepartments(
     dashboard_access: row.dashboard_access,
     empresas_access: row.empresas_access,
     empresas_fields: row.empresas_fields,
+    empresas_criar: row.empresas_criar,
+    empresas_importar: row.empresas_importar,
+    empresas_bulk: row.empresas_bulk,
     created_at: row.created_at,
     departments: (row.profile_departments ?? [])
       .map((link) => link.departments)

@@ -43,6 +43,9 @@ import type { CompanyWithDepartments } from "@/lib/types";
 export default function CompaniesTab() {
   const { profile } = useAuth();
   const isAdmin = profile?.role === "admin";
+  const canCreate = isAdmin || profile?.empresas_criar === true;
+  const canImport = isAdmin || profile?.empresas_importar === true;
+  const canBulk = isAdmin || profile?.empresas_bulk === true;
 
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: departments } = useDepartments();
@@ -135,24 +138,24 @@ export default function CompaniesTab() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {isAdmin && (
-            <>
-              <Button
-                variant="outline"
-                onClick={() => setBulkOpen(true)}
-                disabled={selected.size === 0}
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                Manutenção em massa
-                {selected.size > 0 ? ` (${selected.size})` : ""}
-              </Button>
-              <Button variant="outline" onClick={() => setImportOpen(true)}>
-                <FileUp className="h-4 w-4" />
-                Importar
-              </Button>
-            </>
+          {canBulk && (
+            <Button
+              variant="outline"
+              onClick={() => setBulkOpen(true)}
+              disabled={selected.size === 0}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              Manutenção em massa
+              {selected.size > 0 ? ` (${selected.size})` : ""}
+            </Button>
           )}
-          {isAdmin && (
+          {canImport && (
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <FileUp className="h-4 w-4" />
+              Importar
+            </Button>
+          )}
+          {canCreate && (
             <Button
               onClick={() => {
                 setEditing(null);
@@ -184,7 +187,7 @@ export default function CompaniesTab() {
           <Table>
             <TableHeader>
               <TableRow>
-                {isAdmin && (
+                {canBulk && (
                   <TableHead className="w-10 px-3 py-1.5">
                     <Checkbox
                       checked={allSelected}
@@ -268,7 +271,7 @@ export default function CompaniesTab() {
               {filteredCompanies.length > 0 ? (
                 filteredCompanies.map((company) => (
                   <TableRow key={company.id}>
-                    {isAdmin && (
+                    {canBulk && (
                       <TableCell className="px-3 py-1.5">
                         <Checkbox
                           checked={selected.has(company.id)}
@@ -369,7 +372,7 @@ export default function CompaniesTab() {
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={isAdmin ? 7 : 6}
+                    colSpan={canBulk ? 7 : 6}
                     className="py-10 text-center text-muted-foreground"
                   >
                     {Object.values(busca).some(Boolean)
@@ -403,6 +406,7 @@ export default function CompaniesTab() {
           if (!open) setSelected(new Set());
         }}
         ids={Array.from(selected)}
+        allowedFields={isAdmin ? undefined : (profile?.empresas_fields ?? [])}
       />
 
       <AlertDialog

@@ -43,6 +43,9 @@ export default function UserFormDialog({
   const [dashboardAccess, setDashboardAccess] = useState(false);
   const [empresasAccess, setEmpresasAccess] = useState(false);
   const [empresasFields, setEmpresasFields] = useState<string[]>([]);
+  const [empresasCriar, setEmpresasCriar] = useState(false);
+  const [empresasImportar, setEmpresasImportar] = useState(false);
+  const [empresasBulk, setEmpresasBulk] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -54,6 +57,9 @@ export default function UserFormDialog({
       setDashboardAccess(false);
       setEmpresasAccess(false);
       setEmpresasFields([]);
+      setEmpresasCriar(false);
+      setEmpresasImportar(false);
+      setEmpresasBulk(false);
     }
   }, [open]);
 
@@ -77,6 +83,9 @@ export default function UserFormDialog({
         dashboard_access: dashboardAccess,
         empresas_access: empresasAccess,
         empresas_fields: empresasFields,
+        empresas_criar: empresasCriar,
+        empresas_importar: empresasImportar,
+        empresas_bulk: empresasBulk,
       });
       toast.success("Usuário criado com sucesso.");
       onOpenChange(false);
@@ -172,8 +181,14 @@ export default function UserFormDialog({
           <EmpresasPermissionSection
             access={empresasAccess}
             fields={empresasFields}
+            criar={empresasCriar}
+            importar={empresasImportar}
+            bulk={empresasBulk}
             onAccessChange={setEmpresasAccess}
             onFieldsChange={setEmpresasFields}
+            onCriarChange={setEmpresasCriar}
+            onImportarChange={setEmpresasImportar}
+            onBulkChange={setEmpresasBulk}
           />
           <DialogFooter>
             <Button

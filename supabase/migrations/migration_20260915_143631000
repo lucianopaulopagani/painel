@@ -1,0 +1,4 @@
+alter table public.profiles
+  add column if not exists empresas_criar boolean not null default false,
+  add column if not exists empresas_importar boolean not null default false,
+  add column if not exists empresas_bulk boolean not null default false;

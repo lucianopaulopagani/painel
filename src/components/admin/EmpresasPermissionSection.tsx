@@ -6,16 +6,28 @@ import { EMPRESA_PERMISSION_FIELDS } from "@/lib/empresas-permissions";
 interface EmpresasPermissionSectionProps {
   access: boolean;
   fields: string[];
+  criar: boolean;
+  importar: boolean;
+  bulk: boolean;
   onAccessChange: (access: boolean) => void;
   onFieldsChange: (fields: string[]) => void;
+  onCriarChange: (value: boolean) => void;
+  onImportarChange: (value: boolean) => void;
+  onBulkChange: (value: boolean) => void;
 }
 
-/** Permissão de acesso ao cadastro de empresas + campos liberados por usuário. */
+/** Permissões do cadastro de empresas (acesso + campos + ações). */
 export function EmpresasPermissionSection({
   access,
   fields,
+  criar,
+  importar,
+  bulk,
   onAccessChange,
   onFieldsChange,
+  onCriarChange,
+  onImportarChange,
+  onBulkChange,
 }: EmpresasPermissionSectionProps) {
   const toggleField = (key: string) => {
     if (fields.includes(key)) {
@@ -39,26 +51,69 @@ export function EmpresasPermissionSection({
           checked={access}
           onCheckedChange={(value) => {
             onAccessChange(value);
-            if (!value) onFieldsChange([]);
+            if (!value) {
+              onFieldsChange([]);
+              onCriarChange(false);
+              onImportarChange(false);
+              onBulkChange(false);
+            }
           }}
         />
       </div>
 
       {access && (
-        <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-          {EMPRESA_PERMISSION_FIELDS.map((field) => (
-            <label
-              key={field.key}
-              className="flex cursor-pointer items-center gap-2 text-sm"
-            >
-              <Checkbox
-                checked={fields.includes(field.key)}
-                onCheckedChange={() => toggleField(field.key)}
+        <>
+          <div className="flex flex-col gap-3 rounded-md bg-muted/40 p-3">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <Label className="text-sm font-medium">Nova empresa</Label>
+                <p className="text-xs text-muted-foreground">
+                  Permite cadastrar novas empresas.
+                </p>
+              </div>
+              <Switch checked={criar} onCheckedChange={onCriarChange} />
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <Label className="text-sm font-medium">Importar</Label>
+                <p className="text-xs text-muted-foreground">
+                  Permite importar empresas de planilha.
+                </p>
+              </div>
+              <Switch
+                checked={importar}
+                onCheckedChange={onImportarChange}
               />
-              {field.label}
-            </label>
-          ))}
-        </div>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <Label className="text-sm font-medium">
+                  Manutenção em massa
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Permite alterar várias empresas de uma vez (somente os
+                  campos liberados acima).
+                </p>
+              </div>
+              <Switch checked={bulk} onCheckedChange={onBulkChange} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+            {EMPRESA_PERMISSION_FIELDS.map((field) => (
+              <label
+                key={field.key}
+                className="flex cursor-pointer items-center gap-2 text-sm"
+              >
+                <Checkbox
+                  checked={fields.includes(field.key)}
+                  onCheckedChange={() => toggleField(field.key)}
+                />
+                {field.label}
+              </label>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

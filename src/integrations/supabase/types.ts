@@ -3916,7 +3916,10 @@ export type Database = {
           dashboard_access: boolean
           email: string
           empresas_access: boolean
+          empresas_bulk: boolean
+          empresas_criar: boolean
           empresas_fields: string[]
+          empresas_importar: boolean
           full_name: string
           id: string
           role: string
@@ -3926,7 +3929,10 @@ export type Database = {
           dashboard_access?: boolean
           email: string
           empresas_access?: boolean
+          empresas_bulk?: boolean
+          empresas_criar?: boolean
           empresas_fields?: string[]
+          empresas_importar?: boolean
           full_name: string
           id: string
           role?: string
@@ -3936,7 +3942,10 @@ export type Database = {
           dashboard_access?: boolean
           email?: string
           empresas_access?: boolean
+          empresas_bulk?: boolean
+          empresas_criar?: boolean
           empresas_fields?: string[]
+          empresas_importar?: boolean
           full_name?: string
           id?: string
           role?: string

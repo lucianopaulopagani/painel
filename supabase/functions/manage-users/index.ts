@@ -160,6 +160,9 @@ Deno.serve(async (req) => {
           dashboard_access = false,
           empresas_access = false,
           empresas_fields,
+          empresas_criar = false,
+          empresas_importar = false,
+          empresas_bulk = false,
         } = payload;
         if (!email || !password || !full_name) {
           return json({ ok: false, error: "Informe nome, e-mail e senha." });
@@ -187,6 +190,9 @@ Deno.serve(async (req) => {
           dashboard_access: dashboard_access === true,
           empresas_access: empresas_access === true,
           empresas_fields: normalizeEmpresasFields(empresas_fields),
+          empresas_criar: empresas_criar === true,
+          empresas_importar: empresas_importar === true,
+          empresas_bulk: empresas_bulk === true,
         });
         if (profileError) {
           await admin.auth.admin.deleteUser(created.user.id);
@@ -212,6 +218,9 @@ Deno.serve(async (req) => {
           dashboard_access,
           empresas_access,
           empresas_fields,
+          empresas_criar,
+          empresas_importar,
+          empresas_bulk,
         } = payload;
         if (!id) return json({ ok: false, error: "Usuário não informado." });
         if (role !== undefined && !VALID_ROLES.includes(role)) {
@@ -237,6 +246,15 @@ Deno.serve(async (req) => {
         }
         if (empresas_fields !== undefined) {
           profileUpdate.empresas_fields = normalizeEmpresasFields(empresas_fields);
+        }
+        if (empresas_criar !== undefined) {
+          profileUpdate.empresas_criar = empresas_criar === true;
+        }
+        if (empresas_importar !== undefined) {
+          profileUpdate.empresas_importar = empresas_importar === true;
+        }
+        if (empresas_bulk !== undefined) {
+          profileUpdate.empresas_bulk = empresas_bulk === true;
         }
         if (Object.keys(profileUpdate).length > 0) {
           const { error: profileError } = await admin

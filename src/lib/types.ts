@@ -20,6 +20,9 @@ export interface Profile {
   dashboard_access: boolean;
   empresas_access: boolean;
   empresas_fields: string[];
+  empresas_criar: boolean;
+  empresas_importar: boolean;
+  empresas_bulk: boolean;
   created_at: string;
 }
 

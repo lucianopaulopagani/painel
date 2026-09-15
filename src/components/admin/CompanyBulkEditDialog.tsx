@@ -25,11 +25,14 @@ import { useDepartments } from "@/hooks/use-departments";
 import { useUsers } from "@/hooks/use-users";
 import { TRIBUTACOES } from "@/lib/companies";
 import { UFS } from "@/lib/ufs";
+import type { EmpresaPermissionKey } from "@/lib/empresas-permissions";
 
 interface CompanyBulkEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   ids: string[];
+  /** Campos liberados para edição (undefined = todos, caso do administrador). */
+  allowedFields?: EmpresaPermissionKey[];
 }
 
 const NAO_ALTERAR = "nao-alterar";
@@ -45,10 +48,15 @@ export default function CompanyBulkEditDialog({
   open,
   onOpenChange,
   ids,
+  allowedFields,
 }: CompanyBulkEditDialogProps) {
   const bulkUpdate = useBulkUpdateCompanies();
   const { data: departments } = useDepartments();
   const { data: users } = useUsers();
+
+  /** Campo liberado quando não há restrição (admin) ou consta na lista. */
+  const canEdit = (key: EmpresaPermissionKey): boolean =>
+    !allowedFields || allowedFields.includes(key);
 
   const [uf, setUf] = useState(NAO_ALTERAR);
   const [tributacao, setTributacao] = useState(NAO_ALTERAR);
@@ -128,7 +136,11 @@ export default function CompanyBulkEditDialog({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label>UF</Label>
-              <Select value={uf} onValueChange={setUf}>
+              <Select
+                value={uf}
+                onValueChange={setUf}
+                disabled={!canEdit("uf")}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -146,7 +158,11 @@ export default function CompanyBulkEditDialog({
             </div>
             <div className="flex flex-col gap-1.5">
               <Label>Tributação</Label>
-              <Select value={tributacao} onValueChange={setTributacao}>
+              <Select
+                value={tributacao}
+                onValueChange={setTributacao}
+                disabled={!canEdit("tributacao")}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -171,10 +187,12 @@ export default function CompanyBulkEditDialog({
               value={ie}
               onChange={(e) => setIe(e.target.value)}
               placeholder="Deixe em branco para não alterar"
+              disabled={!canEdit("inscricao_estadual")}
             />
             <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
               <Checkbox
                 checked={clearIe}
+                disabled={!canEdit("inscricao_estadual")}
                 onCheckedChange={(checked) => setClearIe(checked === true)}
               />
               Limpar a Inscrição Estadual das empresas selecionadas
@@ -210,6 +228,7 @@ export default function CompanyBulkEditDialog({
                               action: value as DeptActionValue,
                             })
                           }
+                          disabled={!canEdit("departments")}
                         >
                           <SelectTrigger className="h-8 w-36">
                             <SelectValue />
@@ -235,6 +254,7 @@ export default function CompanyBulkEditDialog({
                               })
                             }
                             placeholder="Responsáveis (opcional)"
+                            disabled={!canEdit("responsaveis")}
                             className="w-full sm:w-60"
                           />
                         )}

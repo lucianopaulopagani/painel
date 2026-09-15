@@ -44,6 +44,9 @@ export default function UserEditDialog({
   const [dashboardAccess, setDashboardAccess] = useState(false);
   const [empresasAccess, setEmpresasAccess] = useState(false);
   const [empresasFields, setEmpresasFields] = useState<string[]>([]);
+  const [empresasCriar, setEmpresasCriar] = useState(false);
+  const [empresasImportar, setEmpresasImportar] = useState(false);
+  const [empresasBulk, setEmpresasBulk] = useState(false);
 
   useEffect(() => {
     if (open && user) {
@@ -54,6 +57,9 @@ export default function UserEditDialog({
       setDashboardAccess(user.dashboard_access);
       setEmpresasAccess(user.empresas_access);
       setEmpresasFields(user.empresas_fields ?? []);
+      setEmpresasCriar(user.empresas_criar);
+      setEmpresasImportar(user.empresas_importar);
+      setEmpresasBulk(user.empresas_bulk);
     }
   }, [open, user]);
 
@@ -74,6 +80,9 @@ export default function UserEditDialog({
         dashboard_access: dashboardAccess,
         empresas_access: empresasAccess,
         empresas_fields: empresasFields,
+        empresas_criar: empresasCriar,
+        empresas_importar: empresasImportar,
+        empresas_bulk: empresasBulk,
       });
       toast.success("Usuário atualizado.");
       onOpenChange(false);
@@ -155,8 +164,14 @@ export default function UserEditDialog({
           <EmpresasPermissionSection
             access={empresasAccess}
             fields={empresasFields}
+            criar={empresasCriar}
+            importar={empresasImportar}
+            bulk={empresasBulk}
             onAccessChange={setEmpresasAccess}
             onFieldsChange={setEmpresasFields}
+            onCriarChange={setEmpresasCriar}
+            onImportarChange={setEmpresasImportar}
+            onBulkChange={setEmpresasBulk}
           />
           <DialogFooter>
             <Button
