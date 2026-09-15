@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { MultiSelectDropdown } from "@/components/ui/multi-select-dropdown";
 import { useBulkUpdateCompanies } from "@/hooks/use-companies";
-import { useAllUsers } from "@/hooks/use-all-users";
+import { useAllUsersWithDepartments } from "@/hooks/use-all-users";
 import { useDepartments } from "@/hooks/use-departments";
 import { TRIBUTACOES } from "@/lib/companies";
 import { UFS } from "@/lib/ufs";
@@ -52,7 +52,7 @@ export default function CompanyBulkEditDialog({
 }: CompanyBulkEditDialogProps) {
   const bulkUpdate = useBulkUpdateCompanies();
   const { data: departments } = useDepartments();
-  const { data: users } = useAllUsers();
+  const { data: usersWithDepartments } = useAllUsersWithDepartments();
 
   /** Campo liberado quando não há restrição (admin) ou consta na lista. */
   const canEdit = (key: EmpresaPermissionKey): boolean =>
@@ -243,10 +243,14 @@ export default function CompanyBulkEditDialog({
                         </Select>
                         {action === "set" && (
                           <MultiSelectDropdown
-                            options={(users ?? []).map((user) => ({
-                              value: user.id,
-                              label: user.full_name,
-                            }))}
+                            options={(usersWithDepartments ?? [])
+                              .filter((user) =>
+                                user.department_ids.includes(department.id)
+                              )
+                              .map((user) => ({
+                                value: user.id,
+                                label: user.full_name,
+                              }))}
                             value={responsibleIds}
                             onChange={(values) =>
                               updateDept(department.id, {

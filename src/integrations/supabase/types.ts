@@ -3964,6 +3964,14 @@ export type Database = {
           id: string
         }[]
       }
+      all_users_departments: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          department_ids: string[]
+          full_name: string
+          id: string
+        }[]
+      }
       contabil_usuarios: {
         Args: Record<PropertyKey, never>
         Returns: {

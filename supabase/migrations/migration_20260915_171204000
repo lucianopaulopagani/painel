@@ -1,0 +1,23 @@
+create or replace function public.all_users_departments()
+returns table (id uuid, full_name text, department_ids uuid[])
+language sql
+security definer
+set search_path = public
+as $$
+  select
+    p.id,
+    p.full_name,
+    coalesce(
+      (select array_agg(pd.department_id) from public.profile_departments pd where pd.profile_id = p.id),
+      '{}'
+    ) as department_ids
+  from public.profiles p
+  where exists (
+    select 1 from public.profiles me
+    where me.id = auth.uid() and (me.role = 'admin' or me.empresas_access = true)
+  )
+  order by p.full_name;
+$$;
+
+grant execute on function public.all_users_departments() to authenticated;
+revoke execute on function public.all_users_departments() from anon;

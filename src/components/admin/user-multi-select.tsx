@@ -7,7 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useAllUsers } from "@/hooks/use-all-users";
+import { useAllUsers, type AllUser } from "@/hooks/use-all-users";
 
 interface UserMultiSelectProps {
   value: string[];
@@ -15,6 +15,8 @@ interface UserMultiSelectProps {
   disabled?: boolean;
   placeholder?: string;
   className?: string;
+  /** Usuários exibidos na seleção (ex.: apenas do departamento). */
+  users?: AllUser[];
 }
 
 /** Menu suspenso de múltipla escolha com os usuários cadastrados. */
@@ -24,11 +26,12 @@ export function UserMultiSelect({
   disabled,
   placeholder = "Selecionar responsáveis",
   className,
+  users,
 }: UserMultiSelectProps) {
-  const { data: users } = useAllUsers();
+  const { data: allUsers } = useAllUsers();
   const [open, setOpen] = useState(false);
 
-  const userList = users ?? [];
+  const userList = users ?? allUsers ?? [];
   const selectedNames = userList
     .filter((user) => value.includes(user.id))
     .map((user) => user.full_name);

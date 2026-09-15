@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { UserMultiSelect } from "@/components/admin/user-multi-select";
 import { useCreateCompany, useUpdateCompany } from "@/hooks/use-companies";
+import { useAllUsersWithDepartments } from "@/hooks/use-all-users";
 import { useDepartments } from "@/hooks/use-departments";
 import { TRIBUTACOES } from "@/lib/companies";
 import { UFS } from "@/lib/ufs";
@@ -50,6 +51,7 @@ export default function CompanyFormDialog({
   const createMutation = useCreateCompany();
   const updateMutation = useUpdateCompany();
   const { data: departments } = useDepartments();
+  const { data: usersWithDepartments } = useAllUsersWithDepartments();
   const isEditing = !!company;
 
   /** Campo liberado quando não há restrição (admin) ou consta na lista. */
@@ -296,6 +298,9 @@ export default function CompanyFormDialog({
                         disabled={
                           !assignment.selected || !canEdit("responsaveis")
                         }
+                        users={(usersWithDepartments ?? []).filter((user) =>
+                          user.department_ids.includes(department.id)
+                        )}
                         className="w-full justify-between font-normal sm:w-56"
                       />
                     </div>
