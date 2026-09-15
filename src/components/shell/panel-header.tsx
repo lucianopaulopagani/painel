@@ -1,9 +1,16 @@
 import type { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, LogOut, Palette, ShieldCheck } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/auth";
+import { useTheme } from "@/lib/theme-context";
 import { getInitials } from "@/lib/utils";
 
 interface PanelHeaderProps {
@@ -14,6 +21,7 @@ interface PanelHeaderProps {
 
 export function PanelHeader({ title, subtitle, children }: PanelHeaderProps) {
   const { profile, logout } = useAuth();
+  const { theme, themes, setThemeKey } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -44,6 +52,29 @@ export function PanelHeader({ title, subtitle, children }: PanelHeaderProps) {
 
         <div className="flex items-center gap-2">
           {children}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-2"
+                title="Tema do site"
+              >
+                <Palette className="h-4 w-4" />
+                <span className="hidden sm:inline">{theme.label}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {themes.map((option) => (
+                <DropdownMenuItem
+                  key={option.key}
+                  onClick={() => setThemeKey(option.key)}
+                >
+                  {option.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Link to="/app" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2">
               <LayoutDashboard className="h-4 w-4" />

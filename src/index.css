@@ -115,6 +115,56 @@
     --chart-warning: 35 90% 58%;
     --chart-success: 130 55% 55%;
   }
+
+  /* Temas de acento (aplicados como classe em <html>, além de claro/escuro). */
+  .theme-blue {
+    --primary: 217 91% 42%;
+    --ring: 217 91% 42%;
+    --brand-cyan: 199 89% 48%;
+  }
+
+  .theme-green {
+    --primary: 142 71% 29%;
+    --ring: 142 71% 29%;
+    --brand-cyan: 152 60% 40%;
+  }
+
+  .theme-sepia {
+    --background: 40 30% 94%;
+    --foreground: 30 20% 16%;
+    --card: 40 30% 97%;
+    --card-foreground: 30 20% 16%;
+    --popover: 40 30% 97%;
+    --popover-foreground: 30 20% 16%;
+    --secondary: 38 26% 90%;
+    --secondary-foreground: 30 20% 16%;
+    --muted: 38 26% 90%;
+    --muted-foreground: 32 12% 40%;
+    --accent: 38 26% 90%;
+    --accent-foreground: 30 20% 16%;
+    --border: 34 20% 86%;
+    --input: 34 20% 86%;
+  }
+
+  .theme-contrast {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    --secondary: 0 0% 94%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 25%;
+    --accent: 0 0% 94%;
+    --accent-foreground: 0 0% 0%;
+    --border: 0 0% 30%;
+    --input: 0 0% 30%;
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 0 0% 0%;
+  }
 }
 
 @layer base {
