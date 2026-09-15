@@ -1,0 +1,26 @@
+create or replace function public.contabil_usuarios()
+returns table (id uuid, full_name text)
+language sql
+security definer
+set search_path = public
+as $$
+  select distinct p.id, p.full_name
+  from public.profiles p
+  where
+    exists (
+      select 1 from public.profile_departments pd
+      join public.departments d on d.id = pd.department_id
+      where pd.profile_id = p.id and d.name = 'Depart. Contábil'
+    )
+    or exists (
+      select 1 from public.company_departments cd
+      join public.departments d on d.id = cd.department_id
+      where d.name = 'Depart. Contábil'
+        and cd.responsible_profile_ids is not null
+        and p.id = any(cd.responsible_profile_ids)
+    )
+  order by p.full_name;
+$$;
+
+revoke execute on function public.contabil_usuarios() from anon;
+grant execute on function public.contabil_usuarios() to authenticated;

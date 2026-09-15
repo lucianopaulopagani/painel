@@ -23,6 +23,7 @@ import {
   useSaveBalanceteBalanco,
 } from "@/hooks/use-balancete-balanco";
 import { useCompanies } from "@/hooks/use-companies";
+import { useContabilUsuarios } from "@/hooks/use-contabil-usuarios";
 import { useDepartments } from "@/hooks/use-departments";
 import { CONTABIL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import {
@@ -59,6 +60,7 @@ const EMPRESA_EDGE = "border-r border-border";
 export default function BalanceteBalanco() {
   const [ano, setAno] = useState<string>(readStoredAno);
   const [busca, setBusca] = useState<Record<string, string>>({
+    usuario: "",
     numero: "",
     empresa: "",
     jan: "",
@@ -83,6 +85,7 @@ export default function BalanceteBalanco() {
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: records } = useBalanceteBalanco(ano);
+  const { data: usuarios } = useContabilUsuarios();
   const saveMutation = useSaveBalanceteBalanco(ano);
 
   const contabil = findDepartmentByName(departments, CONTABIL_DEPARTMENT_NAME);
@@ -119,7 +122,17 @@ export default function BalanceteBalanco() {
       if (query === "branco") return !value;
       return !query || (value ?? "") === query;
     };
+    const responsaveis =
+      company.department_links.find(
+        (link) => link.department_id === contabil?.id
+      )?.profile_ids ?? [];
+    const matchesUsuario =
+      busca.usuario === "" ||
+      (busca.usuario === "sem-responsavel"
+        ? responsaveis.length === 0
+        : responsaveis.includes(busca.usuario));
     return (
+      matchesUsuario &&
       match(company.numero, busca.numero) &&
       match(company.name, busca.empresa) &&
       BALANCETE_MESES.every((mes) =>
@@ -240,20 +253,45 @@ export default function BalanceteBalanco() {
         </p>
       </div>
 
-      <div className="max-w-xs">
-        <Label htmlFor="bb-ano">Ano</Label>
-        <Select value={ano} onValueChange={handleAnoChange}>
-          <SelectTrigger id="bb-ano" className="mt-1.5 w-36">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {balanceteAnos().map((a) => (
-              <SelectItem key={a} value={a}>
-                {a}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="flex flex-wrap items-end gap-4">
+        <div>
+          <Label htmlFor="bb-ano">Ano</Label>
+          <Select value={ano} onValueChange={handleAnoChange}>
+            <SelectTrigger id="bb-ano" className="mt-1.5 w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {balanceteAnos().map((a) => (
+                <SelectItem key={a} value={a}>
+                  {a}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="bb-usuario">Usuário do departamento</Label>
+          <Select
+            value={busca.usuario === "" ? "todos" : busca.usuario}
+            onValueChange={(value) =>
+              setBuscaField("usuario", value === "todos" ? "" : value)
+            }
+          >
+            <SelectTrigger id="bb-usuario" className="mt-1.5 w-64">
+              <SelectValue placeholder="Todos" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos</SelectItem>
+              <SelectItem value="sem-responsavel">Sem responsável</SelectItem>
+              {(usuarios ?? []).map((usuario) => (
+                <SelectItem key={usuario.id} value={usuario.id}>
+                  {usuario.full_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {isLoading && (

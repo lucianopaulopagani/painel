@@ -3942,6 +3942,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      contabil_usuarios: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          full_name: string
+          id: string
+        }[]
+      }
       dashboard_fiscal: {
         Args: { mes: string }
         Returns: {
