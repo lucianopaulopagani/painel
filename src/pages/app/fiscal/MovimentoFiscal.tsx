@@ -32,6 +32,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  useAllMovimentoFiscal,
   useGenerateMovimentoFiscal,
   useLatestMovimentoFiscal,
   useMovimentoFiscal,
@@ -112,6 +113,7 @@ export function MovimentoFiscal() {
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: users } = useUsers();
   const { data: records } = useMovimentoFiscal(mes);
+  const { data: allRecords } = useAllMovimentoFiscal();
   const saveMutation = useSaveMovimentoFiscal(mes);
   const { data: latestRecords } = useLatestMovimentoFiscal();
   // O "mês atual" (referência de trabalho) é sempre o mês anterior ao mês em
@@ -179,6 +181,23 @@ export function MovimentoFiscal() {
     (records ?? []).map((record) => [record.company_id, record])
   );
 
+  /**
+   * Observações efetivas: usa o registro do mês; se estiver vazio e não houver
+   * registro no mês, herda do mês anterior mais recente (leva para os meses
+   * seguintes até serem alteradas).
+   */
+  const effectiveObservacoes = (companyId: string): string | null => {
+    const current = recordByCompany.get(companyId);
+    if (current && current.observacoes) return current.observacoes;
+    const prior = (allRecords ?? [])
+      .filter(
+        (record) =>
+          record.company_id === companyId && record.mes_referencia < mes
+      )
+      .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia));
+    return prior.find((record) => record.observacoes)?.observacoes ?? null;
+  };
+
   const [busca, setBusca] = useState({
     uf: "",
     empresa: "",
@@ -240,7 +259,7 @@ export function MovimentoFiscal() {
       match(record?.st, busca.st) &&
       match(record?.dif_aliq, busca.dif_aliq) &&
       match(record?.dif_aliq_st, busca.dif_aliq_st) &&
-      match(record?.observacoes, busca.obs)
+      match(effectiveObservacoes(company.id), busca.obs)
     );
   });
 
@@ -258,6 +277,7 @@ export function MovimentoFiscal() {
         company_id: companyId,
         mes_referencia: mes,
         ...fields,
+        observacoes: effectiveObservacoes(companyId) ?? null,
         ...patch,
       } as unknown as MovementFiscalInput,
       {
@@ -700,13 +720,15 @@ export function MovimentoFiscal() {
                       <TableCell className={CELL}>
                         {!canEdit ? (
                           <span className="block truncate">
-                            {record?.observacoes || "—"}
+                            {effectiveObservacoes(company.id) || "—"}
                           </span>
                         ) : (
                           <Input
                             key={`${company.id}:${mes}`}
-                            defaultValue={record?.observacoes ?? ""}
-                            title={record?.observacoes ?? ""}
+                            defaultValue={
+                              effectiveObservacoes(company.id) ?? ""
+                            }
+                            title={effectiveObservacoes(company.id) ?? ""}
                             onBlur={(event) =>
                               save(company.id, {
                                 observacoes:

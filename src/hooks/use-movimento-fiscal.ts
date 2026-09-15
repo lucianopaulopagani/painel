@@ -39,6 +39,18 @@ export function useLatestMovimentoFiscal() {
   });
 }
 
+/** Todos os registros do movimento fiscal (usado na herança de observações). */
+export function useAllMovimentoFiscal() {
+  return useQuery({
+    queryKey: ["movimento-fiscal", "all"] as const,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("movimento_fiscal").select("*");
+      if (error) throw error;
+      return (data ?? []) as MovementFiscalRecord[];
+    },
+  });
+}
+
 /** Indica se um mês já foi gerado/liberado (possui registros). */
 export function useMovimentoFiscalMonthExists(mes: string) {
   return useQuery({
@@ -101,7 +113,8 @@ export function useSaveMovimentoFiscal(mes: string) {
     onError: (_error, _record, context) => {
       if (context?.prev) queryClient.setQueryData(queryKey, context.prev);
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey }),
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: movimentoFiscalKeys.all }),
   });
 }
 
