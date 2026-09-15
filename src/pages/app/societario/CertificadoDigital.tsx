@@ -354,7 +354,7 @@ export default function CertificadoDigital() {
         <div className="overflow-x-auto rounded-lg border">
           <Table className="min-w-[1100px]">
             <TableHeader>
-              <TableRow>
+              <TableRow className="bg-muted hover:bg-muted">
                 {filterInput("vencimento", "Vencimento")}
                 {filterSelect("situacao", "Situação", Object.values(LEVEL_SITUACAO))}
                 {filterSelect("status", "Status", Object.values(LEVEL_STATUS))}
