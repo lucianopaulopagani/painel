@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +45,7 @@ export default function CertificateFormDialog({
   const [agendamentoTime, setAgendamentoTime] = useState("");
   const [observacoes, setObservacoes] = useState("");
   const [produtos, setProdutos] = useState<string[]>([]);
+  const [renovado, setRenovado] = useState(false);
 
   useEffect(() => {
     if (!open || !row) return;
@@ -61,6 +63,7 @@ export default function CertificateFormDialog({
     setAgendamentoTime(parts.time);
     setObservacoes(certificate?.observacoes ?? "");
     setProdutos(certificate?.produtos ?? []);
+    setRenovado(false);
   }, [open, row]);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -68,7 +71,8 @@ export default function CertificateFormDialog({
     if (!row) return;
 
     // Ao renovar (nova data futura) um certificado vencido ou que vence hoje,
-    // limpa automaticamente avisado, agendamento e observações.
+    // ou quando o campo "Renovado" está marcado, limpa automaticamente
+    // avisado, agendamento e observações.
     const today = new Date();
     const todayStr = `${today.getFullYear()}-${String(
       today.getMonth() + 1
@@ -76,7 +80,7 @@ export default function CertificateFormDialog({
     const existingDue = row.certificate?.vencimento ?? null;
     const isExistingOverdue = existingDue !== null && existingDue <= todayStr;
     const isNewFuture = vencimento !== "" && vencimento > todayStr;
-    const shouldClear = isExistingOverdue && isNewFuture;
+    const shouldClear = renovado || (isExistingOverdue && isNewFuture);
 
     try {
       await upsert.mutateAsync({
@@ -97,7 +101,7 @@ export default function CertificateFormDialog({
       });
       if (shouldClear) {
         toast.info(
-          "Vencimento futuro — avisado, agendamento e observações foram limpos."
+          "Renovação — avisado, agendamento e observações foram limpos."
         );
       } else {
         toast.success("Certificado salvo.");
@@ -118,6 +122,18 @@ export default function CertificateFormDialog({
           <DialogDescription>{row?.company.name}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <label className="flex cursor-pointer items-center gap-2 rounded-md border p-3 text-sm">
+            <Checkbox
+              checked={renovado}
+              onCheckedChange={(checked) => setRenovado(checked === true)}
+            />
+            <span>
+              <span className="font-medium">Renovado</span>
+              <span className="block text-xs text-muted-foreground">
+                Ao marcar, avisado, agendamento e observações são limpos.
+              </span>
+            </span>
+          </label>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="cert-vencimento">Vencimento</Label>
