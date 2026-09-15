@@ -32,7 +32,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  useAllMovimentoFiscal,
   useGenerateMovimentoFiscal,
   useLatestMovimentoFiscal,
   useMovimentoFiscal,
@@ -113,8 +112,9 @@ export function MovimentoFiscal() {
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: users } = useUsers();
   const { data: records } = useMovimentoFiscal(mes);
-  const { data: allRecords } = useAllMovimentoFiscal();
+  const { data: refRecords } = useMovimentoFiscal(mesAtual);
   const saveMutation = useSaveMovimentoFiscal(mes);
+  const saveRefMutation = useSaveMovimentoFiscal(mesAtual);
   const { data: latestRecords } = useLatestMovimentoFiscal();
   // O "mês atual" (referência de trabalho) é sempre o mês anterior ao mês em
   // curso; o mês em curso é gerado/liberado pelo administrador.
@@ -182,21 +182,14 @@ export function MovimentoFiscal() {
   );
 
   /**
-   * Observações efetivas: usa o registro do mês; se estiver vazio e não houver
-   * registro no mês, herda do mês anterior mais recente (leva para os meses
-   * seguintes até serem alteradas).
+   * Observações efetivas: sempre a obs do mês atual (referência). O valor é
+   * replicado para os demais meses até ser alterado no mês de referência.
    */
-  const effectiveObservacoes = (companyId: string): string | null => {
-    const current = recordByCompany.get(companyId);
-    if (current && current.observacoes) return current.observacoes;
-    const prior = (allRecords ?? [])
-      .filter(
-        (record) =>
-          record.company_id === companyId && record.mes_referencia < mes
-      )
-      .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia));
-    return prior.find((record) => record.observacoes)?.observacoes ?? null;
-  };
+  const refObsByCompany = new Map<string, string | null>(
+    (refRecords ?? []).map((record) => [record.company_id, record.observacoes])
+  );
+  const effectiveObservacoes = (companyId: string): string | null =>
+    refObsByCompany.get(companyId) ?? null;
 
   const [busca, setBusca] = useState({
     uf: "",
@@ -277,13 +270,30 @@ export function MovimentoFiscal() {
         company_id: companyId,
         mes_referencia: mes,
         ...fields,
-        observacoes: effectiveObservacoes(companyId) ?? null,
         ...patch,
       } as unknown as MovementFiscalInput,
       {
         onError: (error) => {
           toast.error(
             error instanceof Error ? error.message : "Erro ao salvar o registro."
+          );
+        },
+      }
+    );
+  };
+
+  /** Grava a observação sempre no mês atual (referência), replicado aos demais. */
+  const saveObservacao = (companyId: string, value: string | null) => {
+    saveRefMutation.mutate(
+      {
+        company_id: companyId,
+        mes_referencia: mesAtual,
+        observacoes: value,
+      } as unknown as MovementFiscalInput,
+      {
+        onError: (error) => {
+          toast.error(
+            error instanceof Error ? error.message : "Erro ao salvar a observação."
           );
         },
       }
@@ -730,10 +740,10 @@ export function MovimentoFiscal() {
                             }
                             title={effectiveObservacoes(company.id) ?? ""}
                             onBlur={(event) =>
-                              save(company.id, {
-                                observacoes:
-                                  event.target.value.trim() || null,
-                              })
+                              saveObservacao(
+                                company.id,
+                                event.target.value.trim() || null
+                              )
                             }
                             className="h-7 w-full min-w-0 px-1 text-[11px]"
                           />
