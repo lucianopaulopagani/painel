@@ -47,6 +47,7 @@ import {
   MOVIMENTO_FISCAL_FIELDS,
   SITUACAO_OPTIONS,
 } from "@/lib/fiscal";
+import { cn } from "@/lib/utils";
 import type {
   CompanyWithDepartments,
   MovementFiscalInput,
@@ -82,6 +83,23 @@ function readStoredMonth(): string {
 const CELL = "px-1 py-1 text-[11px]";
 const HEAD =
   "px-1 py-1.5 text-[11px] font-semibold text-foreground lowercase whitespace-nowrap";
+
+/* Cores das opções dos menus suspensos, seguindo o padrão dos departamentos:
+   OK e OK-SM = finalizada (verde); OK-ENT = âmbar; FAZENDO = vermelho. */
+const SITUACAO_TONE: Record<string, string> = {
+  OK: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+  "OK-SM":
+    "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+  "OK-ENT":
+    "bg-status-warning text-status-warning-foreground hover:bg-status-warning/90",
+  FAZENDO:
+    "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
+};
+const OK_SM_TONE: Record<string, string> = {
+  OK: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+  "OK-SM":
+    "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+};
 
 export function MovimentoFiscal() {
   const { profile } = useAuth();
@@ -565,7 +583,14 @@ export function MovimentoFiscal() {
                       </TableCell>
                       <TableCell className={`${CELL} whitespace-nowrap`}>
                         {!canEdit ? (
-                          <span>{situacao || "—"}</span>
+                          <span
+                            className={cn(
+                              "inline-block rounded px-1.5 py-0.5",
+                              SITUACAO_TONE[situacao]
+                            )}
+                          >
+                            {situacao || "—"}
+                          </span>
                         ) : (
                           <Select
                             value={situacao === "" ? "none" : situacao}
@@ -575,7 +600,12 @@ export function MovimentoFiscal() {
                               })
                             }
                           >
-                            <SelectTrigger className="h-7 w-full min-w-0 px-1 text-[11px]">
+                            <SelectTrigger
+                              className={cn(
+                                "h-7 w-full min-w-0 px-1 text-[11px]",
+                                SITUACAO_TONE[situacao]
+                              )}
+                            >
                               <SelectValue placeholder="—" />
                             </SelectTrigger>
                             <SelectContent>
@@ -600,6 +630,15 @@ export function MovimentoFiscal() {
                                   —
                                 </span>
                               )
+                            ) : field.type === "select" ? (
+                              <span
+                                className={cn(
+                                  "inline-block truncate rounded px-1.5 py-0.5",
+                                  OK_SM_TONE[(record?.[field.key] as string) ?? ""]
+                                )}
+                              >
+                                {(record?.[field.key] as string) || "—"}
+                              </span>
                             ) : (
                               <span className="block truncate">
                                 {(record?.[field.key] as string) || "—"}
@@ -638,7 +677,12 @@ export function MovimentoFiscal() {
                                 })
                               }
                             >
-                              <SelectTrigger className="h-7 w-full min-w-0 px-1 text-[11px]">
+                              <SelectTrigger
+                                className={cn(
+                                  "h-7 w-full min-w-0 px-1 text-[11px]",
+                                  OK_SM_TONE[(record?.[field.key] as string) ?? ""]
+                                )}
+                              >
                                 <SelectValue placeholder="—" />
                               </SelectTrigger>
                               <SelectContent>
