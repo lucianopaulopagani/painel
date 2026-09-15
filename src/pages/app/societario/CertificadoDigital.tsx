@@ -352,7 +352,7 @@ export default function CertificadoDigital() {
 
       {!isLoading && !isError && (
         <div className="overflow-x-auto rounded-lg border">
-          <Table>
+          <Table className="min-w-[1100px]">
             <TableHeader>
               <TableRow>
                 {filterInput("vencimento", "Vencimento")}
@@ -390,15 +390,20 @@ export default function CertificadoDigital() {
                         </Badge>
                       </TableCell>
                       <TableCell className={`${CELL} font-medium`}>
-                        {row.company.name}
+                        <span
+                          className="block max-w-64 truncate"
+                          title={row.company.name}
+                        >
+                          {row.company.name}
+                        </span>
                       </TableCell>
                       <TableCell className={CELL}>
                         {row.certificate && row.certificate.produtos.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
+                          <div className="flex items-center gap-1 overflow-hidden whitespace-nowrap">
                             {row.certificate.produtos.map((produto) => (
                               <Badge
                                 key={produto}
-                                className={PRODUCT_CLASS[produto] ?? undefined}
+                                className={`${PRODUCT_CLASS[produto] ?? ""} whitespace-nowrap`}
                                 variant={
                                   PRODUCT_CLASS[produto] ? "default" : "outline"
                                 }
@@ -436,12 +441,10 @@ export default function CertificadoDigital() {
                       <TableCell className={`${CELL} max-w-64`}>
                         {row.certificate?.observacoes ? (
                           <span
-                            className="line-clamp-2 text-[11px] text-muted-foreground"
+                            className="block truncate text-[11px] text-muted-foreground"
                             title={row.certificate.observacoes}
                           >
-                            {row.certificate.observacoes.length > 100
-                              ? `${row.certificate.observacoes.slice(0, 100)}…`
-                              : row.certificate.observacoes}
+                            {row.certificate.observacoes}
                           </span>
                         ) : (
                           <span className="text-muted-foreground">—</span>
