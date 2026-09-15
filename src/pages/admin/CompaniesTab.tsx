@@ -33,6 +33,7 @@ import {
 import { useCompanies, useDeleteCompany } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { useUsers } from "@/hooks/use-users";
+import { useAuth } from "@/context/auth";
 import CompanyFormDialog from "@/components/admin/CompanyFormDialog";
 import CompanyImportDialog from "@/components/admin/CompanyImportDialog";
 import CompanyBulkEditDialog from "@/components/admin/CompanyBulkEditDialog";
@@ -40,6 +41,9 @@ import { formatCpfCnpj } from "@/lib/utils";
 import type { CompanyWithDepartments } from "@/lib/types";
 
 export default function CompaniesTab() {
+  const { profile } = useAuth();
+  const isAdmin = profile?.role === "admin";
+
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: departments } = useDepartments();
   const { data: users } = useUsers();
@@ -131,28 +135,34 @@ export default function CompaniesTab() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setBulkOpen(true)}
-            disabled={selected.size === 0}
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            Manutenção em massa
-            {selected.size > 0 ? ` (${selected.size})` : ""}
-          </Button>
-          <Button variant="outline" onClick={() => setImportOpen(true)}>
-            <FileUp className="h-4 w-4" />
-            Importar
-          </Button>
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setDialogOpen(true);
-            }}
-          >
-            <Plus className="h-4 w-4" />
-            Nova empresa
-          </Button>
+          {isAdmin && (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => setBulkOpen(true)}
+                disabled={selected.size === 0}
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Manutenção em massa
+                {selected.size > 0 ? ` (${selected.size})` : ""}
+              </Button>
+              <Button variant="outline" onClick={() => setImportOpen(true)}>
+                <FileUp className="h-4 w-4" />
+                Importar
+              </Button>
+            </>
+          )}
+          {isAdmin && (
+            <Button
+              onClick={() => {
+                setEditing(null);
+                setDialogOpen(true);
+              }}
+            >
+              <Plus className="h-4 w-4" />
+              Nova empresa
+            </Button>
+          )}
         </div>
       </div>
 
@@ -174,13 +184,15 @@ export default function CompaniesTab() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-10 px-3 py-1.5">
-                  <Checkbox
-                    checked={allSelected}
-                    onCheckedChange={() => toggleAll()}
-                    aria-label="Selecionar todas"
-                  />
-                </TableHead>
+                {isAdmin && (
+                  <TableHead className="w-10 px-3 py-1.5">
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={() => toggleAll()}
+                      aria-label="Selecionar todas"
+                    />
+                  </TableHead>
+                )}
                 <TableHead className="px-3 py-1.5 align-bottom">
                   <div className="mb-1 text-xs font-medium text-muted-foreground">
                     Numero
@@ -256,13 +268,15 @@ export default function CompaniesTab() {
               {filteredCompanies.length > 0 ? (
                 filteredCompanies.map((company) => (
                   <TableRow key={company.id}>
-                    <TableCell className="px-3 py-1.5">
-                      <Checkbox
-                        checked={selected.has(company.id)}
-                        onCheckedChange={() => toggleSelect(company.id)}
-                        aria-label={`Selecionar ${company.name}`}
-                      />
-                    </TableCell>
+                    {isAdmin && (
+                      <TableCell className="px-3 py-1.5">
+                        <Checkbox
+                          checked={selected.has(company.id)}
+                          onCheckedChange={() => toggleSelect(company.id)}
+                          aria-label={`Selecionar ${company.name}`}
+                        />
+                      </TableCell>
+                    )}
                     <TableCell className="px-3 py-1.5 font-medium">
                       {company.numero || "—"}
                     </TableCell>
@@ -337,15 +351,17 @@ export default function CompaniesTab() {
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          title="Excluir"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => setDeleteTarget(company)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {isAdmin && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Excluir"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => setDeleteTarget(company)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -353,7 +369,7 @@ export default function CompaniesTab() {
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={isAdmin ? 7 : 6}
                     className="py-10 text-center text-muted-foreground"
                   >
                     {Object.values(busca).some(Boolean)
@@ -372,6 +388,7 @@ export default function CompaniesTab() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         company={editing}
+        allowedFields={isAdmin ? undefined : (profile?.empresas_fields ?? [])}
       />
 
       <CompanyImportDialog

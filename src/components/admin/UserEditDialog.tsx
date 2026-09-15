@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DepartmentMultiSelect } from "@/components/admin/department-multi-select";
+import { EmpresasPermissionSection } from "@/components/admin/EmpresasPermissionSection";
 import { useUpdateUser } from "@/hooks/use-users";
 import type { ProfileWithDepartments, Role } from "@/lib/types";
 
@@ -41,6 +42,8 @@ export default function UserEditDialog({
   const [role, setRole] = useState<Role>("member");
   const [departmentIds, setDepartmentIds] = useState<string[]>([]);
   const [dashboardAccess, setDashboardAccess] = useState(false);
+  const [empresasAccess, setEmpresasAccess] = useState(false);
+  const [empresasFields, setEmpresasFields] = useState<string[]>([]);
 
   useEffect(() => {
     if (open && user) {
@@ -49,6 +52,8 @@ export default function UserEditDialog({
       setRole(user.role);
       setDepartmentIds(user.departments.map((d) => d.id));
       setDashboardAccess(user.dashboard_access);
+      setEmpresasAccess(user.empresas_access);
+      setEmpresasFields(user.empresas_fields ?? []);
     }
   }, [open, user]);
 
@@ -67,6 +72,8 @@ export default function UserEditDialog({
         role,
         department_ids: departmentIds,
         dashboard_access: dashboardAccess,
+        empresas_access: empresasAccess,
+        empresas_fields: empresasFields,
       });
       toast.success("Usuário atualizado.");
       onOpenChange(false);
@@ -145,6 +152,12 @@ export default function UserEditDialog({
               onCheckedChange={setDashboardAccess}
             />
           </div>
+          <EmpresasPermissionSection
+            access={empresasAccess}
+            fields={empresasFields}
+            onAccessChange={setEmpresasAccess}
+            onFieldsChange={setEmpresasFields}
+          />
           <DialogFooter>
             <Button
               type="button"

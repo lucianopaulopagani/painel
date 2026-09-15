@@ -18,6 +18,8 @@ export interface Profile {
   full_name: string;
   role: Role;
   dashboard_access: boolean;
+  empresas_access: boolean;
+  empresas_fields: string[];
   created_at: string;
 }
 

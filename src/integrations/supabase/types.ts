@@ -3915,6 +3915,8 @@ export type Database = {
           created_at: string
           dashboard_access: boolean
           email: string
+          empresas_access: boolean
+          empresas_fields: string[]
           full_name: string
           id: string
           role: string
@@ -3923,6 +3925,8 @@ export type Database = {
           created_at?: string
           dashboard_access?: boolean
           email: string
+          empresas_access?: boolean
+          empresas_fields?: string[]
           full_name: string
           id: string
           role?: string
@@ -3931,6 +3935,8 @@ export type Database = {
           created_at?: string
           dashboard_access?: boolean
           email?: string
+          empresas_access?: boolean
+          empresas_fields?: string[]
           full_name?: string
           id?: string
           role?: string

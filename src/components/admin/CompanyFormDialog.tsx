@@ -24,6 +24,7 @@ import { useCreateCompany, useUpdateCompany } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { TRIBUTACOES } from "@/lib/companies";
 import { UFS } from "@/lib/ufs";
+import type { EmpresaPermissionKey } from "@/lib/empresas-permissions";
 import { formatCpfCnpj, isValidCpfCnpj } from "@/lib/utils";
 import type { CompanyWithDepartments } from "@/lib/types";
 
@@ -31,6 +32,8 @@ interface CompanyFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   company?: CompanyWithDepartments | null;
+  /** Campos liberados para edição (undefined = todos, caso do administrador). */
+  allowedFields?: EmpresaPermissionKey[];
 }
 
 interface DepartmentAssignment {
@@ -42,11 +45,16 @@ export default function CompanyFormDialog({
   open,
   onOpenChange,
   company,
+  allowedFields,
 }: CompanyFormDialogProps) {
   const createMutation = useCreateCompany();
   const updateMutation = useUpdateCompany();
   const { data: departments } = useDepartments();
   const isEditing = !!company;
+
+  /** Campo liberado quando não há restrição (admin) ou consta na lista. */
+  const canEdit = (key: EmpresaPermissionKey): boolean =>
+    !allowedFields || allowedFields.includes(key);
 
   const [numero, setNumero] = useState("");
   const [name, setName] = useState("");
@@ -168,6 +176,7 @@ export default function CompanyFormDialog({
                 value={numero}
                 onChange={(e) => setNumero(e.target.value)}
                 placeholder="Ex.: 001 (opcional)"
+                disabled={!canEdit("numero")}
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -179,6 +188,7 @@ export default function CompanyFormDialog({
                 placeholder="000.000.000-00 ou 00.000.000/0000-00"
                 inputMode="numeric"
                 required
+                disabled={!canEdit("documento")}
               />
             </div>
           </div>
@@ -191,6 +201,7 @@ export default function CompanyFormDialog({
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex.: P4 Contabilidade Ltda"
               required
+              disabled={!canEdit("name")}
             />
           </div>
 
@@ -202,11 +213,16 @@ export default function CompanyFormDialog({
                 value={inscricaoEstadual}
                 onChange={(e) => setInscricaoEstadual(e.target.value)}
                 placeholder="Opcional"
+                disabled={!canEdit("inscricao_estadual")}
               />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label>UF</Label>
-              <Select value={uf} onValueChange={setUf}>
+              <Select
+                value={uf}
+                onValueChange={setUf}
+                disabled={!canEdit("uf")}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a UF" />
                 </SelectTrigger>
@@ -226,6 +242,7 @@ export default function CompanyFormDialog({
             <Select
               value={tributacao === "" ? "none" : tributacao}
               onValueChange={setTributacao}
+              disabled={!canEdit("tributacao")}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a tributação" />
@@ -262,6 +279,7 @@ export default function CompanyFormDialog({
                       <label className="flex cursor-pointer items-center gap-2 text-sm">
                         <Checkbox
                           checked={assignment.selected}
+                          disabled={!canEdit("departments")}
                           onCheckedChange={(checked) =>
                             updateAssignment(department.id, {
                               selected: checked === true,
@@ -275,7 +293,9 @@ export default function CompanyFormDialog({
                         onChange={(ids) =>
                           updateAssignment(department.id, { profileIds: ids })
                         }
-                        disabled={!assignment.selected}
+                        disabled={
+                          !assignment.selected || !canEdit("responsaveis")
+                        }
                         className="w-full justify-between font-normal sm:w-56"
                       />
                     </div>

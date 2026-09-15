@@ -45,6 +45,18 @@ function normalizeDepartmentIds(value: unknown): string[] {
   );
 }
 
+// Normaliza a lista de permissões de campos de empresas recebida do frontend.
+function normalizeEmpresasFields(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return Array.from(
+    new Set(
+      value.filter(
+        (item): item is string => typeof item === "string" && item.length > 0
+      )
+    )
+  );
+}
+
 // Substitui os vínculos de departamento de um perfil.
 async function replaceProfileDepartments(
   profileId: string,
@@ -146,6 +158,8 @@ Deno.serve(async (req) => {
           role = "member",
           department_ids,
           dashboard_access = false,
+          empresas_access = false,
+          empresas_fields,
         } = payload;
         if (!email || !password || !full_name) {
           return json({ ok: false, error: "Informe nome, e-mail e senha." });
@@ -171,6 +185,8 @@ Deno.serve(async (req) => {
           full_name,
           role,
           dashboard_access: dashboard_access === true,
+          empresas_access: empresas_access === true,
+          empresas_fields: normalizeEmpresasFields(empresas_fields),
         });
         if (profileError) {
           await admin.auth.admin.deleteUser(created.user.id);
@@ -187,8 +203,16 @@ Deno.serve(async (req) => {
       }
 
       case "update-user": {
-        const { id, full_name, email, role, department_ids, dashboard_access } =
-          payload;
+        const {
+          id,
+          full_name,
+          email,
+          role,
+          department_ids,
+          dashboard_access,
+          empresas_access,
+          empresas_fields,
+        } = payload;
         if (!id) return json({ ok: false, error: "Usuário não informado." });
         if (role !== undefined && !VALID_ROLES.includes(role)) {
           return json({ ok: false, error: "Papel inválido." });
@@ -207,6 +231,12 @@ Deno.serve(async (req) => {
         if (email !== undefined) profileUpdate.email = email;
         if (dashboard_access !== undefined) {
           profileUpdate.dashboard_access = dashboard_access === true;
+        }
+        if (empresas_access !== undefined) {
+          profileUpdate.empresas_access = empresas_access === true;
+        }
+        if (empresas_fields !== undefined) {
+          profileUpdate.empresas_fields = normalizeEmpresasFields(empresas_fields);
         }
         if (Object.keys(profileUpdate).length > 0) {
           const { error: profileError } = await admin

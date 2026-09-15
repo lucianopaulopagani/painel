@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DepartmentMultiSelect } from "@/components/admin/department-multi-select";
+import { EmpresasPermissionSection } from "@/components/admin/EmpresasPermissionSection";
 import { useCreateUser } from "@/hooks/use-users";
 import type { Role } from "@/lib/types";
 
@@ -40,6 +41,8 @@ export default function UserFormDialog({
   const [role, setRole] = useState<Role>("member");
   const [departmentIds, setDepartmentIds] = useState<string[]>([]);
   const [dashboardAccess, setDashboardAccess] = useState(false);
+  const [empresasAccess, setEmpresasAccess] = useState(false);
+  const [empresasFields, setEmpresasFields] = useState<string[]>([]);
 
   useEffect(() => {
     if (open) {
@@ -49,6 +52,8 @@ export default function UserFormDialog({
       setRole("member");
       setDepartmentIds([]);
       setDashboardAccess(false);
+      setEmpresasAccess(false);
+      setEmpresasFields([]);
     }
   }, [open]);
 
@@ -70,6 +75,8 @@ export default function UserFormDialog({
         role,
         department_ids: departmentIds,
         dashboard_access: dashboardAccess,
+        empresas_access: empresasAccess,
+        empresas_fields: empresasFields,
       });
       toast.success("Usuário criado com sucesso.");
       onOpenChange(false);
@@ -162,6 +169,12 @@ export default function UserFormDialog({
               onCheckedChange={setDashboardAccess}
             />
           </div>
+          <EmpresasPermissionSection
+            access={empresasAccess}
+            fields={empresasFields}
+            onAccessChange={setEmpresasAccess}
+            onFieldsChange={setEmpresasFields}
+          />
           <DialogFooter>
             <Button
               type="button"

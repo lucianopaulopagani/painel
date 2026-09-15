@@ -50,14 +50,15 @@ export function PanelHeader({ title, subtitle, children }: PanelHeaderProps) {
               <span className="hidden sm:inline">Meu painel</span>
             </Button>
           </Link>
-          {profile?.role === "admin" && (
-            <Link to="/admin" className="shrink-0">
-              <Button variant="ghost" size="sm" className="gap-2">
-                <ShieldCheck className="h-4 w-4" />
-                <span className="hidden sm:inline">Administração</span>
-              </Button>
-            </Link>
-          )}
+          {profile?.role === "admin" ||
+            (profile?.empresas_access && (
+              <Link to="/admin" className="shrink-0">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <ShieldCheck className="h-4 w-4" />
+                  <span className="hidden sm:inline">Administração</span>
+                </Button>
+              </Link>
+            ))}
           <Button
             variant="ghost"
             size="sm"

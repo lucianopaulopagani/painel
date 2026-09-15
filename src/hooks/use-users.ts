@@ -78,6 +78,8 @@ export interface CreateUserInput {
   role: Role;
   department_ids: string[];
   dashboard_access?: boolean;
+  empresas_access?: boolean;
+  empresas_fields?: string[];
 }
 
 export function useCreateUser() {
@@ -104,6 +106,8 @@ export interface UpdateUserInput {
   role?: Role;
   department_ids?: string[];
   dashboard_access?: boolean;
+  empresas_access?: boolean;
+  empresas_fields?: string[];
 }
 
 export function useUpdateUser() {

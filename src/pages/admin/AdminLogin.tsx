@@ -33,9 +33,14 @@ export default function AdminLogin() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Já autenticado como administrador → vai direto para o painel.
+  // Já autenticado com acesso → vai direto para o painel.
   useEffect(() => {
-    if (!authLoading && session && profile?.role === "admin") {
+    if (
+      !authLoading &&
+      session &&
+      profile &&
+      (profile.role === "admin" || profile.empresas_access)
+    ) {
       navigate("/admin", { replace: true });
     }
   }, [authLoading, session, profile, navigate]);
@@ -52,9 +57,9 @@ export default function AdminLogin() {
       return;
     }
 
-    if (p?.role !== "admin") {
+    if (p?.role !== "admin" && !p?.empresas_access) {
       await logout();
-      setError("Esta conta não tem permissão de administrador.");
+      setError("Esta conta não tem permissão para acessar esta área.");
       setSubmitting(false);
       return;
     }

@@ -12,6 +12,8 @@ export interface RawProfileRow {
   full_name: string;
   role: Role;
   dashboard_access: boolean;
+  empresas_access: boolean;
+  empresas_fields: string[];
   created_at: string;
   profile_departments?: { departments: DepartmentRef | null }[] | null;
 }
@@ -26,6 +28,8 @@ export function toProfileWithDepartments(
     full_name: row.full_name,
     role: row.role,
     dashboard_access: row.dashboard_access,
+    empresas_access: row.empresas_access,
+    empresas_fields: row.empresas_fields,
     created_at: row.created_at,
     departments: (row.profile_departments ?? [])
       .map((link) => link.departments)
