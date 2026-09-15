@@ -108,6 +108,12 @@ export function MovimentoFiscal() {
   );
   const [responsavelFiltro, setResponsavelFiltro] = useState<string>("todos");
 
+  // O "mês atual" (referência de trabalho) é sempre o mês anterior ao mês em
+  // curso; o mês em curso é gerado/liberado pelo administrador.
+  const mesEmCurso = currentMonth();
+  const mesAtual = addMonths(mesEmCurso, -1);
+  const mesSeguinte = mesEmCurso;
+
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: users } = useUsers();
@@ -116,11 +122,6 @@ export function MovimentoFiscal() {
   const saveMutation = useSaveMovimentoFiscal(mes);
   const saveRefMutation = useSaveMovimentoFiscal(mesAtual);
   const { data: latestRecords } = useLatestMovimentoFiscal();
-  // O "mês atual" (referência de trabalho) é sempre o mês anterior ao mês em
-  // curso; o mês em curso é gerado/liberado pelo administrador.
-  const mesEmCurso = currentMonth();
-  const mesAtual = addMonths(mesEmCurso, -1);
-  const mesSeguinte = mesEmCurso;
   const { data: nextMonthExists } = useMovimentoFiscalMonthExists(mesSeguinte);
   const generateMutation = useGenerateMovimentoFiscal(mesSeguinte);
 
