@@ -26,6 +26,7 @@ import { MovimentoFiscal as FiscalMovimento } from "./fiscal/MovimentoFiscal";
 import BalanceteBalanco from "./contabil/BalanceteBalanco";
 import CertificadoDigital from "./societario/CertificadoDigital";
 import SocietarioDashboard from "./societario/SocietarioDashboard";
+import SocietarioManual from "./societario/SocietarioManual";
 import ComplementoInss from "./pessoal/ComplementoInss";
 import Domesticas from "./pessoal/Domesticas";
 import EmpresasFiscal from "./pessoal/EmpresasFiscal";
@@ -70,6 +71,7 @@ const DEPT_MODULES: Record<AvailablePanelKey, ModuleDef[]> = {
   societario: [
     { key: "dashboard", label: "Dashboard", render: () => <SocietarioDashboard /> },
     { key: "certificado-digital", label: "Certificado digital", render: () => <CertificadoDigital /> },
+    { key: "manual", label: "Manual", render: () => <SocietarioManual /> },
   ],
   contabil: [
     { key: "dashboard", label: "Dashboard", render: () => <DepartmentDashboard title="Contábil" /> },
