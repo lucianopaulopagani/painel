@@ -360,7 +360,7 @@ export function MovimentoFiscal() {
             type="month"
             value={mes}
             onChange={(e) => handleMonthChange(e.target.value)}
-            className="mt-1.5"
+            className="mt-1.5 max-w-xs"
           />
         </div>
 
