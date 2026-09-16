@@ -430,8 +430,9 @@ export function MovimentoFiscal() {
           administrador; depois de liberado, os usuários podem editá-lo.
         </p>
 
+      <div className="flex flex-wrap items-end gap-4">
         {isAdmin && (
-          <div className="max-w-xs">
+          <div className="w-60">
             <Label>Responsável</Label>
             <Select
               value={responsavelFiltro}
@@ -451,8 +452,7 @@ export function MovimentoFiscal() {
             </Select>
           </div>
         )}
-
-        <div className="max-w-xs">
+        <div className="w-60">
           <Label htmlFor="filtro-tributacao">Tributação</Label>
           <Select
             value={tributacaoFiltro}
@@ -471,6 +471,7 @@ export function MovimentoFiscal() {
             </SelectContent>
           </Select>
         </div>
+      </div>
       </div>
 
       {isLoading && (
