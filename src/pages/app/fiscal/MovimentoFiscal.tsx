@@ -145,14 +145,6 @@ export function MovimentoFiscal() {
     Boolean(fiscalLinkOf(company))
   );
 
-  const tributacaoOptions = Array.from(
-    new Set(
-      fiscalCompanies
-        .map((company) => company.tributacao)
-        .filter((tributacao): tributacao is string => Boolean(tributacao))
-    )
-  ).sort();
-
   const responsibleIds = Array.from(
     new Set(
       fiscalCompanies.flatMap(
@@ -164,20 +156,31 @@ export function MovimentoFiscal() {
     (users ?? []).map((user) => [user.id, user.full_name])
   );
 
-  const rows = fiscalCompanies
-    .filter((company) => {
-      const link = fiscalLinkOf(company);
-      if (!link) return false;
-      // Admin vê todas (com filtro por responsável); os demais veem apenas as
-      // empresas em que são o responsável.
-      if (isAdmin) {
-        return (
-          responsavelFiltro === "todos" ||
-          link.profile_ids.includes(responsavelFiltro)
-        );
-      }
-      return profile ? link.profile_ids.includes(profile.id) : false;
-    })
+  // Empresas após o filtro de responsável (o que o usuário vê).
+  const responsavelFiltered = fiscalCompanies.filter((company) => {
+    const link = fiscalLinkOf(company);
+    if (!link) return false;
+    // Admin vê todas (com filtro por responsável); os demais veem apenas as
+    // empresas em que são o responsável.
+    if (isAdmin) {
+      return (
+        responsavelFiltro === "todos" ||
+        link.profile_ids.includes(responsavelFiltro)
+      );
+    }
+    return profile ? link.profile_ids.includes(profile.id) : false;
+  });
+
+  // Apenas os tipos de tributação que existem nas empresas da lista.
+  const tributacaoOptions = Array.from(
+    new Set(
+      responsavelFiltered
+        .map((company) => company.tributacao)
+        .filter((tributacao): tributacao is string => Boolean(tributacao))
+    )
+  ).sort();
+
+  const rows = responsavelFiltered
     .filter((company) => {
       // Filtro por tributação, aplicado a todos os usuários.
       return (
@@ -329,7 +332,7 @@ export function MovimentoFiscal() {
   const handleGenerate = async () => {
     try {
       await generateMutation.mutateAsync({
-        companyIds: rows.map((company) => company.id),
+        companyIds: fiscalCompanies.map((company) => company.id),
         sourceRecords: latestRecords ?? [],
       });
       toast.success(`Mês ${formatMonthLabel(mesSeguinte)} gerado e liberado.`);
