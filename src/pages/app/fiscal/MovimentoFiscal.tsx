@@ -107,6 +107,7 @@ export function MovimentoFiscal() {
     () => readStoredMonth() || addMonths(currentMonth(), -1)
   );
   const [responsavelFiltro, setResponsavelFiltro] = useState<string>("todos");
+  const [tributacaoFiltro, setTributacaoFiltro] = useState<string>("todos");
 
   // O "mês atual" (referência de trabalho) é sempre o mês anterior ao mês em
   // curso; o mês em curso é gerado/liberado pelo administrador.
@@ -144,6 +145,14 @@ export function MovimentoFiscal() {
     Boolean(fiscalLinkOf(company))
   );
 
+  const tributacaoOptions = Array.from(
+    new Set(
+      fiscalCompanies
+        .map((company) => company.tributacao)
+        .filter((tributacao): tributacao is string => Boolean(tributacao))
+    )
+  ).sort();
+
   const responsibleIds = Array.from(
     new Set(
       fiscalCompanies.flatMap(
@@ -168,6 +177,13 @@ export function MovimentoFiscal() {
         );
       }
       return profile ? link.profile_ids.includes(profile.id) : false;
+    })
+    .filter((company) => {
+      // Filtro por tributação, aplicado a todos os usuários.
+      return (
+        tributacaoFiltro === "todos" ||
+        company.tributacao === tributacaoFiltro
+      );
     })
     .sort((a, b) => {
       if (!a.numero && !b.numero) {
@@ -432,6 +448,26 @@ export function MovimentoFiscal() {
             </Select>
           </div>
         )}
+
+        <div className="max-w-xs">
+          <Label htmlFor="filtro-tributacao">Tributação</Label>
+          <Select
+            value={tributacaoFiltro}
+            onValueChange={setTributacaoFiltro}
+          >
+            <SelectTrigger id="filtro-tributacao" className="mt-1.5">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todas as tributação</SelectItem>
+              {tributacaoOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {isLoading && (
