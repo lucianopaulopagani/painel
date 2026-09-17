@@ -1,16 +1,32 @@
-import type { ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LayoutDashboard, LogOut, Palette, ShieldCheck } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Camera,
+  ChevronDown,
+  KeyRound,
+  LayoutDashboard,
+  LogOut,
+  Palette,
+  RefreshCw,
+  ShieldCheck,
+  Star,
+} from "lucide-react";
+import { toast } from "@/components/ui/sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/auth";
 import { useTheme } from "@/lib/theme-context";
+import { APP_VERSION } from "@/lib/app-version";
+import { fileToDataUrl, useUpdateOwnProfile } from "@/hooks/use-own-profile";
+import { ChangePasswordDialog } from "@/components/user/ChangePasswordDialog";
 import { getInitials } from "@/lib/utils";
 
 interface PanelHeaderProps {
@@ -20,13 +36,35 @@ interface PanelHeaderProps {
 }
 
 export function PanelHeader({ title, subtitle, children }: PanelHeaderProps) {
-  const { profile, logout } = useAuth();
+  const { profile, logout, refreshProfile } = useAuth();
   const { theme, themes, setThemeKey } = useTheme();
   const navigate = useNavigate();
+  const photoMutation = useUpdateOwnProfile();
+
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const handleLogout = async () => {
     await logout();
     navigate("/", { replace: true });
+  };
+
+  const handlePhotoChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      await photoMutation.mutateAsync({ avatar_url: dataUrl });
+      await refreshProfile();
+      toast.success("Foto atualizada.");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao atualizar a foto."
+      );
+    }
+    event.target.value = "";
   };
 
   return (
@@ -89,24 +127,71 @@ export function PanelHeader({ title, subtitle, children }: PanelHeaderProps) {
               </Button>
             </Link>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLogout}
-            className="gap-2"
-          >
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Sair</span>
-          </Button>
+
           {profile && (
-            <Avatar className="h-8 w-8 shrink-0">
-              <AvatarFallback className="bg-primary text-xs font-semibold text-primary-foreground">
-                {getInitials(profile.full_name)}
-              </AvatarFallback>
-            </Avatar>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-1 rounded-full outline-none ring-ring focus-visible:ring-2"
+                  title={profile.full_name}
+                >
+                  <Avatar className="h-8 w-8">
+                    {profile.avatar_url ? (
+                      <AvatarImage src={profile.avatar_url} />
+                    ) : null}
+                    <AvatarFallback className="bg-primary text-xs font-semibold text-primary-foreground">
+                      {getInitials(profile.full_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-60">
+                <DropdownMenuLabel className="truncate">
+                  {profile.full_name}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => fileRef.current?.click()}>
+                  <Camera className="h-4 w-4" />
+                  Alterar foto
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPasswordOpen(true)}>
+                  <KeyRound className="h-4 w-4" />
+                  Alterar senha
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem disabled>
+                  <Star className="h-4 w-4" />
+                  Versão Atual: {APP_VERSION}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => window.location.reload()}>
+                  <RefreshCw className="h-4 w-4" />
+                  Refresh
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="h-4 w-4" />
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
+
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handlePhotoChange}
+          />
         </div>
       </div>
+
+      <ChangePasswordDialog
+        open={passwordOpen}
+        onOpenChange={setPasswordOpen}
+      />
     </header>
   );
 }

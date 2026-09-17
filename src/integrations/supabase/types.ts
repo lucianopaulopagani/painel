@@ -3918,6 +3918,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           dashboard_access: boolean
           email: string
@@ -3931,6 +3932,7 @@ export type Database = {
           role: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           dashboard_access?: boolean
           email: string
@@ -3944,6 +3946,7 @@ export type Database = {
           role?: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           dashboard_access?: boolean
           email?: string
@@ -4003,6 +4006,10 @@ export type Database = {
       }
       month_is_released: {
         Args: { mes: string }
+        Returns: boolean
+      }
+      update_own_profile: {
+        Args: { avatar_url: string; full_name: string }
         Returns: boolean
       }
       user_can_create_company: {

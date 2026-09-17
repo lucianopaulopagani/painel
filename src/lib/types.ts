@@ -23,6 +23,7 @@ export interface Profile {
   empresas_criar: boolean;
   empresas_importar: boolean;
   empresas_bulk: boolean;
+  avatar_url: string | null;
   created_at: string;
 }
 

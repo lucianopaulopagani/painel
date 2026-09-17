@@ -1,5 +1,7 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Camera } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,6 +24,8 @@ import {
 import { DepartmentMultiSelect } from "@/components/admin/department-multi-select";
 import { EmpresasPermissionSection } from "@/components/admin/EmpresasPermissionSection";
 import { useUpdateUser } from "@/hooks/use-users";
+import { fileToDataUrl } from "@/hooks/use-own-profile";
+import { getInitials } from "@/lib/utils";
 import type { ProfileWithDepartments, Role } from "@/lib/types";
 
 interface UserEditDialogProps {
@@ -47,6 +51,8 @@ export default function UserEditDialog({
   const [empresasCriar, setEmpresasCriar] = useState(false);
   const [empresasImportar, setEmpresasImportar] = useState(false);
   const [empresasBulk, setEmpresasBulk] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open && user) {
@@ -60,8 +66,24 @@ export default function UserEditDialog({
       setEmpresasCriar(user.empresas_criar);
       setEmpresasImportar(user.empresas_importar);
       setEmpresasBulk(user.empresas_bulk);
+      setAvatarUrl(user.avatar_url ?? null);
     }
   }, [open, user]);
+
+  const handlePhotoChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      setAvatarUrl(await fileToDataUrl(file));
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao processar a imagem."
+      );
+    }
+    event.target.value = "";
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -83,6 +105,7 @@ export default function UserEditDialog({
         empresas_criar: empresasCriar,
         empresas_importar: empresasImportar,
         empresas_bulk: empresasBulk,
+        avatar_url: avatarUrl || null,
       });
       toast.success("Usuário atualizado.");
       onOpenChange(false);
@@ -103,6 +126,35 @@ export default function UserEditDialog({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16">
+              {avatarUrl ? <AvatarImage src={avatarUrl} /> : null}
+              <AvatarFallback className="bg-primary text-lg font-semibold text-primary-foreground">
+                {getInitials(fullName || user?.full_name || "?")}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col gap-1.5">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileRef.current?.click()}
+              >
+                <Camera className="h-4 w-4" />
+                Alterar foto
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Foto exibida no topo do sistema para este usuário.
+              </p>
+            </div>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handlePhotoChange}
+            />
+          </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="edit-name">Nome completo</Label>
             <Input

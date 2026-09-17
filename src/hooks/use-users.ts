@@ -114,6 +114,7 @@ export interface UpdateUserInput {
   empresas_criar?: boolean;
   empresas_importar?: boolean;
   empresas_bulk?: boolean;
+  avatar_url?: string | null;
 }
 
 export function useUpdateUser() {

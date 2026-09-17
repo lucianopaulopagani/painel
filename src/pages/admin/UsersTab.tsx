@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { KeyRound, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -102,6 +102,9 @@ export default function UsersTab() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
+                          {u.avatar_url ? (
+                            <AvatarImage src={u.avatar_url} />
+                          ) : null}
                           <AvatarFallback className="bg-primary text-xs font-semibold text-primary-foreground">
                             {getInitials(u.full_name)}
                           </AvatarFallback>

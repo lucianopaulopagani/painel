@@ -221,6 +221,7 @@ Deno.serve(async (req) => {
           empresas_criar,
           empresas_importar,
           empresas_bulk,
+          avatar_url,
         } = payload;
         if (!id) return json({ ok: false, error: "Usuário não informado." });
         if (role !== undefined && !VALID_ROLES.includes(role)) {
@@ -255,6 +256,12 @@ Deno.serve(async (req) => {
         }
         if (empresas_bulk !== undefined) {
           profileUpdate.empresas_bulk = empresas_bulk === true;
+        }
+        if (avatar_url !== undefined) {
+          profileUpdate.avatar_url =
+            typeof avatar_url === "string" && avatar_url.length > 0
+              ? avatar_url
+              : null;
         }
         if (Object.keys(profileUpdate).length > 0) {
           const { error: profileError } = await admin
