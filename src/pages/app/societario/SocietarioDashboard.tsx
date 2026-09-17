@@ -172,9 +172,6 @@ export default function SocietarioDashboard() {
                 <CardContent className="pt-3">
                   <div className="text-3xl font-bold tabular-nums">
                     {counts[card.level]}
-                    <span className="ml-2 text-base font-semibold text-muted-foreground">
-                      {percentOf(counts[card.level])}%
-                    </span>
                   </div>
                   <CardDescription className="mt-1">
                     {percentOf(counts[card.level])}% do total de empresas
@@ -197,9 +194,6 @@ export default function SocietarioDashboard() {
                   <CardContent className="pt-3">
                     <div className="text-3xl font-bold tabular-nums">
                       {count}
-                      <span className="ml-2 text-base font-semibold text-muted-foreground">
-                        {percentProduct(count)}%
-                      </span>
                     </div>
                     <CardDescription className="mt-1">
                       {percentProduct(count)}% dos certificados
