@@ -14,6 +14,8 @@ export interface CompanyImportRow {
   departamentos: string[];
   /** Nomes de responsáveis (separados por ";") */
   responsaveis: string[];
+  socioResponsavel: string;
+  socioCpf: string;
 }
 
 export interface CompanyImportValidation {
@@ -33,6 +35,8 @@ const HEADERS = [
   "Tributação",
   "Departamentos",
   "Responsáveis",
+  "Sócio Responsável",
+  "CPF do Sócio",
 ];
 
 /** Gera e baixa o modelo (planilha Excel) para importação. */
@@ -51,6 +55,8 @@ export function buildCompanyImportTemplate(
       "Simples Nacional",
       "Depart. Fiscal;Societário",
       "Elizandra;Jannaina",
+      "ELIZANDRA PEREIRA",
+      "000.000.000-00",
     ],
   ]);
   ws["!cols"] = [
@@ -62,6 +68,8 @@ export function buildCompanyImportTemplate(
     { wch: 22 },
     { wch: 40 },
     { wch: 40 },
+    { wch: 28 },
+    { wch: 20 },
   ];
 
   const helpRows: string[][] = [
@@ -75,6 +83,10 @@ export function buildCompanyImportTemplate(
     [
       "Responsáveis:",
       "Nomes separados por ponto e vírgula (;), aplicados aos departamentos informados.",
+    ],
+    [
+      "Sócio:",
+      "Sócio responsável (nome) e CPF do sócio são opcionais.",
     ],
     ["Dica:", "Não altere a linha de cabeçalho."],
     [],
@@ -127,6 +139,8 @@ export function parseCompanyImportFile(
           .split(";")
           .map((name) => name.trim())
           .filter(Boolean),
+        socioResponsavel: get(8),
+        socioCpf: get(9),
       };
     });
 }
@@ -159,6 +173,12 @@ export function validateCompanyImportRows(
       )
     ) {
       errors.push("Tributação desconhecida");
+    }
+    if (
+      row.socioCpf &&
+      row.socioCpf.replace(/\D/g, "").length !== 11
+    ) {
+      errors.push("CPF do sócio inválido (11 dígitos)");
     }
 
     const department_ids = row.departamentos

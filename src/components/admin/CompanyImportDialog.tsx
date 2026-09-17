@@ -92,6 +92,8 @@ export default function CompanyImportDialog({
           uf: v.row.uf,
           inscricao_estadual: v.row.inscricaoEstadual || null,
           tributacao: v.row.tributacao || null,
+          socio_responsavel: v.row.socioResponsavel || null,
+          socio_cpf: v.row.socioCpf.replace(/\D/g, "") || null,
           department_ids: v.department_ids,
           responsible_ids: v.responsible_ids,
         }))

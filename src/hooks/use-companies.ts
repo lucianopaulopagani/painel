@@ -198,6 +198,8 @@ export interface ImportCompanyItem {
   uf: string;
   inscricao_estadual: string | null;
   tributacao: string | null;
+  socio_responsavel: string | null;
+  socio_cpf: string | null;
   department_ids: string[];
   responsible_ids: string[];
 }
@@ -220,6 +222,8 @@ export function useImportCompanies() {
               inscricao_estadual: item.inscricao_estadual || null,
               uf: item.uf,
               tributacao: item.tributacao ?? null,
+              socio_responsavel: item.socio_responsavel || null,
+              socio_cpf: item.socio_cpf || null,
             })
             .select("id")
             .single();
