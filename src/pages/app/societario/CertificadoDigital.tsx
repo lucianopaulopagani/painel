@@ -40,6 +40,7 @@ import {
   findDepartmentByName,
 } from "@/lib/departments";
 import {
+  formatCpfCnpj,
   formatDateOnlyBr,
   formatDateTimeBr,
 } from "@/lib/utils";
@@ -92,6 +93,8 @@ export default function CertificadoDigital() {
     situacao: "",
     status: "",
     empresa: "",
+    socio: "",
+    socioCpf: "",
     produto: "",
     avisado: "",
     agendamento: "",
@@ -157,6 +160,8 @@ export default function CertificadoDigital() {
       selectOrBlank(LEVEL_SITUACAO[status.level], filtros.situacao) &&
       selectOrBlank(LEVEL_STATUS[status.level], filtros.status) &&
       match(row.company.name, filtros.empresa) &&
+      match(row.company.socio_responsavel ?? "", filtros.socio) &&
+      match(row.company.socio_cpf ?? "", filtros.socioCpf) &&
       (filtros.produto === ""
         ? true
         : filtros.produto === "branco"
@@ -184,6 +189,8 @@ export default function CertificadoDigital() {
       situacao: "",
       status: "",
       empresa: "",
+      socio: "",
+      socioCpf: "",
       produto: "",
       avisado: "",
       agendamento: "",
@@ -352,13 +359,15 @@ export default function CertificadoDigital() {
 
       {!isLoading && !isError && (
         <div className="overflow-x-auto rounded-lg border">
-          <Table className="min-w-[1100px]">
+          <Table className="min-w-[1250px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
                 {filterInput("vencimento", "Vencimento")}
                 {filterSelect("situacao", "Situação", Object.values(LEVEL_SITUACAO))}
                 {filterSelect("status", "Status", Object.values(LEVEL_STATUS))}
                 {filterInput("empresa", "Empresa")}
+                {filterInput("socio", "Resp.")}
+                {filterInput("socioCpf", "CPF")}
                 {filterSelect("produto", "Produto", CERTIFICATE_PRODUCTS)}
                 {filterSelect("avisado", "Avisado", ["Sim", "Não"])}
                 {filterInput("agendamento", "Agendamento")}
@@ -395,6 +404,22 @@ export default function CertificadoDigital() {
                           title={row.company.name}
                         >
                           {row.company.name}
+                        </span>
+                      </TableCell>
+                      <TableCell className={CELL}>
+                        <span
+                          className="block max-w-32 truncate"
+                          title={row.company.socio_responsavel ?? undefined}
+                        >
+                          {row.company.socio_responsavel || "—"}
+                        </span>
+                      </TableCell>
+                      <TableCell className={CELL}>
+                        <span
+                          className="block max-w-32 truncate text-muted-foreground"
+                          title={row.company.socio_cpf ?? undefined}
+                        >
+                          {formatCpfCnpj(row.company.socio_cpf ?? "") || "—"}
                         </span>
                       </TableCell>
                       <TableCell className={CELL}>
@@ -466,7 +491,7 @@ export default function CertificadoDigital() {
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={9}
+                    colSpan={11}
                     className="py-10 text-center text-muted-foreground"
                   >
                     {rows.length === 0
