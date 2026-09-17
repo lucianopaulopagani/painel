@@ -20,13 +20,17 @@ import {
 } from "@/lib/departments";
 import { cn } from "@/lib/utils";
 import { DepartmentDashboard } from "./DepartmentDashboard";
+import FiscalManual from "./FiscalManual";
+import NotaFiscalManual from "./NotaFiscalManual";
 import GeneralDashboard from "./general-dashboard";
 import FiscalDashboard from "./fiscal/FiscalDashboard";
 import { MovimentoFiscal as FiscalMovimento } from "./fiscal/MovimentoFiscal";
 import BalanceteBalanco from "./contabil/BalanceteBalanco";
+import ContabilManual from "./contabil/ContabilManual";
 import CertificadoDigital from "./societario/CertificadoDigital";
 import SocietarioDashboard from "./societario/SocietarioDashboard";
 import SocietarioManual from "./societario/SocietarioManual";
+import PessoalManual from "./pessoal/PessoalManual";
 import ComplementoInss from "./pessoal/ComplementoInss";
 import Domesticas from "./pessoal/Domesticas";
 import EmpresasFiscal from "./pessoal/EmpresasFiscal";
@@ -59,6 +63,7 @@ const DEPT_MODULES: Record<AvailablePanelKey, ModuleDef[]> = {
   fiscal: [
     { key: "dashboard", label: "Dashboard", render: () => <FiscalDashboard /> },
     { key: "movimento-fiscal", label: "Movimento Fiscal", render: () => <FiscalMovimento /> },
+    { key: "manual", label: "Manual", render: () => <FiscalManual /> },
   ],
   pessoal: [
     { key: "dashboard", label: "Dashboard", render: () => <DepartmentDashboard title="Pessoal" /> },
@@ -67,6 +72,7 @@ const DEPT_MODULES: Record<AvailablePanelKey, ModuleDef[]> = {
     { key: "domesticas", label: "Domésticas", render: () => <Domesticas /> },
     { key: "ponto", label: "Ponto", render: () => <Ponto /> },
     { key: "complemento-inss", label: "Complemento INSS", render: () => <ComplementoInss /> },
+    { key: "manual", label: "Manual", render: () => <PessoalManual /> },
   ],
   societario: [
     { key: "dashboard", label: "Dashboard", render: () => <SocietarioDashboard /> },
@@ -76,9 +82,11 @@ const DEPT_MODULES: Record<AvailablePanelKey, ModuleDef[]> = {
   contabil: [
     { key: "dashboard", label: "Dashboard", render: () => <DepartmentDashboard title="Contábil" /> },
     { key: "balancete-balanco", label: "Balancete/Balanço", render: () => <BalanceteBalanco /> },
+    { key: "manual", label: "Manual", render: () => <ContabilManual /> },
   ],
   "nota-fiscal": [
     { key: "dashboard", label: "Dashboard", render: () => <DepartmentDashboard title="Nota Fiscal" /> },
+    { key: "manual", label: "Manual", render: () => <NotaFiscalManual /> },
   ],
 };
 
