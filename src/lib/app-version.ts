@@ -24,11 +24,10 @@ export function getAppVersion(): string {
   const month = currentMonth();
   const count =
     VERSION_STATE.month === month ? VERSION_STATE.count : 1;
-  const [, year, monthPart] = month.split("-");
-  return `${VERSION_STATE.order}.${year}.${monthPart}.${String(count).padStart(
-    2,
-    "0"
-  )}`;
+  const [year, monthPart] = month.split("-");
+  return `${VERSION_STATE.order}.${year.slice(2)}.${monthPart}.${String(
+    count
+  ).padStart(2, "0")}`;
 }
 
 /** Versão atual exibida no menu do usuário. */
