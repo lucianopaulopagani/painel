@@ -130,7 +130,7 @@ export function buildCertificateReportHtml(
   <table>
     <thead>
       <tr>
-        <th>Empresa</th><th>Sócio</th><th>CPF</th><th>Produto</th><th>Vencimento / Situação</th><th>Status</th>
+        <th>Empresa</th><th>Responsável</th><th>CPF</th><th>Produto</th><th>Vencimento / Situação</th><th>Status</th>
         <th>Avisado</th><th>Agendamento</th><th>Observações</th>
       </tr>
     </thead>
@@ -220,7 +220,7 @@ export function downloadCertificateReportExcel(
   <table border="1" cellspacing="0" cellpadding="4" style="border-collapse:collapse;font-size:12px;">
     <thead>
       <tr style="background:#ffe599;font-weight:bold;">
-        <th>Empresa</th><th>Sócio</th><th>CPF</th><th>Produto</th><th>Vencimento</th><th>Situação</th><th>Status</th>
+        <th>Empresa</th><th>Responsável</th><th>CPF</th><th>Produto</th><th>Vencimento</th><th>Situação</th><th>Status</th>
         <th>Avisado</th><th>Agendamento</th><th>Observações</th>
       </tr>
     </thead>
