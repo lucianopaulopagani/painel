@@ -134,15 +134,28 @@ export default function UserEditDialog({
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col gap-1.5">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => fileRef.current?.click()}
-              >
-                <Camera className="h-4 w-4" />
-                Alterar foto
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileRef.current?.click()}
+                >
+                  <Camera className="h-4 w-4" />
+                  Alterar foto
+                </Button>
+                {avatarUrl && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => setAvatarUrl(null)}
+                  >
+                    Remover foto
+                  </Button>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Foto exibida no topo do sistema para este usuário.
               </p>
