@@ -127,15 +127,20 @@ export default function SocietarioDashboard() {
   }
 
   const totalEmpresas = rows.length;
-  const percentOf = (value: number): number =>
-    totalEmpresas > 0 ? Math.round((value / totalEmpresas) * 100) : 0;
+  const formatPct = (value: number): string =>
+    value.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  const percentOf = (value: number): string =>
+    totalEmpresas > 0 ? formatPct((value / totalEmpresas) * 100) : "0,00";
 
   const totalProdutos = Array.from(productCounts.values()).reduce(
     (sum, value) => sum + value,
     0
   );
-  const percentProduct = (value: number): number =>
-    totalProdutos > 0 ? Math.round((value / totalProdutos) * 100) : 0;
+  const percentProduct = (value: number): string =>
+    totalProdutos > 0 ? formatPct((value / totalProdutos) * 100) : "0,00";
 
   return (
     <div className="space-y-4">
