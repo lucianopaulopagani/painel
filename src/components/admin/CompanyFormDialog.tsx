@@ -281,6 +281,7 @@ export default function CompanyFormDialog({
                 value={socioResponsavel}
                 onChange={(e) => setSocioResponsavel(e.target.value)}
                 placeholder="Nome do sócio responsável"
+                disabled={!canEdit("socio_responsavel")}
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -291,6 +292,7 @@ export default function CompanyFormDialog({
                 onChange={(e) => setSocioCpf(formatCpfCnpj(e.target.value))}
                 placeholder="000.000.000-00"
                 inputMode="numeric"
+                disabled={!canEdit("socio_cpf")}
               />
             </div>
           </div>

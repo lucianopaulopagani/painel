@@ -8,6 +8,8 @@ export const EMPRESA_PERMISSION_FIELDS = [
   { key: "inscricao_estadual", label: "Inscrição Estadual" },
   { key: "uf", label: "UF" },
   { key: "tributacao", label: "Tributação" },
+  { key: "socio_responsavel", label: "Sócio responsável" },
+  { key: "socio_cpf", label: "CPF do sócio" },
   { key: "departments", label: "Departamentos" },
   { key: "responsaveis", label: "Responsáveis" },
 ] as const;
