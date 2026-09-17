@@ -3481,6 +3481,8 @@ export type Database = {
           inscricao_estadual: string | null
           name: string
           numero: string | null
+          socio_cpf: string | null
+          socio_responsavel: string | null
           tributacao: string | null
           uf: string
         }
@@ -3491,6 +3493,8 @@ export type Database = {
           inscricao_estadual?: string | null
           name: string
           numero?: string | null
+          socio_cpf?: string | null
+          socio_responsavel?: string | null
           tributacao?: string | null
           uf: string
         }
@@ -3501,6 +3505,8 @@ export type Database = {
           inscricao_estadual?: string | null
           name?: string
           numero?: string | null
+          socio_cpf?: string | null
+          socio_responsavel?: string | null
           tributacao?: string | null
           uf?: string
         }
@@ -4050,7 +4056,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_09_09: {
+      messages_2026_09_16: {
         Row: {
           event: string | null
           extension: string
@@ -4083,7 +4089,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_09_10: {
+      messages_2026_09_17: {
         Row: {
           event: string | null
           extension: string
@@ -4116,7 +4122,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_09_11: {
+      messages_2026_09_18: {
         Row: {
           event: string | null
           extension: string
@@ -4149,7 +4155,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_09_12: {
+      messages_2026_09_19: {
         Row: {
           event: string | null
           extension: string
@@ -4182,7 +4188,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_09_13: {
+      messages_2026_09_20: {
         Row: {
           event: string | null
           extension: string

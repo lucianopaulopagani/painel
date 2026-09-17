@@ -51,6 +51,10 @@ export interface Company {
   uf: string;
   /** Regime de tributação. */
   tributacao: string | null;
+  /** Sócio responsável da empresa (não exibido na listagem). */
+  socio_responsavel: string | null;
+  /** CPF do sócio responsável. */
+  socio_cpf: string | null;
   created_at: string;
 }
 

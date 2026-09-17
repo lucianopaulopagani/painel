@@ -52,6 +52,8 @@ export interface RawCompanyRow {
   inscricao_estadual: string | null;
   uf: string;
   tributacao: string | null;
+  socio_responsavel: string | null;
+  socio_cpf: string | null;
   created_at: string;
   company_departments?:
     | { department_id: string; responsible_profile_ids: string[] | null }[]
@@ -70,6 +72,8 @@ export function toCompanyWithDepartments(
     inscricao_estadual: row.inscricao_estadual,
     uf: row.uf,
     tributacao: row.tributacao ?? null,
+    socio_responsavel: row.socio_responsavel ?? null,
+    socio_cpf: row.socio_cpf ?? null,
     created_at: row.created_at,
     department_links: (row.company_departments ?? []).map((link) => ({
       department_id: link.department_id,

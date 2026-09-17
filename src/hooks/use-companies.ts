@@ -40,6 +40,8 @@ export interface CompanyInput {
   inscricao_estadual: string | null;
   uf: string;
   tributacao: string | null;
+  socio_responsavel: string | null;
+  socio_cpf: string | null;
   department_links: CompanyDepartmentLink[];
 }
 
@@ -81,6 +83,8 @@ export function useCreateCompany() {
           inscricao_estadual: input.inscricao_estadual?.trim() || null,
           uf: input.uf,
           tributacao: input.tributacao ?? null,
+          socio_responsavel: input.socio_responsavel?.trim() || null,
+          socio_cpf: input.socio_cpf?.trim() || null,
         })
         .select("id")
         .single();
@@ -106,6 +110,8 @@ export function useUpdateCompany() {
           inscricao_estadual: input.inscricao_estadual?.trim() || null,
           uf: input.uf,
           tributacao: input.tributacao ?? null,
+          socio_responsavel: input.socio_responsavel?.trim() || null,
+          socio_cpf: input.socio_cpf?.trim() || null,
         })
         .eq("id", id);
       if (error) throw error;

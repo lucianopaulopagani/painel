@@ -71,6 +71,8 @@ export default function CompanyFormDialog({
   const [inscricaoEstadual, setInscricaoEstadual] = useState("");
   const [uf, setUf] = useState("");
   const [tributacao, setTributacao] = useState("");
+  const [socioResponsavel, setSocioResponsavel] = useState("");
+  const [socioCpf, setSocioCpf] = useState("");
   const [assignments, setAssignments] = useState<
     Record<string, DepartmentAssignment>
   >({});
@@ -85,6 +87,8 @@ export default function CompanyFormDialog({
     setInscricaoEstadual(company?.inscricao_estadual ?? "");
     setUf(company?.uf ?? "");
     setTributacao(company?.tributacao ?? "");
+    setSocioResponsavel(company?.socio_responsavel ?? "");
+    setSocioCpf(company ? formatCpfCnpj(company.socio_cpf ?? "") : "");
 
     const initial: Record<string, DepartmentAssignment> = {};
     for (const department of departments ?? []) {
@@ -142,6 +146,8 @@ export default function CompanyFormDialog({
       inscricao_estadual: inscricaoEstadual,
       uf,
       tributacao: tributacao || null,
+      socio_responsavel: socioResponsavel.trim() || null,
+      socio_cpf: socioCpf.replace(/\D/g, "") || null,
       department_links,
     };
 
@@ -265,6 +271,28 @@ export default function CompanyFormDialog({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="company-socio">Sócio responsável</Label>
+              <Input
+                id="company-socio"
+                value={socioResponsavel}
+                onChange={(e) => setSocioResponsavel(e.target.value)}
+                placeholder="Nome do sócio responsável"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="company-socio-cpf">CPF do sócio</Label>
+              <Input
+                id="company-socio-cpf"
+                value={socioCpf}
+                onChange={(e) => setSocioCpf(formatCpfCnpj(e.target.value))}
+                placeholder="000.000.000-00"
+                inputMode="numeric"
+              />
+            </div>
           </div>
 
           <div className="flex flex-col gap-2">
