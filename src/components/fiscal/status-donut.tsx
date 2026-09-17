@@ -17,10 +17,12 @@ const COLORS = {
 function Metric({
   label,
   value,
+  percent,
   tone,
 }: {
   label: string;
   value: number;
+  percent?: string;
   tone?: "success" | "warning";
 }) {
   return (
@@ -35,8 +37,22 @@ function Metric({
       >
         {value}
       </div>
+      {percent && (
+        <div className="mt-0.5 text-xs text-muted-foreground">
+          {percent} do total
+        </div>
+      )}
     </div>
   );
+}
+
+/** Porcentagem com 2 casas decimais no formato pt-BR (ex.: 12,50%). */
+function formatPercent(value: number, total: number): string {
+  if (total <= 0) return "0,00%";
+  return `${((value / total) * 100).toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}%`;
 }
 
 export function StatusDonut({
@@ -46,7 +62,7 @@ export function StatusDonut({
   subtitle,
 }: StatusDonutProps) {
   const total = finalizadas + pendentes;
-  const percent = total > 0 ? Math.round((finalizadas / total) * 100) : 0;
+  const percent = formatPercent(finalizadas, total);
 
   const data = [
     { name: "Finalizadas", value: finalizadas, color: COLORS.finalizadas },
@@ -94,13 +110,23 @@ export function StatusDonut({
 
           <div className="grid grid-cols-3 gap-3 sm:col-span-2">
             <Metric label="Total" value={total} />
-            <Metric label="Finalizadas" value={finalizadas} tone="success" />
-            <Metric label="Pendentes" value={pendentes} tone="warning" />
+            <Metric
+              label="Finalizadas"
+              value={finalizadas}
+              percent={formatPercent(finalizadas, total)}
+              tone="success"
+            />
+            <Metric
+              label="Pendentes"
+              value={pendentes}
+              percent={formatPercent(pendentes, total)}
+              tone="warning"
+            />
           </div>
         </div>
 
         <p className="mt-3 text-xs text-muted-foreground">
-          {percent}% finalizadas · OK e OK-SM contam como finalizadas; as demais
+          {percent} finalizadas · OK e OK-SM contam como finalizadas; as demais
           como pendentes.
         </p>
       </CardContent>
