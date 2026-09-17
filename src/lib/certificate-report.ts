@@ -1,5 +1,9 @@
 import { getCertificateStatus } from "@/lib/certificate-status";
-import { formatDateOnlyBr, formatDateTimeBr } from "@/lib/utils";
+import {
+  formatCpfCnpj,
+  formatDateOnlyBr,
+  formatDateTimeBr,
+} from "@/lib/utils";
 import type { CertificateRow } from "@/lib/types";
 
 export interface CertificateReportFilters {
@@ -75,6 +79,8 @@ export function buildCertificateReportHtml(
       const pill = `<span class="pill" style="background:${colors.bg};color:${colors.fg}">`;
       return `<tr>
         <td>${escapeHtml(row.company.name)}</td>
+        <td>${escapeHtml(row.company.socio_responsavel ?? "—")}</td>
+        <td>${escapeHtml(formatCpfCnpj(row.company.socio_cpf ?? "") || "—")}</td>
         <td>${escapeHtml((row.certificate?.produtos ?? []).join(", ") || "—")}</td>
         <td class="nowrap">${pill}${escapeHtml(situacao)}</span></td>
         <td>${pill}${escapeHtml(status.status)}</span></td>
@@ -124,11 +130,11 @@ export function buildCertificateReportHtml(
   <table>
     <thead>
       <tr>
-        <th>Empresa</th><th>Produto</th><th>Vencimento / Situação</th><th>Status</th>
+        <th>Empresa</th><th>Sócio</th><th>CPF</th><th>Produto</th><th>Vencimento / Situação</th><th>Status</th>
         <th>Avisado</th><th>Agendamento</th><th>Observações</th>
       </tr>
     </thead>
-    <tbody>${body || `<tr><td colspan="7">Nenhum registro.</td></tr>`}</tbody>
+    <tbody>${body || `<tr><td colspan="9">Nenhum registro.</td></tr>`}</tbody>
   </table>
 </body>
 </html>`;
@@ -178,6 +184,8 @@ export function downloadCertificateReportExcel(
             : "—";
       return `<tr>
         <td>${escapeHtml(row.company.name)}</td>
+        <td>${escapeHtml(row.company.socio_responsavel ?? "—")}</td>
+        <td>${escapeHtml(formatCpfCnpj(row.company.socio_cpf ?? "") || "—")}</td>
         <td>${escapeHtml((row.certificate?.produtos ?? []).join(", ") || "—")}</td>
         <td>${escapeHtml(formatDateOnlyBr(row.certificate?.vencimento))}</td>
         <td>${escapeHtml(status.situacao)}</td>
@@ -212,11 +220,11 @@ export function downloadCertificateReportExcel(
   <table border="1" cellspacing="0" cellpadding="4" style="border-collapse:collapse;font-size:12px;">
     <thead>
       <tr style="background:#ffe599;font-weight:bold;">
-        <th>Empresa</th><th>Produto</th><th>Vencimento</th><th>Situação</th><th>Status</th>
+        <th>Empresa</th><th>Sócio</th><th>CPF</th><th>Produto</th><th>Vencimento</th><th>Situação</th><th>Status</th>
         <th>Avisado</th><th>Agendamento</th><th>Observações</th>
       </tr>
     </thead>
-    <tbody>${body || '<tr><td colspan="8">Nenhum registro.</td></tr>'}</tbody>
+    <tbody>${body || '<tr><td colspan="10">Nenhum registro.</td></tr>'}</tbody>
   </table>
 </body>
 </html>`;
