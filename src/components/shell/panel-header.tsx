@@ -10,6 +10,7 @@ import {
   RefreshCw,
   ShieldCheck,
   Star,
+  Trash2,
 } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -65,6 +66,18 @@ export function PanelHeader({ title, subtitle, children }: PanelHeaderProps) {
       );
     }
     event.target.value = "";
+  };
+
+  const handleRemovePhoto = async () => {
+    try {
+      await photoMutation.mutateAsync({ avatar_url: "" });
+      await refreshProfile();
+      toast.success("Foto removida.");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao remover a foto."
+      );
+    }
   };
 
   return (
@@ -156,6 +169,12 @@ export function PanelHeader({ title, subtitle, children }: PanelHeaderProps) {
                   <Camera className="h-4 w-4" />
                   Alterar foto
                 </DropdownMenuItem>
+                {profile.avatar_url && (
+                  <DropdownMenuItem onClick={handleRemovePhoto}>
+                    <Trash2 className="h-4 w-4" />
+                    Remover foto
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => setPasswordOpen(true)}>
                   <KeyRound className="h-4 w-4" />
                   Alterar senha
