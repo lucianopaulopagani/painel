@@ -126,6 +126,17 @@ export default function SocietarioDashboard() {
     if (bucket >= 0) months[bucket].count += 1;
   }
 
+  const totalEmpresas = rows.length;
+  const percentOf = (value: number): number =>
+    totalEmpresas > 0 ? Math.round((value / totalEmpresas) * 100) : 0;
+
+  const totalProdutos = Array.from(productCounts.values()).reduce(
+    (sum, value) => sum + value,
+    0
+  );
+  const percentProduct = (value: number): number =>
+    totalProdutos > 0 ? Math.round((value / totalProdutos) * 100) : 0;
+
   return (
     <div className="space-y-4">
       <div>
@@ -161,9 +172,12 @@ export default function SocietarioDashboard() {
                 <CardContent className="pt-3">
                   <div className="text-3xl font-bold tabular-nums">
                     {counts[card.level]}
+                    <span className="ml-2 text-base font-semibold text-muted-foreground">
+                      {percentOf(counts[card.level])}%
+                    </span>
                   </div>
                   <CardDescription className="mt-1">
-                    {counts[card.level] === 1 ? "certificado" : "certificados"}
+                    {percentOf(counts[card.level])}% do total de empresas
                   </CardDescription>
                 </CardContent>
               </Card>
@@ -171,25 +185,29 @@ export default function SocietarioDashboard() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {CERTIFICATE_PRODUCTS.map((produto) => (
-              <Card key={produto}>
-                <CardHeader className="rounded-t-lg bg-muted/50 pb-2">
-                  <CardTitle className="text-sm font-semibold">
-                    {produto}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-3">
-                  <div className="text-3xl font-bold tabular-nums">
-                    {productCounts.get(produto) ?? 0}
-                  </div>
-                  <CardDescription className="mt-1">
-                    {productCounts.get(produto) === 1
-                      ? "certificado"
-                      : "certificados"}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            ))}
+            {CERTIFICATE_PRODUCTS.map((produto) => {
+              const count = productCounts.get(produto) ?? 0;
+              return (
+                <Card key={produto}>
+                  <CardHeader className="rounded-t-lg bg-muted/50 pb-2">
+                    <CardTitle className="text-sm font-semibold">
+                      {produto}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-3">
+                    <div className="text-3xl font-bold tabular-nums">
+                      {count}
+                      <span className="ml-2 text-base font-semibold text-muted-foreground">
+                        {percentProduct(count)}%
+                      </span>
+                    </div>
+                    <CardDescription className="mt-1">
+                      {percentProduct(count)}% dos certificados
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
 
           <Card>
