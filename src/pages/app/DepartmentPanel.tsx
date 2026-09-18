@@ -25,12 +25,10 @@ import { DepartmentDashboard } from "./DepartmentDashboard";
 import FiscalManual from "./FiscalManual";
 import NotaFiscalManual from "./NotaFiscalManual";
 import GeneralDashboard from "./general-dashboard";
-import FiscalDashboard from "./fiscal/FiscalDashboard";
 import { MovimentoFiscal as FiscalMovimento } from "./fiscal/MovimentoFiscal";
 import BalanceteBalanco from "./contabil/BalanceteBalanco";
 import ContabilManual from "./contabil/ContabilManual";
 import CertificadoDigital from "./societario/CertificadoDigital";
-import SocietarioDashboard from "./societario/SocietarioDashboard";
 import SocietarioManual from "./societario/SocietarioManual";
 import PessoalManual from "./pessoal/PessoalManual";
 import ComplementoInss from "./pessoal/ComplementoInss";
@@ -83,11 +81,6 @@ const MANUALS: Record<string, () => JSX.Element> = {
   "nota-fiscal": () => <NotaFiscalManual />,
 };
 
-const DASHBOARDS: Record<string, () => JSX.Element> = {
-  fiscal: () => <FiscalDashboard />,
-  societario: () => <SocietarioDashboard />,
-};
-
 export default function DepartmentPanel() {
   const { profile } = useAuth();
   const { data: departments } = useDepartments();
@@ -116,10 +109,8 @@ export default function DepartmentPanel() {
     profile.departments.some((d) => d.name === NOTA_FISCAL_DEPARTMENT_NAME);
 
   const availablePanels: { key: AvailablePanelKey; label: string }[] = [
-    (profile.role === "admin" || profile.dashboard_access) && {
-      key: "dashboard",
-      label: "Dashboard geral",
-    },
+    // Dashboard geral — acessível a todos; mostra os departamentos do usuário.
+    { key: "dashboard", label: "Dashboard geral" },
     hasFiscalAccess && { key: "fiscal", label: "Fiscal" },
     hasPessoalAccess && { key: "pessoal", label: "Pessoal" },
     hasSocietarioAccess && { key: "societario", label: "Societário" },
@@ -129,8 +120,8 @@ export default function DepartmentPanel() {
     Boolean(panel)
   );
 
-  /** Monta os módulos do painel: Dashboard + subdepartamentos (banco) + Manual. */
-  const buildModules = (key: AvailablePanelKey, label: string): ModuleDef[] => {
+  /** Monta os módulos do painel: subdepartamentos (banco) + Manual. */
+  const buildModules = (key: AvailablePanelKey): ModuleDef[] => {
     if (key === "dashboard") {
       return [
         {
@@ -140,14 +131,7 @@ export default function DepartmentPanel() {
         },
       ];
     }
-    const modules: ModuleDef[] = [
-      {
-        key: "dashboard",
-        label: "Dashboard",
-        render:
-          DASHBOARDS[key] ?? (() => <DepartmentDashboard title={label} />),
-      },
-    ];
+    const modules: ModuleDef[] = [];
     const deptName = PANEL_DEPARTMENT_NAME[key];
     const deptId = deptName
       ? (departments ?? []).find(
@@ -233,7 +217,7 @@ export default function DepartmentPanel() {
   const active = activePanel ?? availablePanels[0].key;
   const activeLabel =
     availablePanels.find((panel) => panel.key === active)?.label ?? "";
-  const modules = buildModules(active, activeLabel);
+  const modules = buildModules(active);
   const currentModuleKey = activeModule[active] ?? modules[0].key;
   const currentModule =
     modules.find((module) => module.key === currentModuleKey) ?? modules[0];
@@ -254,7 +238,7 @@ export default function DepartmentPanel() {
       <nav className="relative z-30 bg-background/90 backdrop-blur">
         <div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center gap-1 px-4 py-2 sm:px-6">
           {availablePanels.map((panel) => {
-            const deptModules = buildModules(panel.key, panel.label);
+            const deptModules = buildModules(panel.key);
             return (
               <div key={panel.key} className="group relative shrink-0">
                 <button
