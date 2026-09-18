@@ -16,7 +16,9 @@ export function useCompanies() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("companies")
-        .select("*, company_departments(department_id, responsible_profile_ids)")
+        .select(
+          "*, company_departments(department_id, responsible_profile_ids, subdepartments)"
+        )
         .order("numero");
       if (error) throw error;
       return (data as unknown as RawCompanyRow[])
