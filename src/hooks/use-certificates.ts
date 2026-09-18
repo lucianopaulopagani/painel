@@ -21,6 +21,7 @@ export interface CertificateInput {
   company_id: string;
   vencimento: string | null;
   avisado: boolean | null;
+  financ: boolean | null;
   agendamento_at: string | null;
   observacoes: string | null;
   produtos: string[];

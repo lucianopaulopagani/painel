@@ -97,6 +97,7 @@ export default function CertificadoDigital() {
     socioCpf: "",
     produto: "",
     avisado: "",
+    financ: "",
     agendamento: "",
     observacoes: "",
   });
@@ -174,6 +175,14 @@ export default function CertificadoDigital() {
           : filtros.avisado === "sim"
             ? row.certificate?.avisado === true
             : row.certificate?.avisado === false) &&
+      selectOrBlank(
+        row.certificate?.financ == null
+          ? ""
+          : row.certificate.financ
+            ? "Sim"
+            : "Não",
+        filtros.financ
+      ) &&
       match(agendamento, filtros.agendamento) &&
       match(row.certificate?.observacoes ?? "", filtros.observacoes)
     );
@@ -193,6 +202,7 @@ export default function CertificadoDigital() {
       socioCpf: "",
       produto: "",
       avisado: "",
+      financ: "",
       agendamento: "",
       observacoes: "",
     });
@@ -370,6 +380,7 @@ export default function CertificadoDigital() {
                 {filterInput("socioCpf", "CPF")}
                 {filterSelect("produto", "Produto", CERTIFICATE_PRODUCTS)}
                 {filterSelect("avisado", "Avisado", ["Sim", "Não"])}
+                {filterSelect("financ", "Financ.", ["Sim", "Não"])}
                 {filterInput("agendamento", "Agendamento")}
                 {filterInput("observacoes", "Observações")}
                 <TableHead className={`${HEAD} w-20 text-right align-bottom`}>
@@ -454,6 +465,19 @@ export default function CertificadoDigital() {
                           <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
+                      <TableCell className={CELL}>
+                        {row.certificate?.financ === true ? (
+                          <Badge className="bg-status-success text-status-success-foreground hover:bg-status-success">
+                            Sim
+                          </Badge>
+                        ) : row.certificate?.financ === false ? (
+                          <Badge className="bg-status-danger text-status-danger-foreground hover:bg-status-danger">
+                            Não
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
                       <TableCell className={`${CELL} whitespace-nowrap`}>
                         {row.certificate?.agendamento_at ? (
                           <Badge className="bg-status-warning text-status-warning-foreground hover:bg-status-warning">
@@ -491,7 +515,7 @@ export default function CertificadoDigital() {
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={11}
+                    colSpan={12}
                     className="py-10 text-center text-muted-foreground"
                   >
                     {rows.length === 0

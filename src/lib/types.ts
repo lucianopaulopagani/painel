@@ -79,6 +79,8 @@ export interface Certificate {
   vencimento: string | null;
   /** null = em branco; true = sim; false = não. */
   avisado: boolean | null;
+  /** null = em branco; true = sim; false = não (financeiro). */
+  financ: boolean | null;
   agendamento_at: string | null;
   observacoes: string | null;
   /** Produtos selecionados (ex.: e-CNPJ A1 12 meses). */

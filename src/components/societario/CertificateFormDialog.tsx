@@ -41,6 +41,7 @@ export default function CertificateFormDialog({
 
   const [vencimento, setVencimento] = useState("");
   const [avisado, setAvisado] = useState("branco");
+  const [financ, setFinanc] = useState("branco");
   const [agendamentoDate, setAgendamentoDate] = useState("");
   const [agendamentoTime, setAgendamentoTime] = useState("");
   const [observacoes, setObservacoes] = useState("");
@@ -55,6 +56,13 @@ export default function CertificateFormDialog({
       certificate?.avisado === true
         ? "sim"
         : certificate?.avisado === false
+          ? "nao"
+          : "branco"
+    );
+    setFinanc(
+      certificate?.financ === true
+        ? "sim"
+        : certificate?.financ === false
           ? "nao"
           : "branco"
     );
@@ -91,6 +99,13 @@ export default function CertificateFormDialog({
           : avisado === "sim"
             ? true
             : avisado === "nao"
+              ? false
+              : null,
+        financ: shouldClear
+          ? null
+          : financ === "sim"
+            ? true
+            : financ === "nao"
               ? false
               : null,
         agendamento_at: shouldClear
@@ -147,6 +162,19 @@ export default function CertificateFormDialog({
             <div className="flex flex-col gap-1.5">
               <Label>Avisado</Label>
               <Select value={avisado} onValueChange={setAvisado}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="branco">Em branco</SelectItem>
+                  <SelectItem value="sim">Sim</SelectItem>
+                  <SelectItem value="nao">Não</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label>Financ.</Label>
+              <Select value={financ} onValueChange={setFinanc}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

@@ -3436,6 +3436,7 @@ export type Database = {
           avisado: boolean | null
           company_id: string
           created_at: string
+          financ: boolean | null
           id: string
           observacoes: string | null
           produtos: string[]
@@ -3447,6 +3448,7 @@ export type Database = {
           avisado?: boolean | null
           company_id: string
           created_at?: string
+          financ?: boolean | null
           id?: string
           observacoes?: string | null
           produtos?: string[]
@@ -3458,6 +3460,7 @@ export type Database = {
           avisado?: boolean | null
           company_id?: string
           created_at?: string
+          financ?: boolean | null
           id?: string
           observacoes?: string | null
           produtos?: string[]
