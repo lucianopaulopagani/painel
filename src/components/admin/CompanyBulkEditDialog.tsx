@@ -22,6 +22,7 @@ import {
 import { MultiSelectDropdown } from "@/components/ui/multi-select-dropdown";
 import { useBulkUpdateCompanies } from "@/hooks/use-companies";
 import { useAllUsersWithDepartments } from "@/hooks/use-all-users";
+import { useAllDepartmentSubmenus } from "@/hooks/use-department-submenus";
 import { useDepartments } from "@/hooks/use-departments";
 import { useAuth } from "@/context/auth";
 import { TRIBUTACOES } from "@/lib/companies";
@@ -43,6 +44,7 @@ type DeptActionValue = "none" | "set" | "remove";
 interface DeptAction {
   action: DeptActionValue;
   responsibleIds: string[];
+  subdepartments: string[];
 }
 
 export default function CompanyBulkEditDialog({
@@ -54,6 +56,7 @@ export default function CompanyBulkEditDialog({
   const bulkUpdate = useBulkUpdateCompanies();
   const { data: departments } = useDepartments();
   const { data: usersWithDepartments } = useAllUsersWithDepartments();
+  const { data: allSubmenus } = useAllDepartmentSubmenus();
   const { profile } = useAuth();
 
   const isAdmin = profile?.role === "admin";
@@ -89,6 +92,7 @@ export default function CompanyBulkEditDialog({
       [departmentId]: {
         action: "none",
         responsibleIds: [],
+        subdepartments: [],
         ...prev[departmentId],
         ...patch,
       },
@@ -109,6 +113,7 @@ export default function CompanyBulkEditDialog({
         department_id,
         action: value.action as "remove" | "set",
         responsible_ids: value.responsibleIds,
+        subdepartments: value.subdepartments,
       }));
 
     if (Object.keys(patch).length === 0 && deptActionsList.length === 0) {
@@ -219,6 +224,11 @@ export default function CompanyBulkEditDialog({
                     deptActions[department.id]?.action ?? "none";
                   const responsibleIds =
                     deptActions[department.id]?.responsibleIds ?? [];
+                  const subdepartments =
+                    deptActions[department.id]?.subdepartments ?? [];
+                  const deptSubmenus = (allSubmenus ?? [])
+                    .filter((submenu) => submenu.department_id === department.id)
+                    .map((submenu) => submenu.name);
                   const editableDepartment =
                     isAdmin || myDepartmentIds.has(department.id);
                   return (
@@ -252,6 +262,27 @@ export default function CompanyBulkEditDialog({
                             <SelectItem value="remove">Remover</SelectItem>
                           </SelectContent>
                         </Select>
+                        {action === "set" && (
+                          <MultiSelectDropdown
+                            options={deptSubmenus.map((submenu) => ({
+                              value: submenu,
+                              label: submenu,
+                            }))}
+                            value={subdepartments}
+                            onChange={(values) =>
+                              updateDept(department.id, {
+                                subdepartments: values,
+                              })
+                            }
+                            placeholder="Subdepartamentos (opcional)"
+                            disabled={
+                              !canEdit("departments") ||
+                              !editableDepartment ||
+                              deptSubmenus.length === 0
+                            }
+                            className="w-full sm:w-56"
+                          />
+                        )}
                         {action === "set" && (
                           <MultiSelectDropdown
                             options={(usersWithDepartments ?? [])

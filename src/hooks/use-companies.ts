@@ -157,6 +157,7 @@ export function useBulkUpdateCompanies() {
         department_id: string;
         action: "remove" | "set";
         responsible_ids: string[];
+        subdepartments: string[];
       }[];
     }) => {
       if (Object.keys(patch).length > 0) {
@@ -184,6 +185,7 @@ export function useBulkUpdateCompanies() {
                   company_id: companyId,
                   department_id: dept.department_id,
                   responsible_profile_ids: dept.responsible_ids,
+                  subdepartments: dept.subdepartments ?? [],
                 },
                 { onConflict: "company_id,department_id" }
               );
