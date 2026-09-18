@@ -38,8 +38,23 @@ const DASHBOARDS = [
 
 type DashboardKey = (typeof DASHBOARDS)[number]["key"];
 
+/** Submenus (visões) de cada dashboard por departamento. */
+const DEPT_SUBMENUS: Record<DashboardKey, { key: string; label: string }[]> = {
+  fiscal: [{ key: "dashboard", label: "Dashboard" }],
+  pessoal: [{ key: "dashboard", label: "Dashboard" }],
+  societario: [
+    { key: "dashboard", label: "Dashboard" },
+    { key: "certificado-digital", label: "Certificado digital" },
+  ],
+  contabil: [{ key: "dashboard", label: "Dashboard" }],
+  "nota-fiscal": [{ key: "dashboard", label: "Dashboard" }],
+};
+
 export default function GeneralDashboard() {
   const [active, setActive] = useState<DashboardKey>("fiscal");
+  const [activeSubmenu, setActiveSubmenu] = useState<
+    Partial<Record<DashboardKey, string>>
+  >({});
   const [mes, setMes] = useState<string>(
     () => readStoredMonth() || defaultReferenceMonth()
   );
@@ -77,10 +92,19 @@ export default function GeneralDashboard() {
 
   const activeLabel =
     DASHBOARDS.find((dashboard) => dashboard.key === active)?.label ?? "";
+  const submenus = DEPT_SUBMENUS[active];
+  const submenuKey = activeSubmenu[active] ?? submenus[0].key;
+  const submenuLabel =
+    submenus.find((submenu) => submenu.key === submenuKey)?.label ?? "";
+
+  const selectSubmenu = (key: string) => {
+    setActiveSubmenu((prev) => ({ ...prev, [active]: key }));
+  };
 
   return (
     <div className="space-y-4">
-      <div className="group relative w-fit">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="group relative">
           <Button type="button" variant="outline" className="gap-2">
             {activeLabel}
             <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
@@ -105,7 +129,33 @@ export default function GeneralDashboard() {
           </div>
         </div>
 
-        {active === "fiscal" ? (
+        <div className="group relative">
+          <Button type="button" variant="outline" className="gap-2">
+            {submenuLabel}
+            <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
+          </Button>
+
+          <div className="invisible absolute left-0 top-full z-50 pt-1 opacity-0 transition-all group-hover:visible group-hover:opacity-100">
+            <div className="min-w-44 rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
+              {submenus.map((submenu) => (
+                <button
+                  key={submenu.key}
+                  type="button"
+                  onClick={() => selectSubmenu(submenu.key)}
+                  className={cn(
+                    "flex w-full items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-muted",
+                    submenuKey === submenu.key && "bg-muted font-medium"
+                  )}
+                >
+                  {submenu.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {active === "fiscal" && submenuKey === "dashboard" ? (
           <>
             <div className="max-w-xs">
               <Label htmlFor="geral-mes">Mês de referência</Label>
@@ -156,7 +206,7 @@ export default function GeneralDashboard() {
               </>
             )}
           </>
-        ) : active === "societario" ? (
+        ) : active === "societario" && submenuKey === "certificado-digital" ? (
           <SocietarioDashboard />
         ) : (
           <Card className="border-dashed">
