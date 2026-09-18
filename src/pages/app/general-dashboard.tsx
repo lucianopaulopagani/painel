@@ -43,7 +43,6 @@ const DEPT_SUBMENUS: Record<DashboardKey, { key: string; label: string }[]> = {
   fiscal: [{ key: "dashboard", label: "Dashboard" }],
   pessoal: [{ key: "dashboard", label: "Dashboard" }],
   societario: [
-    { key: "dashboard", label: "Dashboard" },
     { key: "certificado-digital", label: "Certificado digital" },
   ],
   contabil: [{ key: "dashboard", label: "Dashboard" }],
