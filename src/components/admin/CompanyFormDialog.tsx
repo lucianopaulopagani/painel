@@ -54,7 +54,6 @@ export default function CompanyFormDialog({
   const updateMutation = useUpdateCompany();
   const { data: departments } = useDepartments();
   const { data: usersWithDepartments } = useAllUsersWithDepartments();
-  const { data: municipios } = useMunicipios(uf);
   const { profile } = useAuth();
   const isEditing = !!company;
 
@@ -79,6 +78,8 @@ export default function CompanyFormDialog({
   const [assignments, setAssignments] = useState<
     Record<string, DepartmentAssignment>
   >({});
+
+  const { data: municipios } = useMunicipios(uf);
 
   const departmentsKey = (departments ?? []).map((d) => d.id).join(",");
 
