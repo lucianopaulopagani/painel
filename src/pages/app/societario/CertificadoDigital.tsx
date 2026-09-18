@@ -39,6 +39,7 @@ import {
   SOCIETARIO_DEPARTMENT_NAME,
   findDepartmentByName,
 } from "@/lib/departments";
+import { companyUsesSubmenu } from "@/lib/department-submenus";
 import {
   formatCpfCnpj,
   formatDateOnlyBr,
@@ -109,11 +110,7 @@ export default function CertificadoDigital() {
 
   const rows: CertificateRow[] = (companies ?? [])
     .filter((company) =>
-      societario
-        ? company.department_links.some(
-            (link) => link.department_id === societario.id
-          )
-        : false
+      companyUsesSubmenu(company, societario?.id, "Certificado digital")
     )
     .map((company) => ({
       company,

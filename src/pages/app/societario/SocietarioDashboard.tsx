@@ -21,6 +21,7 @@ import { useDepartments } from "@/hooks/use-departments";
 import { getCertificateStatus, type CertificateStatusLevel } from "@/lib/certificate-status";
 import { CERTIFICATE_PRODUCTS } from "@/lib/certificate-products";
 import { SOCIETARIO_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
+import { companyUsesSubmenu } from "@/lib/department-submenus";
 import { cn } from "@/lib/utils";
 
 const MESES = [
@@ -76,11 +77,7 @@ export default function SocietarioDashboard() {
   );
 
   const rows = (companies ?? []).filter((company) =>
-    societario
-      ? company.department_links.some(
-          (link) => link.department_id === societario.id
-        )
-      : false
+    companyUsesSubmenu(company, societario?.id, "Certificado digital")
   );
 
   const certificateOf = (companyId: string) =>

@@ -1,3 +1,5 @@
+import type { CompanyWithDepartments } from "@/lib/types";
+
 /**
  * Subdepartamentos (submenus) de cada departamento, usados no cadastro de
  * empresas para marcar quais áreas a empresa utiliza.
@@ -22,4 +24,20 @@ export const DEPARTMENT_SUBMENUS: Record<string, string[]> = {
 /** Subdepartamentos de um departamento (vazios quando não houver). */
 export function submenusOf(departmentName: string): string[] {
   return DEPARTMENT_SUBMENUS[departmentName] ?? [];
+}
+
+/**
+ * Indica se a empresa utiliza o subdepartamento (submenu) informado no
+ * departamento — as listas só mostram empresas com o subdepartamento marcado.
+ */
+export function companyUsesSubmenu(
+  company: CompanyWithDepartments,
+  departmentId: string | undefined,
+  submenuLabel: string
+): boolean {
+  if (!departmentId) return false;
+  const link = company.department_links.find(
+    (item) => item.department_id === departmentId
+  );
+  return Boolean(link && (link.subdepartments ?? []).includes(submenuLabel));
 }

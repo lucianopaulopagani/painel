@@ -37,6 +37,7 @@ import { useEmpresasFuncionarios, useEmpresasFuncionariosAll, useSaveEmpresasFun
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
+import { companyUsesSubmenu } from "@/lib/department-submenus";
 import {
   EMPRESAS_FUNC_DCTFWEB_OPTIONS,
   EMPRESAS_FUNC_EMPRESTIMO_OPTIONS,
@@ -204,11 +205,7 @@ export default function EmpresasFuncionarios() {
 
   const rows = (companies ?? [])
     .filter((company) =>
-      pessoal
-        ? company.department_links.some(
-            (link) => link.department_id === pessoal.id
-          )
-        : false
+      companyUsesSubmenu(company, pessoal?.id, "Empresas com funcionários")
     )
     .sort((a, b) => {
       if (!a.numero && !b.numero) {

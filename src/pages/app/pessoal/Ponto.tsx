@@ -22,6 +22,7 @@ import { usePonto, usePontoAll, useSavePonto } from "@/hooks/use-ponto";
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
+import { companyUsesSubmenu } from "@/lib/department-submenus";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
 import { PONTO_ENVIO_OPTIONS } from "@/lib/ponto";
 import { cn } from "@/lib/utils";
@@ -57,13 +58,7 @@ export default function Ponto() {
   const pessoal = findDepartmentByName(departments, PESSOAL_DEPARTMENT_NAME);
 
   const rows = (companies ?? [])
-    .filter((company) =>
-      pessoal
-        ? company.department_links.some(
-            (link) => link.department_id === pessoal.id
-          )
-        : false
-    )
+    .filter((company) => companyUsesSubmenu(company, pessoal?.id, "Ponto"))
     .sort((a, b) => {
       if (!a.numero && !b.numero) {
         return a.name.localeCompare(b.name, "pt-BR");

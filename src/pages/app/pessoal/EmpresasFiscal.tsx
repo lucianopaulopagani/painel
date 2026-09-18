@@ -26,6 +26,7 @@ import {
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
+import { companyUsesSubmenu } from "@/lib/department-submenus";
 import {
   EMPRESAS_FISCAL_DCTFWEB_OPTIONS,
   EMPRESAS_FISCAL_ENVIO_OPTIONS,
@@ -79,13 +80,7 @@ export default function EmpresasFiscal() {
   const pessoal = findDepartmentByName(departments, PESSOAL_DEPARTMENT_NAME);
 
   const rows = (companies ?? [])
-    .filter((company) =>
-      pessoal
-        ? company.department_links.some(
-            (link) => link.department_id === pessoal.id
-          )
-        : false
-    )
+    .filter((company) => companyUsesSubmenu(company, pessoal?.id, "Empresas Fiscal"))
     .sort((a, b) => {
       if (!a.numero && !b.numero) {
         return a.name.localeCompare(b.name, "pt-BR");

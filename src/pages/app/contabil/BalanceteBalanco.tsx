@@ -26,6 +26,7 @@ import { useCompanies } from "@/hooks/use-companies";
 import { useContabilUsuarios } from "@/hooks/use-contabil-usuarios";
 import { useDepartments } from "@/hooks/use-departments";
 import { CONTABIL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
+import { companyUsesSubmenu } from "@/lib/department-submenus";
 import {
   BALANCETE_MESES,
   BALANCETE_MES_OPTIONS,
@@ -92,11 +93,7 @@ export default function BalanceteBalanco() {
 
   const rows = (companies ?? [])
     .filter((company) =>
-      contabil
-        ? company.department_links.some(
-            (link) => link.department_id === contabil.id
-          )
-        : false
+      companyUsesSubmenu(company, contabil?.id, "Balancete/Balanço")
     )
     .sort((a, b) => {
       if (!a.numero && !b.numero) {

@@ -26,6 +26,7 @@ import {
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
+import { companyUsesSubmenu } from "@/lib/department-submenus";
 import {
   COMPLEMENTO_INSS_DARF_OPTIONS,
   COMPLEMENTO_INSS_ENVIO_OPTIONS,
@@ -70,11 +71,7 @@ export default function ComplementoInss() {
 
   const rows = (companies ?? [])
     .filter((company) =>
-      pessoal
-        ? company.department_links.some(
-            (link) => link.department_id === pessoal.id
-          )
-        : false
+      companyUsesSubmenu(company, pessoal?.id, "Complemento INSS")
     )
     .sort((a, b) => {
       if (!a.numero && !b.numero) {
