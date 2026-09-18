@@ -11,14 +11,14 @@ interface DepartmentDashboardProps {
   title: string;
 }
 
-/** Dashboard de um departamento — substituído pelo conteúdo real futuramente. */
+/** Área de um departamento/subdepartamento ainda em desenvolvimento. */
 export function DepartmentDashboard({ title }: DepartmentDashboardProps) {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-semibold">Dashboard</h2>
+        <h2 className="text-lg font-semibold">{title}</h2>
         <p className="text-sm text-muted-foreground">
-          Dashboard do departamento {title}.
+          Esta área será desenvolvida futuramente.
         </p>
       </div>
 
@@ -26,10 +26,10 @@ export function DepartmentDashboard({ title }: DepartmentDashboardProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Construction className="h-5 w-5 text-muted-foreground" />
-            Dashboard {title}
+            Em desenvolvimento
           </CardTitle>
           <CardDescription>
-            O dashboard deste departamento será criado futuramente.
+            A área {title} será criada futuramente.
           </CardDescription>
         </CardHeader>
         <CardContent>
