@@ -54,6 +54,7 @@ export interface RawCompanyRow {
   inscricao_estadual: string | null;
   uf: string;
   tributacao: string | null;
+  municipio: string | null;
   socio_responsavel: string | null;
   socio_cpf: string | null;
   created_at: string;
@@ -74,6 +75,7 @@ export function toCompanyWithDepartments(
     inscricao_estadual: row.inscricao_estadual,
     uf: row.uf,
     tributacao: row.tributacao ?? null,
+    municipio: row.municipio ?? null,
     socio_responsavel: row.socio_responsavel ?? null,
     socio_cpf: row.socio_cpf ?? null,
     created_at: row.created_at,

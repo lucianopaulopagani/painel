@@ -22,6 +22,7 @@ import {
 import { UserMultiSelect } from "@/components/admin/user-multi-select";
 import { useCreateCompany, useUpdateCompany } from "@/hooks/use-companies";
 import { useAllUsersWithDepartments } from "@/hooks/use-all-users";
+import { useMunicipios } from "@/hooks/use-municipios";
 import { useDepartments } from "@/hooks/use-departments";
 import { useAuth } from "@/context/auth";
 import { TRIBUTACOES } from "@/lib/companies";
@@ -53,6 +54,7 @@ export default function CompanyFormDialog({
   const updateMutation = useUpdateCompany();
   const { data: departments } = useDepartments();
   const { data: usersWithDepartments } = useAllUsersWithDepartments();
+  const { data: municipios } = useMunicipios(uf);
   const { profile } = useAuth();
   const isEditing = !!company;
 
@@ -70,6 +72,7 @@ export default function CompanyFormDialog({
   const [documento, setDocumento] = useState("");
   const [inscricaoEstadual, setInscricaoEstadual] = useState("");
   const [uf, setUf] = useState("");
+  const [municipio, setMunicipio] = useState("");
   const [tributacao, setTributacao] = useState("");
   const [socioResponsavel, setSocioResponsavel] = useState("");
   const [socioCpf, setSocioCpf] = useState("");
@@ -86,6 +89,7 @@ export default function CompanyFormDialog({
     setDocumento(company ? formatCpfCnpj(company.documento) : "");
     setInscricaoEstadual(company?.inscricao_estadual ?? "");
     setUf(company?.uf ?? "");
+    setMunicipio(company?.municipio ?? "");
     setTributacao(company?.tributacao ?? "");
     setSocioResponsavel(company?.socio_responsavel ?? "");
     setSocioCpf(company ? formatCpfCnpj(company.socio_cpf ?? "") : "");
@@ -145,6 +149,7 @@ export default function CompanyFormDialog({
       documento,
       inscricao_estadual: inscricaoEstadual,
       uf,
+      municipio: municipio || null,
       tributacao: tributacao || null,
       socio_responsavel: socioResponsavel.trim() || null,
       socio_cpf: socioCpf.replace(/\D/g, "") || null,
@@ -235,7 +240,10 @@ export default function CompanyFormDialog({
               <Label>UF</Label>
               <Select
                 value={uf}
-                onValueChange={setUf}
+                onValueChange={(value) => {
+                  setUf(value);
+                  setMunicipio("");
+                }}
                 disabled={!canEdit("uf")}
               >
                 <SelectTrigger>
@@ -250,6 +258,37 @@ export default function CompanyFormDialog({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Município</Label>
+            <Select
+              value={municipio === "" ? "none" : municipio}
+              onValueChange={(value) =>
+                setMunicipio(value === "none" ? "" : value)
+              }
+              disabled={!canEdit("municipio") || uf.length !== 2}
+            >
+              <SelectTrigger>
+                <SelectValue
+                  placeholder={
+                    uf.length !== 2
+                      ? "Selecione a UF primeiro"
+                      : (municipios ?? []).length === 0
+                        ? "Carregando municípios…"
+                        : "Selecione o município"
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent className="max-h-80">
+                <SelectItem value="none">—</SelectItem>
+                {(municipios ?? []).map((nome) => (
+                  <SelectItem key={nome} value={nome}>
+                    {nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex flex-col gap-1.5">

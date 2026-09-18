@@ -50,6 +50,8 @@ export interface Company {
   inscricao_estadual: string | null;
   /** Unidade federativa (sigla de 2 letras). */
   uf: string;
+  /** Município. */
+  municipio: string | null;
   /** Regime de tributação. */
   tributacao: string | null;
   /** Sócio responsável da empresa (não exibido na listagem). */

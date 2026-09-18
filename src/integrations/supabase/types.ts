@@ -3479,6 +3479,7 @@ export type Database = {
           documento: string
           id: string
           inscricao_estadual: string | null
+          municipio: string | null
           name: string
           numero: string | null
           socio_cpf: string | null
@@ -3491,6 +3492,7 @@ export type Database = {
           documento: string
           id?: string
           inscricao_estadual?: string | null
+          municipio?: string | null
           name: string
           numero?: string | null
           socio_cpf?: string | null
@@ -3503,6 +3505,7 @@ export type Database = {
           documento?: string
           id?: string
           inscricao_estadual?: string | null
+          municipio?: string | null
           name?: string
           numero?: string | null
           socio_cpf?: string | null

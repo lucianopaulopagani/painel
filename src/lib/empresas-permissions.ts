@@ -7,6 +7,7 @@ export const EMPRESA_PERMISSION_FIELDS = [
   { key: "documento", label: "CPF/CNPJ" },
   { key: "inscricao_estadual", label: "Inscrição Estadual" },
   { key: "uf", label: "UF" },
+  { key: "municipio", label: "Município" },
   { key: "tributacao", label: "Tributação" },
   { key: "socio_responsavel", label: "Sócio responsável" },
   { key: "socio_cpf", label: "CPF do sócio" },

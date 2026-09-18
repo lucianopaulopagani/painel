@@ -39,6 +39,7 @@ export interface CompanyInput {
   documento: string;
   inscricao_estadual: string | null;
   uf: string;
+  municipio: string | null;
   tributacao: string | null;
   socio_responsavel: string | null;
   socio_cpf: string | null;
@@ -82,6 +83,7 @@ export function useCreateCompany() {
           documento: input.documento.trim(),
           inscricao_estadual: input.inscricao_estadual?.trim() || null,
           uf: input.uf,
+          municipio: input.municipio?.trim() || null,
           tributacao: input.tributacao ?? null,
           socio_responsavel: input.socio_responsavel?.trim() || null,
           socio_cpf: input.socio_cpf?.trim() || null,
@@ -109,6 +111,7 @@ export function useUpdateCompany() {
           documento: input.documento.trim(),
           inscricao_estadual: input.inscricao_estadual?.trim() || null,
           uf: input.uf,
+          municipio: input.municipio?.trim() || null,
           tributacao: input.tributacao ?? null,
           socio_responsavel: input.socio_responsavel?.trim() || null,
           socio_cpf: input.socio_cpf?.trim() || null,
