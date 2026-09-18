@@ -59,7 +59,11 @@ export interface RawCompanyRow {
   socio_cpf: string | null;
   created_at: string;
   company_departments?:
-    | { department_id: string; responsible_profile_ids: string[] | null }[]
+    | {
+        department_id: string;
+        responsible_profile_ids: string[] | null;
+        subdepartments: string[] | null;
+      }[]
     | null;
 }
 
@@ -82,6 +86,7 @@ export function toCompanyWithDepartments(
     department_links: (row.company_departments ?? []).map((link) => ({
       department_id: link.department_id,
       profile_ids: link.responsible_profile_ids ?? [],
+      subdepartments: link.subdepartments ?? [],
     })),
   };
 }

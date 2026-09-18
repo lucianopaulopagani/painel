@@ -65,6 +65,8 @@ export interface Company {
 export interface CompanyDepartmentLink {
   department_id: string;
   profile_ids: string[];
+  /** Subdepartamentos (submenus) que a empresa utiliza neste departamento. */
+  subdepartments: string[];
 }
 
 /** Empresa já com os departamentos vinculados. */

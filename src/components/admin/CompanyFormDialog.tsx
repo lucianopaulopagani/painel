@@ -20,10 +20,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { UserMultiSelect } from "@/components/admin/user-multi-select";
+import { MultiSelectDropdown } from "@/components/ui/multi-select-dropdown";
 import { useCreateCompany, useUpdateCompany } from "@/hooks/use-companies";
 import { useAllUsersWithDepartments } from "@/hooks/use-all-users";
 import { useMunicipios } from "@/hooks/use-municipios";
 import { useDepartments } from "@/hooks/use-departments";
+import { submenusOf } from "@/lib/department-submenus";
 import { useAuth } from "@/context/auth";
 import { TRIBUTACOES } from "@/lib/companies";
 import { UFS } from "@/lib/ufs";
@@ -42,6 +44,7 @@ interface CompanyFormDialogProps {
 interface DepartmentAssignment {
   selected: boolean;
   profileIds: string[];
+  subdepartments: string[];
 }
 
 export default function CompanyFormDialog({
@@ -103,6 +106,7 @@ export default function CompanyFormDialog({
       initial[department.id] = {
         selected: !!link,
         profileIds: link?.profile_ids ?? [],
+        subdepartments: link?.subdepartments ?? [],
       };
     }
     setAssignments(initial);
@@ -116,7 +120,11 @@ export default function CompanyFormDialog({
     setAssignments((prev) => ({
       ...prev,
       [departmentId]: {
-        ...(prev[departmentId] ?? { selected: false, profileIds: [] }),
+        ...(prev[departmentId] ?? {
+          selected: false,
+          profileIds: [],
+          subdepartments: [],
+        }),
         ...patch,
       },
     }));
@@ -142,6 +150,7 @@ export default function CompanyFormDialog({
       .map((department) => ({
         department_id: department.id,
         profile_ids: assignments[department.id]?.profileIds ?? [],
+        subdepartments: assignments[department.id]?.subdepartments ?? [],
       }));
 
     const payload = {
@@ -350,13 +359,15 @@ export default function CompanyFormDialog({
                   const assignment = assignments[department.id] ?? {
                     selected: false,
                     profileIds: [],
+                    subdepartments: [],
                   };
                   const editableDepartment =
                     isAdmin || myDepartmentIds.has(department.id);
+                  const deptSubmenus = submenusOf(department.name);
                   return (
                     <div
                       key={department.id}
-                      className="flex flex-col gap-2 rounded-md border p-2 sm:flex-row sm:items-center sm:justify-between"
+                      className="grid grid-cols-1 gap-2 rounded-md border p-2 sm:grid-cols-3 sm:items-center sm:gap-3"
                     >
                       <label className="flex cursor-pointer items-center gap-2 text-sm">
                         <Checkbox
@@ -372,6 +383,26 @@ export default function CompanyFormDialog({
                         />
                         <span>{department.name}</span>
                       </label>
+                      <MultiSelectDropdown
+                        options={deptSubmenus.map((submenu) => ({
+                          value: submenu,
+                          label: submenu,
+                        }))}
+                        value={assignment.subdepartments}
+                        onChange={(values) =>
+                          updateAssignment(department.id, {
+                            subdepartments: values,
+                          })
+                        }
+                        placeholder="Subdepartamentos (opcional)"
+                        disabled={
+                          !assignment.selected ||
+                          !canEdit("departments") ||
+                          !editableDepartment ||
+                          deptSubmenus.length === 0
+                        }
+                        className="w-full"
+                      />
                       <UserMultiSelect
                         value={assignment.profileIds}
                         onChange={(ids) =>
@@ -385,7 +416,7 @@ export default function CompanyFormDialog({
                         users={(usersWithDepartments ?? []).filter((user) =>
                           user.department_ids.includes(department.id)
                         )}
-                        className="w-full justify-between font-normal sm:w-56"
+                        className="w-full justify-between font-normal"
                       />
                     </div>
                   );

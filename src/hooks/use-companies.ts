@@ -66,6 +66,7 @@ async function replaceCompanyDepartments(
         company_id: companyId,
         department_id: link.department_id,
         responsible_profile_ids: link.profile_ids,
+        subdepartments: link.subdepartments ?? [],
       }))
     );
   if (insertError) throw insertError;
@@ -237,6 +238,7 @@ export function useImportCompanies() {
             item.department_ids.map((department_id) => ({
               department_id,
               profile_ids: item.responsible_ids,
+              subdepartments: [],
             }))
           );
           imported += 1;

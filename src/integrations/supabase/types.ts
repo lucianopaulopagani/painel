@@ -3523,16 +3523,19 @@ export type Database = {
           company_id: string
           department_id: string
           responsible_profile_ids: string[]
+          subdepartments: string[]
         }
         Insert: {
           company_id: string
           department_id: string
           responsible_profile_ids?: string[]
+          subdepartments?: string[]
         }
         Update: {
           company_id?: string
           department_id?: string
           responsible_profile_ids?: string[]
+          subdepartments?: string[]
         }
         Relationships: [
           {
