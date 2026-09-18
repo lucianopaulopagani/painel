@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/select";
 import { DepartmentMultiSelect } from "@/components/admin/department-multi-select";
 import { EmpresasPermissionSection } from "@/components/admin/EmpresasPermissionSection";
-import { UserSubmenuSelect } from "@/components/admin/UserSubmenuSelect";
 import { useUpdateUser } from "@/hooks/use-users";
 import { fileToDataUrl } from "@/hooks/use-own-profile";
 import { getInitials } from "@/lib/utils";
@@ -46,7 +45,6 @@ export default function UserEditDialog({
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("member");
   const [departmentIds, setDepartmentIds] = useState<string[]>([]);
-  const [submenuIds, setSubmenuIds] = useState<string[]>([]);
   const [dashboardAccess, setDashboardAccess] = useState(false);
   const [empresasAccess, setEmpresasAccess] = useState(false);
   const [empresasFields, setEmpresasFields] = useState<string[]>([]);
@@ -62,7 +60,6 @@ export default function UserEditDialog({
       setEmail(user.email);
       setRole(user.role);
       setDepartmentIds(user.departments.map((d) => d.id));
-      setSubmenuIds(user.submenu_ids ?? []);
       setDashboardAccess(user.dashboard_access);
       setEmpresasAccess(user.empresas_access);
       setEmpresasFields(user.empresas_fields ?? []);
@@ -102,7 +99,6 @@ export default function UserEditDialog({
         email: email.trim(),
         role,
         department_ids: departmentIds,
-        submenu_ids: submenuIds,
         dashboard_access: dashboardAccess,
         empresas_access: empresasAccess,
         empresas_fields: empresasFields,
@@ -214,7 +210,6 @@ export default function UserEditDialog({
               acessa nenhum departamento.
             </p>
           </div>
-          <UserSubmenuSelect value={submenuIds} onChange={setSubmenuIds} />
           <div className="flex items-center justify-between gap-4 rounded-md border p-3">
             <div>
               <Label htmlFor="edit-dashboard" className="text-sm font-medium">

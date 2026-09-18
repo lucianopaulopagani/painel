@@ -30,8 +30,6 @@ export interface Profile {
 /** Perfil já com a lista de departamentos vinculados (N:N). */
 export interface ProfileWithDepartments extends Profile {
   departments: DepartmentRef[];
-  /** Subdepartamentos (submenus) liberados para o usuário. */
-  submenu_ids: string[];
 }
 
 export interface ManageUserPayload {

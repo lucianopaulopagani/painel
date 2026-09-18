@@ -57,36 +57,6 @@ function normalizeEmpresasFields(value: unknown): string[] {
   );
 }
 
-// Substitui os subdepartamentos (submenus) liberados de um perfil.
-async function replaceProfileSubmenus(
-  profileId: string,
-  submenuIds: string[]
-): Promise<string | null> {
-  const { error: deleteError } = await admin
-    .from("profile_submenus")
-    .delete()
-    .eq("profile_id", profileId);
-  if (deleteError) return deleteError.message;
-
-  if (submenuIds.length === 0) return null;
-
-  const { error: insertError } = await admin
-    .from("profile_submenus")
-    .insert(submenuIds.map((submenu_id) => ({ profile_id: profileId, submenu_id })));
-  return insertError ? insertError.message : null;
-}
-
-function normalizeIdList(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return Array.from(
-    new Set(
-      value.filter(
-        (item): item is string => typeof item === "string" && item.length > 0
-      )
-    )
-  );
-}
-
 // Substitui os vínculos de departamento de um perfil.
 async function replaceProfileDepartments(
   profileId: string,
@@ -193,7 +163,6 @@ Deno.serve(async (req) => {
           empresas_criar = false,
           empresas_importar = false,
           empresas_bulk = false,
-          submenu_ids,
         } = payload;
         if (!email || !password || !full_name) {
           return json({ ok: false, error: "Informe nome, e-mail e senha." });
@@ -236,12 +205,6 @@ Deno.serve(async (req) => {
         );
         if (linkError) return json({ ok: false, error: linkError });
 
-        const submenuError = await replaceProfileSubmenus(
-          created.user.id,
-          normalizeIdList(submenu_ids)
-        );
-        if (submenuError) return json({ ok: false, error: submenuError });
-
         return json({ ok: true, user_id: created.user.id });
       }
 
@@ -259,7 +222,6 @@ Deno.serve(async (req) => {
           empresas_importar,
           empresas_bulk,
           avatar_url,
-          submenu_ids,
         } = payload;
         if (!id) return json({ ok: false, error: "Usuário não informado." });
         if (role !== undefined && !VALID_ROLES.includes(role)) {
@@ -315,14 +277,6 @@ Deno.serve(async (req) => {
             normalizeDepartmentIds(department_ids)
           );
           if (linkError) return json({ ok: false, error: linkError });
-        }
-
-        if (Array.isArray(submenu_ids)) {
-          const submenuError = await replaceProfileSubmenus(
-            id,
-            normalizeIdList(submenu_ids)
-          );
-          if (submenuError) return json({ ok: false, error: submenuError });
         }
         return json({ ok: true });
       }

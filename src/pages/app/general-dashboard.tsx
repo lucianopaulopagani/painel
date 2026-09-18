@@ -16,8 +16,6 @@ import {
   type ResponsavelBarData,
 } from "@/components/fiscal/responsavel-bars";
 import { useFiscalDashboard } from "@/hooks/use-fiscal-dashboard";
-import { useAllDepartmentSubmenus } from "@/hooks/use-department-submenus";
-import { useMySubmenuIds } from "@/hooks/use-my-submenus";
 import { isSituacaoFinalizada } from "@/lib/fiscal";
 import { useAuth } from "@/context/auth";
 import {
@@ -71,27 +69,15 @@ const DEPT_SUBMENUS: Record<DashboardKey, { key: string; label: string }[]> = {
 export default function GeneralDashboard() {
   const { profile } = useAuth();
   const isAdmin = profile?.role === "admin";
-  const { data: allSubmenus } = useAllDepartmentSubmenus();
-  const { data: mySubmenus } = useMySubmenuIds();
   const userDeptNames = new Set(
     (profile?.departments ?? []).map((department) => department.name)
   );
-  const mySubmenuIdSet = new Set(mySubmenus ?? []);
-  const allowedSubmenuLabels = new Set(
-    (allSubmenus ?? [])
-      .filter((submenu) => mySubmenuIdSet.has(submenu.id))
-      .map((submenu) => submenu.name)
-  );
 
-  // Dashboards visíveis: admin vê todos; senão, departamentos do usuário que
-  // tenham ao menos um subdepartamento liberado.
-  const visibleDashboards = DASHBOARDS.filter((dashboard) => {
-    if (isAdmin) return true;
-    if (!userDeptNames.has(DASHBOARD_DEPARTMENT[dashboard.key])) return false;
-    return DEPT_SUBMENUS[dashboard.key].some((submenu) =>
-      allowedSubmenuLabels.has(submenu.label)
-    );
-  });
+  // Dashboards visíveis: admin vê todos; senão, os departamentos do usuário.
+  const visibleDashboards = DASHBOARDS.filter(
+    (dashboard) =>
+      isAdmin || userDeptNames.has(DASHBOARD_DEPARTMENT[dashboard.key])
+  );
 
   const [activeDept, setActiveDept] = useState<DashboardKey | null>(null);
   const [activeSubmenu, setActiveSubmenu] = useState<
@@ -136,9 +122,7 @@ export default function GeneralDashboard() {
   const activeLabel = active
     ? (DASHBOARDS.find((dashboard) => dashboard.key === active)?.label ?? "")
     : "";
-  const submenus = (active ? DEPT_SUBMENUS[active] : []).filter(
-    (submenu) => isAdmin || allowedSubmenuLabels.has(submenu.label)
-  );
+  const submenus = active ? DEPT_SUBMENUS[active] : [];
   const submenuKey = active ? (activeSubmenu[active] ?? submenus[0].key) : null;
   const submenuLabel =
     submenus.find((submenu) => submenu.key === submenuKey)?.label ?? "";

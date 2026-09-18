@@ -3956,37 +3956,6 @@ export type Database = {
           },
         ]
       }
-      profile_submenus: {
-        Row: {
-          created_at: string
-          profile_id: string
-          submenu_id: string
-        }
-        Insert: {
-          created_at?: string
-          profile_id: string
-          submenu_id: string
-        }
-        Update: {
-          created_at?: string
-          profile_id?: string
-          submenu_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profile_submenus_profile_id_fkey"
-            columns: ["profile_id"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profile_submenus_submenu_id_fkey"
-            columns: ["submenu_id"]
-            referencedRelation: "department_submenus"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           avatar_url: string | null
