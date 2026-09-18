@@ -261,56 +261,57 @@ export default function CompanyFormDialog({
             </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Município</Label>
-            <Select
-              value={municipio === "" ? "none" : municipio}
-              onValueChange={(value) =>
-                setMunicipio(value === "none" ? "" : value)
-              }
-              disabled={!canEdit("municipio") || uf.length !== 2}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    uf.length !== 2
-                      ? "Selecione a UF primeiro"
-                      : (municipios ?? []).length === 0
-                        ? "Carregando municípios…"
-                        : "Selecione o município"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent className="max-h-80">
-                <SelectItem value="none">—</SelectItem>
-                {(municipios ?? []).map((nome) => (
-                  <SelectItem key={nome} value={nome}>
-                    {nome}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label>Tributação</Label>
-            <Select
-              value={tributacao === "" ? "none" : tributacao}
-              onValueChange={setTributacao}
-              disabled={!canEdit("tributacao")}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione a tributação" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">—</SelectItem>
-                {TRIBUTACOES.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <Label>Tributação</Label>
+              <Select
+                value={tributacao === "" ? "none" : tributacao}
+                onValueChange={setTributacao}
+                disabled={!canEdit("tributacao")}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a tributação" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">—</SelectItem>
+                  {TRIBUTACOES.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label>Município</Label>
+              <Select
+                value={municipio === "" ? "none" : municipio}
+                onValueChange={(value) =>
+                  setMunicipio(value === "none" ? "" : value)
+                }
+                disabled={!canEdit("municipio") || uf.length !== 2}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={
+                      uf.length !== 2
+                        ? "Selecione a UF primeiro"
+                        : (municipios ?? []).length === 0
+                          ? "Carregando municípios…"
+                          : "Selecione o município"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent className="max-h-80">
+                  <SelectItem value="none">—</SelectItem>
+                  {(municipios ?? []).map((nome) => (
+                    <SelectItem key={nome} value={nome}>
+                      {nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
