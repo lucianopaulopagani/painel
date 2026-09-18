@@ -149,16 +149,30 @@ export default function CertificateFormDialog({
               </span>
             </span>
           </label>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="cert-vencimento">Vencimento</Label>
+            <Input
+              id="cert-vencimento"
+              type="date"
+              value={vencimento}
+              onChange={(e) => setVencimento(e.target.value)}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Produto</Label>
+            <MultiSelectDropdown
+              options={CERTIFICATE_PRODUCTS.map((produto) => ({
+                value: produto,
+                label: produto,
+              }))}
+              value={produtos}
+              onChange={setProdutos}
+              placeholder="Selecionar produtos"
+            />
+          </div>
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="cert-vencimento">Vencimento</Label>
-              <Input
-                id="cert-vencimento"
-                type="date"
-                value={vencimento}
-                onChange={(e) => setVencimento(e.target.value)}
-              />
-            </div>
             <div className="flex flex-col gap-1.5">
               <Label>Avisado</Label>
               <Select value={avisado} onValueChange={setAvisado}>
@@ -185,19 +199,6 @@ export default function CertificateFormDialog({
                 </SelectContent>
               </Select>
             </div>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label>Produto</Label>
-            <MultiSelectDropdown
-              options={CERTIFICATE_PRODUCTS.map((produto) => ({
-                value: produto,
-                label: produto,
-              }))}
-              value={produtos}
-              onChange={setProdutos}
-              placeholder="Selecionar produtos"
-            />
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
