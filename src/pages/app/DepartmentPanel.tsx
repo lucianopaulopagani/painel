@@ -162,11 +162,8 @@ export default function DepartmentPanel() {
       modules.push({
         key: submenu.id,
         label: submenu.name,
-        // Subdepartamentos sem tela própria mostram o dashboard do departamento.
-        render:
-          render ??
-          DASHBOARDS[key] ??
-          (() => <DepartmentDashboard title={label} />),
+        // Subdepartamentos sem tela própria ficam como "em desenvolvimento".
+        render: render ?? (() => <DepartmentDashboard title={submenu.name} />),
       });
     }
     modules.push({
