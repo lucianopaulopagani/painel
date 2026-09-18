@@ -40,7 +40,7 @@ type DashboardKey = (typeof DASHBOARDS)[number]["key"];
 
 /** Submenus (visões) de cada dashboard por departamento. */
 const DEPT_SUBMENUS: Record<DashboardKey, { key: string; label: string }[]> = {
-  fiscal: [{ key: "dashboard", label: "Dashboard" }],
+  fiscal: [{ key: "dashboard", label: "Movimento Fiscal" }],
   pessoal: [{ key: "dashboard", label: "Dashboard" }],
   societario: [
     { key: "certificado-digital", label: "Certificado digital" },
