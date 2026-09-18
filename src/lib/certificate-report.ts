@@ -85,6 +85,7 @@ export function buildCertificateReportHtml(
         <td class="nowrap">${pill}${escapeHtml(situacao)}</span></td>
         <td>${pill}${escapeHtml(status.status)}</span></td>
         <td>${row.certificate?.avisado === true ? "Sim" : row.certificate?.avisado === false ? "Não" : "—"}</td>
+        <td>${row.certificate?.financ === true ? "Sim" : row.certificate?.financ === false ? "Não" : "—"}</td>
         <td class="nowrap">${escapeHtml(formatDateTimeBr(row.certificate?.agendamento_at))}</td>
         <td>${escapeHtml(row.certificate?.observacoes ?? "—")}</td>
       </tr>`;
@@ -131,10 +132,10 @@ export function buildCertificateReportHtml(
     <thead>
       <tr>
         <th>Empresa</th><th>Responsável</th><th>CPF</th><th>Produto</th><th>Vencimento / Situação</th><th>Status</th>
-        <th>Avisado</th><th>Agendamento</th><th>Observações</th>
+        <th>Avisado</th><th>Financ.</th><th>Agendamento</th><th>Observações</th>
       </tr>
     </thead>
-    <tbody>${body || `<tr><td colspan="9">Nenhum registro.</td></tr>`}</tbody>
+    <tbody>${body || `<tr><td colspan="10">Nenhum registro.</td></tr>`}</tbody>
   </table>
 </body>
 </html>`;
@@ -191,6 +192,7 @@ export function downloadCertificateReportExcel(
         <td>${escapeHtml(status.situacao)}</td>
         <td>${escapeHtml(status.status)}</td>
         <td>${escapeHtml(avisado)}</td>
+        <td>${escapeHtml(row.certificate?.financ === true ? "Sim" : row.certificate?.financ === false ? "Não" : "—")}</td>
         <td>${escapeHtml(formatDateTimeBr(row.certificate?.agendamento_at))}</td>
         <td>${escapeHtml(row.certificate?.observacoes ?? "—")}</td>
       </tr>`;
@@ -221,10 +223,10 @@ export function downloadCertificateReportExcel(
     <thead>
       <tr style="background:#ffe599;font-weight:bold;">
         <th>Empresa</th><th>Responsável</th><th>CPF</th><th>Produto</th><th>Vencimento</th><th>Situação</th><th>Status</th>
-        <th>Avisado</th><th>Agendamento</th><th>Observações</th>
+        <th>Avisado</th><th>Financ.</th><th>Agendamento</th><th>Observações</th>
       </tr>
     </thead>
-    <tbody>${body || '<tr><td colspan="10">Nenhum registro.</td></tr>'}</tbody>
+    <tbody>${body || '<tr><td colspan="11">Nenhum registro.</td></tr>'}</tbody>
   </table>
 </body>
 </html>`;
