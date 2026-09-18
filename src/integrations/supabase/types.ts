@@ -3589,6 +3589,37 @@ export type Database = {
           },
         ]
       }
+      department_submenus: {
+        Row: {
+          created_at: string
+          department_id: string
+          id: string
+          name: string
+          position: number
+        }
+        Insert: {
+          created_at?: string
+          department_id: string
+          id?: string
+          name: string
+          position?: number
+        }
+        Update: {
+          created_at?: string
+          department_id?: string
+          id?: string
+          name?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_submenus_department_id_fkey"
+            columns: ["department_id"]
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departments: {
         Row: {
           created_at: string

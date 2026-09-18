@@ -1,0 +1,31 @@
+create table if not exists public.department_submenus (
+  id uuid primary key default gen_random_uuid(),
+  department_id uuid not null references public.departments(id) on delete cascade,
+  name text not null,
+  position integer not null default 0,
+  created_at timestamptz not null default now(),
+  unique (department_id, name)
+);
+
+alter table public.department_submenus enable row level security;
+
+create policy "department_submenus_admin_all" on public.department_submenus
+  for all using (public.is_admin()) with check (public.is_admin());
+
+create policy "department_submenus_read" on public.department_submenus
+  for select using (true);
+
+insert into public.department_submenus (department_id, name, position)
+select d.id, s.name, s.position
+from (values
+  ('Depart. Fiscal','Movimento Fiscal',0),
+  ('Depart. Pessoal','Empresas com funcionários',0),
+  ('Depart. Pessoal','Empresas Fiscal',1),
+  ('Depart. Pessoal','Domésticas',2),
+  ('Depart. Pessoal','Ponto',3),
+  ('Depart. Pessoal','Complemento INSS',4),
+  ('Societário','Certificado digital',0),
+  ('Depart. Contábil','Balancete/Balanço',0)
+) as s(dept_name, name, position)
+join public.departments d on d.name = s.dept_name
+on conflict (department_id, name) do nothing;

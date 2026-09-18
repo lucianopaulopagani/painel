@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/card";
 import { PanelHeader } from "@/components/shell/panel-header";
 import { useAuth } from "@/context/auth";
+import { useDepartments } from "@/hooks/use-departments";
+import { useAllDepartmentSubmenus } from "@/hooks/use-department-submenus";
 import {
   CONTABIL_DEPARTMENT_NAME,
   FISCAL_DEPARTMENT_NAME,
@@ -51,47 +53,45 @@ interface ModuleDef {
   render: () => JSX.Element;
 }
 
-/** Submenus (módulos) de cada painel — exibidos no menu suspenso da aba. */
-const DEPT_MODULES: Record<AvailablePanelKey, ModuleDef[]> = {
-  dashboard: [
-    {
-      key: "dashboard",
-      label: "Dashboard geral",
-      render: () => <GeneralDashboard />,
-    },
-  ],
-  fiscal: [
-    { key: "dashboard", label: "Dashboard", render: () => <FiscalDashboard /> },
-    { key: "movimento-fiscal", label: "Movimento Fiscal", render: () => <FiscalMovimento /> },
-    { key: "manual", label: "Manual", render: () => <FiscalManual /> },
-  ],
-  pessoal: [
-    { key: "dashboard", label: "Dashboard", render: () => <DepartmentDashboard title="Pessoal" /> },
-    { key: "empresas-funcionarios", label: "Empresas com funcionários", render: () => <EmpresasFuncionarios /> },
-    { key: "empresas-fiscal", label: "Empresas Fiscal", render: () => <EmpresasFiscal /> },
-    { key: "domesticas", label: "Domésticas", render: () => <Domesticas /> },
-    { key: "ponto", label: "Ponto", render: () => <Ponto /> },
-    { key: "complemento-inss", label: "Complemento INSS", render: () => <ComplementoInss /> },
-    { key: "manual", label: "Manual", render: () => <PessoalManual /> },
-  ],
-  societario: [
-    { key: "dashboard", label: "Dashboard", render: () => <SocietarioDashboard /> },
-    { key: "certificado-digital", label: "Certificado digital", render: () => <CertificadoDigital /> },
-    { key: "manual", label: "Manual", render: () => <SocietarioManual /> },
-  ],
-  contabil: [
-    { key: "dashboard", label: "Dashboard", render: () => <DepartmentDashboard title="Contábil" /> },
-    { key: "balancete-balanco", label: "Balancete/Balanço", render: () => <BalanceteBalanco /> },
-    { key: "manual", label: "Manual", render: () => <ContabilManual /> },
-  ],
-  "nota-fiscal": [
-    { key: "dashboard", label: "Dashboard", render: () => <DepartmentDashboard title="Nota Fiscal" /> },
-    { key: "manual", label: "Manual", render: () => <NotaFiscalManual /> },
-  ],
+/** Nome do departamento (cadastro) de cada painel. */
+const PANEL_DEPARTMENT_NAME: Record<AvailablePanelKey, string | null> = {
+  dashboard: null,
+  fiscal: FISCAL_DEPARTMENT_NAME,
+  pessoal: PESSOAL_DEPARTMENT_NAME,
+  societario: SOCIETARIO_DEPARTMENT_NAME,
+  contabil: CONTABIL_DEPARTMENT_NAME,
+  "nota-fiscal": NOTA_FISCAL_DEPARTMENT_NAME,
+};
+
+/** Renderizador por nome de subdepartamento (novos nomes caem no placeholder). */
+const SUBMENU_RENDERERS: Record<string, () => JSX.Element> = {
+  "Movimento Fiscal": () => <FiscalMovimento />,
+  "Empresas com funcionários": () => <EmpresasFuncionarios />,
+  "Empresas Fiscal": () => <EmpresasFiscal />,
+  "Domésticas": () => <Domesticas />,
+  "Ponto": () => <Ponto />,
+  "Complemento INSS": () => <ComplementoInss />,
+  "Certificado digital": () => <CertificadoDigital />,
+  "Balancete/Balanço": () => <BalanceteBalanco />,
+};
+
+const MANUALS: Record<string, () => JSX.Element> = {
+  fiscal: () => <FiscalManual />,
+  pessoal: () => <PessoalManual />,
+  societario: () => <SocietarioManual />,
+  contabil: () => <ContabilManual />,
+  "nota-fiscal": () => <NotaFiscalManual />,
+};
+
+const DASHBOARDS: Record<string, () => JSX.Element> = {
+  fiscal: () => <FiscalDashboard />,
+  societario: () => <SocietarioDashboard />,
 };
 
 export default function DepartmentPanel() {
   const { profile } = useAuth();
+  const { data: departments } = useDepartments();
+  const { data: allSubmenus } = useAllDepartmentSubmenus();
   const [activePanel, setActivePanel] = useState<AvailablePanelKey | null>(null);
   const [activeModule, setActiveModule] = useState<
     Partial<Record<AvailablePanelKey, string>>
@@ -128,6 +128,50 @@ export default function DepartmentPanel() {
   ].filter((panel): panel is { key: AvailablePanelKey; label: string } =>
     Boolean(panel)
   );
+
+  /** Monta os módulos do painel: Dashboard + subdepartamentos (banco) + Manual. */
+  const buildModules = (key: AvailablePanelKey, label: string): ModuleDef[] => {
+    if (key === "dashboard") {
+      return [
+        {
+          key: "dashboard",
+          label: "Dashboard geral",
+          render: () => <GeneralDashboard />,
+        },
+      ];
+    }
+    const modules: ModuleDef[] = [
+      {
+        key: "dashboard",
+        label: "Dashboard",
+        render:
+          DASHBOARDS[key] ?? (() => <DepartmentDashboard title={label} />),
+      },
+    ];
+    const deptName = PANEL_DEPARTMENT_NAME[key];
+    const deptId = deptName
+      ? (departments ?? []).find(
+          (department) => department.name === deptName
+        )?.id
+      : undefined;
+    const submenus = (allSubmenus ?? [])
+      .filter((submenu) => submenu.department_id === deptId)
+      .sort((a, b) => a.position - b.position);
+    for (const submenu of submenus) {
+      const render = SUBMENU_RENDERERS[submenu.name];
+      modules.push({
+        key: submenu.id,
+        label: submenu.name,
+        render: render ?? (() => <DepartmentDashboard title={submenu.name} />),
+      });
+    }
+    modules.push({
+      key: "manual",
+      label: "Manual",
+      render: MANUALS[key] ?? (() => <DepartmentDashboard title="Manual" />),
+    });
+    return modules;
+  };
 
   // Nenhum painel disponível: mantém o placeholder original.
   if (availablePanels.length === 0) {
@@ -188,7 +232,7 @@ export default function DepartmentPanel() {
   const active = activePanel ?? availablePanels[0].key;
   const activeLabel =
     availablePanels.find((panel) => panel.key === active)?.label ?? "";
-  const modules = DEPT_MODULES[active];
+  const modules = buildModules(active, activeLabel);
   const currentModuleKey = activeModule[active] ?? modules[0].key;
   const currentModule =
     modules.find((module) => module.key === currentModuleKey) ?? modules[0];
@@ -209,7 +253,7 @@ export default function DepartmentPanel() {
       <nav className="relative z-30 bg-background/90 backdrop-blur">
         <div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center gap-1 px-4 py-2 sm:px-6">
           {availablePanels.map((panel) => {
-            const deptModules = DEPT_MODULES[panel.key];
+            const deptModules = buildModules(panel.key, panel.label);
             return (
               <div key={panel.key} className="group relative shrink-0">
                 <button

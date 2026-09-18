@@ -24,8 +24,8 @@ import { MultiSelectDropdown } from "@/components/ui/multi-select-dropdown";
 import { useCreateCompany, useUpdateCompany } from "@/hooks/use-companies";
 import { useAllUsersWithDepartments } from "@/hooks/use-all-users";
 import { useMunicipios } from "@/hooks/use-municipios";
+import { useAllDepartmentSubmenus } from "@/hooks/use-department-submenus";
 import { useDepartments } from "@/hooks/use-departments";
-import { submenusOf } from "@/lib/department-submenus";
 import { useAuth } from "@/context/auth";
 import { TRIBUTACOES } from "@/lib/companies";
 import { UFS } from "@/lib/ufs";
@@ -57,6 +57,7 @@ export default function CompanyFormDialog({
   const updateMutation = useUpdateCompany();
   const { data: departments } = useDepartments();
   const { data: usersWithDepartments } = useAllUsersWithDepartments();
+  const { data: allSubmenus } = useAllDepartmentSubmenus();
   const { profile } = useAuth();
   const isEditing = !!company;
 
@@ -363,7 +364,9 @@ export default function CompanyFormDialog({
                   };
                   const editableDepartment =
                     isAdmin || myDepartmentIds.has(department.id);
-                  const deptSubmenus = submenusOf(department.name);
+                  const deptSubmenus = (allSubmenus ?? [])
+                    .filter((submenu) => submenu.department_id === department.id)
+                    .map((submenu) => submenu.name);
                   return (
                     <div
                       key={department.id}

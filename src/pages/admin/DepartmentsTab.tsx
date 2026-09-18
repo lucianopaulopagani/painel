@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import { Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -24,16 +26,27 @@ import {
   useDeleteDepartment,
   useDepartments,
 } from "@/hooks/use-departments";
+import {
+  useAllDepartmentSubmenus,
+  useCreateDepartmentSubmenu,
+  useDeleteDepartmentSubmenu,
+} from "@/hooks/use-department-submenus";
 import DepartmentFormDialog from "@/components/admin/DepartmentFormDialog";
 import type { Department } from "@/lib/types";
 
 export default function DepartmentsTab() {
   const { data: departments, isLoading, isError } = useDepartments();
+  const { data: allSubmenus } = useAllDepartmentSubmenus();
   const deleteMutation = useDeleteDepartment();
+  const createSubmenuMutation = useCreateDepartmentSubmenu();
+  const deleteSubmenuMutation = useDeleteDepartmentSubmenu();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Department | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Department | null>(null);
+  const [newSubmenuByDept, setNewSubmenuByDept] = useState<
+    Record<string, string>
+  >({});
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -46,6 +59,31 @@ export default function DepartmentsTab() {
       );
     }
     setDeleteTarget(null);
+  };
+
+  const handleAddSubmenu = async (departmentId: string) => {
+    const name = (newSubmenuByDept[departmentId] ?? "").trim();
+    if (!name) return;
+    try {
+      await createSubmenuMutation.mutateAsync({ department_id: departmentId, name });
+      setNewSubmenuByDept((prev) => ({ ...prev, [departmentId]: "" }));
+      toast.success("Subdepartamento criado.");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao criar subdepartamento."
+      );
+    }
+  };
+
+  const handleDeleteSubmenu = async (id: string, name: string) => {
+    try {
+      await deleteSubmenuMutation.mutateAsync(id);
+      toast.success(`Subdepartamento "${name}" removido.`);
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao remover subdepartamento."
+      );
+    }
   };
 
   return (
@@ -87,51 +125,107 @@ export default function DepartmentsTab() {
               <TableRow>
                 <TableHead>Nome</TableHead>
                 <TableHead>Descrição</TableHead>
+                <TableHead>Subdepartamentos</TableHead>
                 <TableHead>Criado em</TableHead>
                 <TableHead className="w-28 text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {departments && departments.length > 0 ? (
-                departments.map((d) => (
-                  <TableRow key={d.id}>
-                    <TableCell className="font-medium">{d.name}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {d.description || "—"}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(d.created_at).toLocaleDateString("pt-BR")}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          title="Editar"
-                          onClick={() => {
-                            setEditing(d);
-                            setDialogOpen(true);
-                          }}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          title="Excluir"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => setDeleteTarget(d)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                departments.map((d) => {
+                  const submenus = (allSubmenus ?? []).filter(
+                    (submenu) => submenu.department_id === d.id
+                  );
+                  return (
+                    <TableRow key={d.id}>
+                      <TableCell className="font-medium">{d.name}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {d.description || "—"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap items-center gap-1">
+                          {submenus.map((submenu) => (
+                            <Badge
+                              key={submenu.id}
+                              variant="secondary"
+                              className="gap-1"
+                            >
+                              {submenu.name}
+                              <button
+                                type="button"
+                                title="Remover subdepartamento"
+                                onClick={() =>
+                                  handleDeleteSubmenu(submenu.id, submenu.name)
+                                }
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                          <div className="flex items-center gap-1">
+                            <Input
+                              value={newSubmenuByDept[d.id] ?? ""}
+                              onChange={(e) =>
+                                setNewSubmenuByDept((prev) => ({
+                                  ...prev,
+                                  [d.id]: e.target.value,
+                                }))
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  handleAddSubmenu(d.id);
+                                }
+                              }}
+                              placeholder="Novo subdep."
+                              className="h-7 w-36 text-xs"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              title="Adicionar subdepartamento"
+                              onClick={() => handleAddSubmenu(d.id)}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(d.created_at).toLocaleDateString("pt-BR")}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Editar"
+                            onClick={() => {
+                              setEditing(d);
+                              setDialogOpen(true);
+                            }}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Excluir"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => setDeleteTarget(d)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={4}
+                    colSpan={5}
                     className="py-10 text-center text-muted-foreground"
                   >
                     Nenhum departamento cadastrado.
