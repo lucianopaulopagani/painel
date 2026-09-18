@@ -20,6 +20,7 @@ export interface RawProfileRow {
   avatar_url: string | null;
   created_at: string;
   profile_departments?: { departments: DepartmentRef | null }[] | null;
+  profile_submenus?: { submenu_id: string }[] | null;
 }
 
 /** Converte o retorno aninhado em `departments: DepartmentRef[]`. */
@@ -39,6 +40,9 @@ export function toProfileWithDepartments(
     empresas_bulk: row.empresas_bulk,
     avatar_url: row.avatar_url ?? null,
     created_at: row.created_at,
+    submenu_ids: (row.profile_submenus ?? [])
+      .map((link) => link.submenu_id)
+      .filter(Boolean),
     departments: (row.profile_departments ?? [])
       .map((link) => link.departments)
       .filter((department): department is DepartmentRef => department !== null),

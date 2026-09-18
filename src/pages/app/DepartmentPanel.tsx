@@ -13,6 +13,7 @@ import { PanelHeader } from "@/components/shell/panel-header";
 import { useAuth } from "@/context/auth";
 import { useDepartments } from "@/hooks/use-departments";
 import { useAllDepartmentSubmenus } from "@/hooks/use-department-submenus";
+import { useMySubmenuIds } from "@/hooks/use-my-submenus";
 import {
   CONTABIL_DEPARTMENT_NAME,
   FISCAL_DEPARTMENT_NAME,
@@ -85,6 +86,11 @@ export default function DepartmentPanel() {
   const { profile } = useAuth();
   const { data: departments } = useDepartments();
   const { data: allSubmenus } = useAllDepartmentSubmenus();
+  const { data: mySubmenus } = useMySubmenuIds();
+  const isAdminUser = profile?.role === "admin";
+  const mySubmenuIds = new Set(
+    isAdminUser ? [] : (mySubmenus ?? [])
+  );
   const [activePanel, setActivePanel] = useState<AvailablePanelKey | null>(null);
   const [activeModule, setActiveModule] = useState<
     Partial<Record<AvailablePanelKey, string>>
@@ -140,7 +146,9 @@ export default function DepartmentPanel() {
       : undefined;
     const submenus = (allSubmenus ?? [])
       .filter((submenu) => submenu.department_id === deptId)
-      .sort((a, b) => a.position - b.position);
+      .sort((a, b) => a.position - b.position)
+      // Não-admins veem apenas os subdepartamentos liberados no usuário.
+      .filter((submenu) => isAdminUser || mySubmenuIds.has(submenu.id));
     for (const submenu of submenus) {
       const render = SUBMENU_RENDERERS[submenu.name];
       modules.push({

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { DepartmentMultiSelect } from "@/components/admin/department-multi-select";
 import { EmpresasPermissionSection } from "@/components/admin/EmpresasPermissionSection";
+import { UserSubmenuSelect } from "@/components/admin/UserSubmenuSelect";
 import { useCreateUser } from "@/hooks/use-users";
 import type { Role } from "@/lib/types";
 
@@ -40,6 +41,7 @@ export default function UserFormDialog({
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>("member");
   const [departmentIds, setDepartmentIds] = useState<string[]>([]);
+  const [submenuIds, setSubmenuIds] = useState<string[]>([]);
   const [dashboardAccess, setDashboardAccess] = useState(false);
   const [empresasAccess, setEmpresasAccess] = useState(false);
   const [empresasFields, setEmpresasFields] = useState<string[]>([]);
@@ -54,6 +56,7 @@ export default function UserFormDialog({
       setPassword("");
       setRole("member");
       setDepartmentIds([]);
+      setSubmenuIds([]);
       setDashboardAccess(false);
       setEmpresasAccess(false);
       setEmpresasFields([]);
@@ -80,6 +83,7 @@ export default function UserFormDialog({
         password,
         role,
         department_ids: departmentIds,
+        submenu_ids: submenuIds,
         dashboard_access: dashboardAccess,
         empresas_access: empresasAccess,
         empresas_fields: empresasFields,
@@ -162,6 +166,7 @@ export default function UserFormDialog({
               acessa nenhum departamento.
             </p>
           </div>
+          <UserSubmenuSelect value={submenuIds} onChange={setSubmenuIds} />
           <div className="flex items-center justify-between gap-4 rounded-md border p-3">
             <div>
               <Label htmlFor="user-dashboard" className="text-sm font-medium">

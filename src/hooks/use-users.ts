@@ -63,7 +63,9 @@ export function useUsers() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("*, profile_departments(departments(id, name))")
+        .select(
+          "*, profile_departments(departments(id, name)), profile_submenus(submenu_id)"
+        )
         .order("full_name");
       if (error) throw error;
       return (data as unknown as RawProfileRow[]).map(toProfileWithDepartments);
@@ -77,6 +79,7 @@ export interface CreateUserInput {
   password: string;
   role: Role;
   department_ids: string[];
+  submenu_ids?: string[];
   dashboard_access?: boolean;
   empresas_access?: boolean;
   empresas_fields?: string[];
@@ -108,6 +111,7 @@ export interface UpdateUserInput {
   email?: string;
   role?: Role;
   department_ids?: string[];
+  submenu_ids?: string[];
   dashboard_access?: boolean;
   empresas_access?: boolean;
   empresas_fields?: string[];
