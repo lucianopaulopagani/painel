@@ -1,6 +1,13 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { ChevronDown, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -34,6 +41,11 @@ import {
   alvaraAnos,
 } from "@/lib/alvara-localizacao";
 import { formatCpfCnpj, cn } from "@/lib/utils";
+import {
+  downloadAlvaraReportExcel,
+  printAlvaraReport,
+  type AlvaraReportRow,
+} from "@/lib/alvara-report";
 import type { AlvaraLocalizacaoInput } from "@/lib/types";
 
 const STORAGE_KEY = "societario:alvara-ano";
@@ -195,6 +207,38 @@ export default function AlvaraLocalizacao() {
     }
   };
 
+  const reportFilters = {
+    ano,
+    uf: ufFiltro === "todos" ? undefined : ufFiltro,
+    municipio: municipioFiltro === "todos" ? undefined : municipioFiltro,
+  };
+
+  const reportRows: AlvaraReportRow[] = filteredRows.map((company) => {
+    const record = recordByCompany.get(company.id);
+    return {
+      numero: company.numero ?? "",
+      empresa: company.name,
+      cnpj: formatCpfCnpj(company.documento),
+      uf: company.uf ?? "",
+      municipio: company.municipio ?? "",
+      observacao: effectiveObservacao(company.id) ?? "",
+      vencimento: record?.vencimento ?? "",
+      gerado: record?.gerado ?? "",
+      enviado: record?.enviado ?? "",
+    };
+  });
+
+  const handleReportPdf = () => {
+    const opened = printAlvaraReport(reportRows, reportFilters);
+    if (!opened) {
+      toast.error("Permita pop-ups no navegador para gerar o relatório.");
+    }
+  };
+
+  const handleReportExcel = () => {
+    downloadAlvaraReportExcel(reportRows, reportFilters);
+  };
+
   const renderSelectCell = (
     companyId: string,
     value: string,
@@ -338,6 +382,30 @@ export default function AlvaraLocalizacao() {
             </SelectContent>
           </Select>
         </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="sm"
+              className="gap-2"
+              disabled={filteredRows.length === 0}
+            >
+              <FileText className="h-4 w-4" />
+              Relatório
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleReportPdf}>
+              <FileText className="h-4 w-4" />
+              Gerar em PDF
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleReportExcel}>
+              <FileSpreadsheet className="h-4 w-4" />
+              Gerar em Excel
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {isLoading && (
