@@ -65,7 +65,7 @@ const PRODUCT_CLASS: Record<string, string> = {
 
 const CELL = "px-1 py-1 text-[11px]";
 const HEAD =
-  "sticky top-0 z-20 h-auto bg-muted px-1 py-1 text-[11px] font-medium text-muted-foreground";
+  "sticky top-[112px] z-20 h-auto bg-muted px-1 py-1 text-[11px] font-medium text-muted-foreground";
 
 /** Rótulos dos filtros de situação e status (por nível). */
 const LEVEL_SITUACAO: Record<CertificateStatusLevel, string> = {
@@ -366,7 +366,7 @@ export default function CertificadoDigital() {
       )}
 
       {!isLoading && !isError && (
-        <div className="max-h-[calc(100dvh-260px)] overflow-auto rounded-lg border">
+        <div className="rounded-lg border">
           <Table className="min-w-[1250px] border-separate border-spacing-0">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
