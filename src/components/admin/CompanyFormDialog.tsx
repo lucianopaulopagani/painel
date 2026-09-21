@@ -31,6 +31,7 @@ import { TRIBUTACOES, MOTIVOS_INATIVACAO } from "@/lib/companies";
 import { UFS } from "@/lib/ufs";
 import type { EmpresaPermissionKey } from "@/lib/empresas-permissions";
 import { formatCpfCnpj, isValidCpfCnpj } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { CompanyWithDepartments } from "@/lib/types";
 
 interface CompanyFormDialogProps {
@@ -207,7 +208,14 @@ export default function CompanyFormDialog({
               : "Cadastre uma empresa e vincule os departamentos que a utilizam."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form
+          onSubmit={handleSubmit}
+          className={cn(
+            "flex flex-col gap-4",
+            !ativa &&
+              "[&_label]:text-destructive [&_input]:border-destructive [&_input]:text-destructive [&_[role=combobox]]:border-destructive [&_[role=combobox]]:text-destructive"
+          )}
+        >
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="company-numero">Numero</Label>
