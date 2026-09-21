@@ -179,12 +179,35 @@ export function useBulkUpdateCompanies() {
 
       for (const dept of deptActions ?? []) {
         if (dept.action === "remove") {
-          const { error } = await supabase
-            .from("company_departments")
-            .delete()
-            .in("company_id", ids)
-            .eq("department_id", dept.department_id);
-          if (error) throw error;
+          const toRemove = dept.subdepartments ?? [];
+          if (toRemove.length > 0) {
+            // Remove apenas os subdepartamentos selecionados, mantendo o vínculo.
+            const { data: links, error: readError } = await supabase
+              .from("company_departments")
+              .select("company_id, subdepartments")
+              .in("company_id", ids)
+              .eq("department_id", dept.department_id);
+            if (readError) throw readError;
+            for (const link of links ?? []) {
+              const remaining = (link.subdepartments ?? []).filter(
+                (submenu: string) => !toRemove.includes(submenu)
+              );
+              const { error } = await supabase
+                .from("company_departments")
+                .update({ subdepartments: remaining })
+                .eq("company_id", link.company_id)
+                .eq("department_id", dept.department_id);
+              if (error) throw error;
+            }
+          } else {
+            // Nenhum subdepartamento: desmarca o departamento.
+            const { error } = await supabase
+              .from("company_departments")
+              .delete()
+              .in("company_id", ids)
+              .eq("department_id", dept.department_id);
+            if (error) throw error;
+          }
         } else {
           for (const companyId of ids) {
             const { error } = await supabase

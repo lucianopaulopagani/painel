@@ -262,7 +262,7 @@ export default function CompanyBulkEditDialog({
                             <SelectItem value="remove">Remover</SelectItem>
                           </SelectContent>
                         </Select>
-                        {action === "set" && (
+                        {action !== "none" && (
                           <MultiSelectDropdown
                             options={deptSubmenus.map((submenu) => ({
                               value: submenu,
@@ -274,7 +274,11 @@ export default function CompanyBulkEditDialog({
                                 subdepartments: values,
                               })
                             }
-                            placeholder="Subdepartamentos (opcional)"
+                            placeholder={
+                              action === "remove"
+                                ? "Subdepartamentos a remover"
+                                : "Subdepartamentos (opcional)"
+                            }
                             disabled={
                               !canEdit("departments") ||
                               !editableDepartment ||
@@ -314,8 +318,9 @@ export default function CompanyBulkEditDialog({
             )}
             <p className="text-xs text-muted-foreground">
               "Adicionar / definir" inclui o departamento nas empresas
-              selecionadas (e troca os responsáveis, se informados);
-              "Remover" desvincula o departamento.
+              selecionadas (e troca os responsáveis, se informados); "Remover"
+              remove os subdepartamentos selecionados e, se nenhum for
+              escolhido, desvincula o departamento.
             </p>
           </div>
 
