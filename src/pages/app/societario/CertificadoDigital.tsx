@@ -373,7 +373,7 @@ export default function CertificadoDigital() {
                 {filterSelect("situacao", "Situação", Object.values(LEVEL_SITUACAO))}
                 {filterSelect("status", "Status", Object.values(LEVEL_STATUS))}
                 {filterInput("empresa", "Empresa")}
-                {filterInput("socio", "Resp.")}
+                {filterInput("socio", "Responsável")}
                 {filterInput("socioCpf", "CPF")}
                 {filterSelect("produto", "Produto", CERTIFICATE_PRODUCTS)}
                 {filterSelect("avisado", "Avisado", ["Sim", "Não"])}
