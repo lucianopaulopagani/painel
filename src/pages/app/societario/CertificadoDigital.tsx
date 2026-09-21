@@ -366,8 +366,8 @@ export default function CertificadoDigital() {
       )}
 
       {!isLoading && !isError && (
-        <div className="rounded-lg border">
-          <Table className="min-w-[1250px] border-separate border-spacing-0">
+        <div className="overflow-x-clip rounded-lg border">
+          <Table className="min-w-[1250px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
                 {filterInput("vencimento", "Vencimento")}
