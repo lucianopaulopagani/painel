@@ -38,6 +38,7 @@ import CompanyFormDialog from "@/components/admin/CompanyFormDialog";
 import CompanyImportDialog from "@/components/admin/CompanyImportDialog";
 import CompanyBulkEditDialog from "@/components/admin/CompanyBulkEditDialog";
 import { formatCpfCnpj } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { CompanyWithDepartments } from "@/lib/types";
 
 export default function CompaniesTab() {
@@ -270,7 +271,13 @@ export default function CompaniesTab() {
             <TableBody>
               {filteredCompanies.length > 0 ? (
                 filteredCompanies.map((company) => (
-                  <TableRow key={company.id}>
+                  <TableRow
+                    key={company.id}
+                    className={cn(
+                      !company.ativa &&
+                        "bg-destructive/5 [&_td]:!text-destructive [&_span]:!text-destructive"
+                    )}
+                  >
                     {canBulk && (
                       <TableCell className="px-3 py-1.5">
                         <Checkbox
