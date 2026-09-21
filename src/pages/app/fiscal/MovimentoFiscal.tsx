@@ -44,6 +44,7 @@ import { useUsers } from "@/hooks/use-users";
 import { useAuth } from "@/context/auth";
 import { FISCAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import { companyUsesSubmenu } from "@/lib/department-submenus";
+import { isCompanyInactiveInMonth } from "@/lib/companies";
 import {
   MOVIMENTO_FISCAL_FIELDS,
   SITUACAO_OPTIONS,
@@ -142,8 +143,10 @@ export function MovimentoFiscal() {
       ? company.department_links.find((link) => link.department_id === fiscal.id)
       : undefined;
 
-  const fiscalCompanies = (companies ?? []).filter((company) =>
-    companyUsesSubmenu(company, fiscal?.id, "Movimento Fiscal")
+  const fiscalCompanies = (companies ?? []).filter(
+    (company) =>
+      companyUsesSubmenu(company, fiscal?.id, "Movimento Fiscal") &&
+      !isCompanyInactiveInMonth(company, mes)
   );
 
   const responsibleIds = Array.from(

@@ -58,6 +58,12 @@ export interface Company {
   socio_responsavel: string | null;
   /** CPF do sócio responsável. */
   socio_cpf: string | null;
+  /** Empresa ativa? (false = inativada a partir de data_inativacao) */
+  ativa: boolean;
+  /** Motivo da inativação. */
+  motivo_inativacao: string | null;
+  /** Último dia ativo (YYYY-MM-DD). */
+  data_inativacao: string | null;
   created_at: string;
 }
 

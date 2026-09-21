@@ -49,6 +49,7 @@ import {
   EMPRESAS_FUNC_STATUS_OPTIONS,
 } from "@/lib/empresas-funcionarios";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
+import { isCompanyInactiveInMonth } from "@/lib/companies";
 import { formatCpfCnpj } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { EmpresasFuncionariosInput } from "@/lib/types";
@@ -205,7 +206,8 @@ export default function EmpresasFuncionarios() {
 
   const rows = (companies ?? [])
     .filter((company) =>
-      companyUsesSubmenu(company, pessoal?.id, "Empresas com funcionários")
+      companyUsesSubmenu(company, pessoal?.id, "Empresas com funcionários") &&
+      !isCompanyInactiveInMonth(company, mes)
     )
     .sort((a, b) => {
       if (!a.numero && !b.numero) {

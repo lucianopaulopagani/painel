@@ -40,6 +40,7 @@ import {
   findDepartmentByName,
 } from "@/lib/departments";
 import { companyUsesSubmenu } from "@/lib/department-submenus";
+import { isCompanyInactiveToday } from "@/lib/companies";
 import {
   formatCpfCnpj,
   formatDateOnlyBr,
@@ -111,7 +112,8 @@ export default function CertificadoDigital() {
 
   const rows: CertificateRow[] = (companies ?? [])
     .filter((company) =>
-      companyUsesSubmenu(company, societario?.id, "Certificado digital")
+      companyUsesSubmenu(company, societario?.id, "Certificado digital") &&
+      !isCompanyInactiveToday(company)
     )
     .map((company) => ({
       company,

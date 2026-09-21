@@ -27,7 +27,7 @@ import { useMunicipios } from "@/hooks/use-municipios";
 import { useAllDepartmentSubmenus } from "@/hooks/use-department-submenus";
 import { useDepartments } from "@/hooks/use-departments";
 import { useAuth } from "@/context/auth";
-import { TRIBUTACOES } from "@/lib/companies";
+import { TRIBUTACOES, MOTIVOS_INATIVACAO } from "@/lib/companies";
 import { UFS } from "@/lib/ufs";
 import type { EmpresaPermissionKey } from "@/lib/empresas-permissions";
 import { formatCpfCnpj, isValidCpfCnpj } from "@/lib/utils";
@@ -79,6 +79,9 @@ export default function CompanyFormDialog({
   const [tributacao, setTributacao] = useState("");
   const [socioResponsavel, setSocioResponsavel] = useState("");
   const [socioCpf, setSocioCpf] = useState("");
+  const [ativa, setAtiva] = useState(true);
+  const [motivoInativacao, setMotivoInativacao] = useState("");
+  const [dataInativacao, setDataInativacao] = useState("");
   const [assignments, setAssignments] = useState<
     Record<string, DepartmentAssignment>
   >({});
@@ -98,6 +101,9 @@ export default function CompanyFormDialog({
     setTributacao(company?.tributacao ?? "");
     setSocioResponsavel(company?.socio_responsavel ?? "");
     setSocioCpf(company ? formatCpfCnpj(company.socio_cpf ?? "") : "");
+    setAtiva(company?.ativa ?? true);
+    setMotivoInativacao(company?.motivo_inativacao ?? "");
+    setDataInativacao(company?.data_inativacao ?? "");
 
     const initial: Record<string, DepartmentAssignment> = {};
     for (const department of departments ?? []) {
@@ -164,6 +170,9 @@ export default function CompanyFormDialog({
       tributacao: tributacao || null,
       socio_responsavel: socioResponsavel.trim() || null,
       socio_cpf: socioCpf.replace(/\D/g, "") || null,
+      ativa,
+      motivo_inativacao: ativa ? null : motivoInativacao || null,
+      data_inativacao: ativa ? null : dataInativacao || null,
       department_links,
     };
 
@@ -347,6 +356,63 @@ export default function CompanyFormDialog({
               />
             </div>
           </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <Label>Ativa?</Label>
+              <Select
+                value={ativa ? "sim" : "nao"}
+                onValueChange={(value) => setAtiva(value === "sim")}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sim">Sim</SelectItem>
+                  <SelectItem value="nao">Não</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {!ativa && (
+              <div className="flex flex-col gap-1.5">
+                <Label>Data de inativação</Label>
+                <Input
+                  type="date"
+                  value={dataInativacao}
+                  onChange={(e) => setDataInativacao(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Último dia ativo (ex.: 30/09/2026). A partir de 01/10/2026 a
+                  empresa é desabilitada em todos os departamentos. Meses
+                  anteriores não mudam.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {!ativa && (
+            <div className="flex flex-col gap-1.5">
+              <Label>Motivo da inativação</Label>
+              <Select
+                value={motivoInativacao === "" ? "none" : motivoInativacao}
+                onValueChange={(value) =>
+                  setMotivoInativacao(value === "none" ? "" : value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o motivo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">—</SelectItem>
+                  {MOTIVOS_INATIVACAO.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="flex flex-col gap-2">
             <Label>Departamentos que utilizam a empresa</Label>

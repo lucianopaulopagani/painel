@@ -33,6 +33,7 @@ import {
   EMPRESAS_FISCAL_STATUS_OPTIONS,
 } from "@/lib/empresas-fiscal";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
+import { isCompanyInactiveInMonth } from "@/lib/companies";
 import { formatCpfCnpj } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { EmpresasFiscalInput, EmpresasFiscalRecord } from "@/lib/types";
@@ -80,7 +81,11 @@ export default function EmpresasFiscal() {
   const pessoal = findDepartmentByName(departments, PESSOAL_DEPARTMENT_NAME);
 
   const rows = (companies ?? [])
-    .filter((company) => companyUsesSubmenu(company, pessoal?.id, "Empresas Fiscal"))
+    .filter(
+      (company) =>
+        companyUsesSubmenu(company, pessoal?.id, "Empresas Fiscal") &&
+        !isCompanyInactiveInMonth(company, mes)
+    )
     .sort((a, b) => {
       if (!a.numero && !b.numero) {
         return a.name.localeCompare(b.name, "pt-BR");

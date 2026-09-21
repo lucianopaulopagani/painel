@@ -45,6 +45,9 @@ export interface CompanyInput {
   tributacao: string | null;
   socio_responsavel: string | null;
   socio_cpf: string | null;
+  ativa: boolean;
+  motivo_inativacao: string | null;
+  data_inativacao: string | null;
   department_links: CompanyDepartmentLink[];
 }
 
@@ -90,6 +93,9 @@ export function useCreateCompany() {
           tributacao: input.tributacao ?? null,
           socio_responsavel: input.socio_responsavel?.trim() || null,
           socio_cpf: input.socio_cpf?.trim() || null,
+          ativa: input.ativa,
+          motivo_inativacao: input.motivo_inativacao || null,
+          data_inativacao: input.data_inativacao || null,
         })
         .select("id")
         .single();
@@ -118,6 +124,9 @@ export function useUpdateCompany() {
           tributacao: input.tributacao ?? null,
           socio_responsavel: input.socio_responsavel?.trim() || null,
           socio_cpf: input.socio_cpf?.trim() || null,
+          ativa: input.ativa,
+          motivo_inativacao: input.motivo_inativacao || null,
+          data_inativacao: input.data_inativacao || null,
         })
         .eq("id", id);
       if (error) throw error;

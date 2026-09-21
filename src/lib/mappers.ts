@@ -57,6 +57,9 @@ export interface RawCompanyRow {
   municipio: string | null;
   socio_responsavel: string | null;
   socio_cpf: string | null;
+  ativa: boolean;
+  motivo_inativacao: string | null;
+  data_inativacao: string | null;
   created_at: string;
   company_departments?:
     | {
@@ -82,6 +85,9 @@ export function toCompanyWithDepartments(
     municipio: row.municipio ?? null,
     socio_responsavel: row.socio_responsavel ?? null,
     socio_cpf: row.socio_cpf ?? null,
+    ativa: row.ativa ?? true,
+    motivo_inativacao: row.motivo_inativacao ?? null,
+    data_inativacao: row.data_inativacao ?? null,
     created_at: row.created_at,
     department_links: (row.company_departments ?? []).map((link) => ({
       department_id: link.department_id,

@@ -32,6 +32,7 @@ import {
   COMPLEMENTO_INSS_ENVIO_OPTIONS,
 } from "@/lib/complemento-inss";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
+import { isCompanyInactiveInMonth } from "@/lib/companies";
 import { cn } from "@/lib/utils";
 import type { ComplementoInssInput } from "@/lib/types";
 
@@ -71,7 +72,8 @@ export default function ComplementoInss() {
 
   const rows = (companies ?? [])
     .filter((company) =>
-      companyUsesSubmenu(company, pessoal?.id, "Complemento INSS")
+      companyUsesSubmenu(company, pessoal?.id, "Complemento INSS") &&
+      !isCompanyInactiveInMonth(company, mes)
     )
     .sort((a, b) => {
       if (!a.numero && !b.numero) {
