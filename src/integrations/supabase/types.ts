@@ -3360,6 +3360,49 @@ export type Database = {
   }
   public: {
     Tables: {
+      alvara_localizacao: {
+        Row: {
+          ano: string
+          company_id: string
+          created_at: string
+          enviado: string | null
+          gerado: string | null
+          id: string
+          observacao: string | null
+          updated_at: string
+          vencimento: string | null
+        }
+        Insert: {
+          ano: string
+          company_id: string
+          created_at?: string
+          enviado?: string | null
+          gerado?: string | null
+          id?: string
+          observacao?: string | null
+          updated_at?: string
+          vencimento?: string | null
+        }
+        Update: {
+          ano?: string
+          company_id?: string
+          created_at?: string
+          enviado?: string | null
+          gerado?: string | null
+          id?: string
+          observacao?: string | null
+          updated_at?: string
+          vencimento?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alvara_localizacao_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       balancete_balanco: {
         Row: {
           abr: string | null

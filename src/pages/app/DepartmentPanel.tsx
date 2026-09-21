@@ -29,6 +29,7 @@ import { MovimentoFiscal as FiscalMovimento } from "./fiscal/MovimentoFiscal";
 import BalanceteBalanco from "./contabil/BalanceteBalanco";
 import ContabilManual from "./contabil/ContabilManual";
 import CertificadoDigital from "./societario/CertificadoDigital";
+import AlvaraLocalizacao from "./societario/AlvaraLocalizacao";
 import SocietarioManual from "./societario/SocietarioManual";
 import PessoalManual from "./pessoal/PessoalManual";
 import ComplementoInss from "./pessoal/ComplementoInss";
@@ -70,6 +71,7 @@ const SUBMENU_RENDERERS: Record<string, () => JSX.Element> = {
   "Ponto": () => <Ponto />,
   "Complemento INSS": () => <ComplementoInss />,
   "Certificado digital": () => <CertificadoDigital />,
+  "Alvará de Localização": () => <AlvaraLocalizacao />,
   "Balancete/Balanço": () => <BalanceteBalanco />,
 };
 
