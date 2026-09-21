@@ -14,6 +14,8 @@ export interface AlvaraReportFilters {
   ano?: string;
   uf?: string;
   municipio?: string;
+  vencimentoDe?: string;
+  vencimentoAte?: string;
 }
 
 const HEADERS = [
@@ -41,6 +43,13 @@ function buildFilterSummary(filters: AlvaraReportFilters): string[] {
   if (filters.ano) lines.push(`Ano: ${filters.ano}`);
   if (filters.uf) lines.push(`UF: ${filters.uf}`);
   if (filters.municipio) lines.push(`Município: ${filters.municipio}`);
+  if (filters.vencimentoDe || filters.vencimentoAte) {
+    lines.push(
+      `Vencimento: ${filters.vencimentoDe || "início"} a ${
+        filters.vencimentoAte || "fim"
+      }`
+    );
+  }
   return lines;
 }
 

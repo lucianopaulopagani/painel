@@ -74,6 +74,8 @@ export default function AlvaraLocalizacao() {
   const [ano, setAno] = useState<string>(readStoredAno);
   const [ufFiltro, setUfFiltro] = useState("todos");
   const [municipioFiltro, setMunicipioFiltro] = useState("todos");
+  const [vencimentoDe, setVencimentoDe] = useState("");
+  const [vencimentoAte, setVencimentoAte] = useState("");
   const [busca, setBusca] = useState({
     numero: "",
     empresa: "",
@@ -142,6 +144,15 @@ export default function AlvaraLocalizacao() {
     )
   ).sort();
 
+  /** Vencimento (dd/mm) combinado com o ano selecionado → "YYYY-MM-DD". */
+  const vencimentoIso = (companyId: string): string => {
+    const venc = recordByCompany.get(companyId)?.vencimento ?? "";
+    const match = /^(\d{1,2})\/(\d{1,2})$/.exec(venc);
+    if (!match) return "";
+    const [, dd, mm] = match;
+    return `${ano}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
+  };
+
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
     const match = (value: string | null | undefined, query: string): boolean =>
@@ -156,7 +167,12 @@ export default function AlvaraLocalizacao() {
       if (query === "branco") return !value;
       return !query || (value ?? "") === query;
     };
+    const iso = vencimentoIso(company.id);
+    const inVencimentoRange =
+      (!vencimentoDe || (iso !== "" && iso >= vencimentoDe)) &&
+      (!vencimentoAte || (iso !== "" && iso <= vencimentoAte));
     return (
+      inVencimentoRange &&
       (ufFiltro === "todos" || company.uf === ufFiltro) &&
       (municipioFiltro === "todos" || company.municipio === municipioFiltro) &&
       match(company.numero, busca.numero) &&
@@ -211,6 +227,8 @@ export default function AlvaraLocalizacao() {
     ano,
     uf: ufFiltro === "todos" ? undefined : ufFiltro,
     municipio: municipioFiltro === "todos" ? undefined : municipioFiltro,
+    vencimentoDe: vencimentoDe || undefined,
+    vencimentoAte: vencimentoAte || undefined,
   };
 
   const reportRows: AlvaraReportRow[] = filteredRows.map((company) => {
@@ -381,6 +399,28 @@ export default function AlvaraLocalizacao() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="alvara-venc-de">Vencimento entre</Label>
+          <div className="mt-1.5 flex items-center gap-2">
+            <Input
+              id="alvara-venc-de"
+              type="date"
+              aria-label="Vencimento de"
+              value={vencimentoDe}
+              onChange={(e) => setVencimentoDe(e.target.value)}
+              className="h-9 w-36"
+            />
+            <span className="text-xs text-muted-foreground">até</span>
+            <Input
+              type="date"
+              aria-label="Vencimento até"
+              value={vencimentoAte}
+              onChange={(e) => setVencimentoAte(e.target.value)}
+              className="h-9 w-36"
+            />
+          </div>
         </div>
 
         <DropdownMenu>
