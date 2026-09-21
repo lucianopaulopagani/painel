@@ -64,7 +64,8 @@ const PRODUCT_CLASS: Record<string, string> = {
 };
 
 const CELL = "px-1 py-1 text-[11px]";
-const HEAD = "h-auto px-1 py-1 text-[11px] font-medium text-muted-foreground";
+const HEAD =
+  "sticky top-[108px] z-20 h-auto bg-muted px-1 py-1 text-[11px] font-medium text-muted-foreground";
 
 /** Rótulos dos filtros de situação e status (por nível). */
 const LEVEL_SITUACAO: Record<CertificateStatusLevel, string> = {
