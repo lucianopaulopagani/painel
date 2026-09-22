@@ -85,6 +85,11 @@ const SECTIONS: ManualSection[] = [
           "Observação e Venc. são levados para os anos seguintes até serem alterados.",
       },
       {
+        label: "Dashboard (Dashboard geral)",
+        detail:
+          "No Dashboard geral, o submenu 'Alvará de Localização' mostra os cartões Gerado, Enviado, Total e Sem vencimento (com quantidade e porcentagem), o gráfico de alvarás a vencer nos meses do ano selecionado, e os filtros de Ano, UF e Município.",
+      },
+      {
         label: "Relatório",
         detail:
           "Botão 'Relatório' com geração em PDF e Excel, respeitando os filtros aplicados.",

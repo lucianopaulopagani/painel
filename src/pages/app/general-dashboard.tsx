@@ -27,6 +27,7 @@ import {
 } from "@/lib/departments";
 import { cn } from "@/lib/utils";
 import SocietarioDashboard from "./societario/SocietarioDashboard";
+import AlvaraLocalizacaoDashboard from "./societario/AlvaraLocalizacaoDashboard";
 import {
   defaultReferenceMonth,
   readStoredMonth,
@@ -61,6 +62,7 @@ const DEPT_SUBMENUS: Record<DashboardKey, { key: string; label: string }[]> = {
   pessoal: [{ key: "dashboard", label: "Dashboard" }],
   societario: [
     { key: "certificado-digital", label: "Certificado digital" },
+    { key: "alvara-localizacao", label: "Alvará de Localização" },
   ],
   contabil: [{ key: "dashboard", label: "Dashboard" }],
   "nota-fiscal": [{ key: "dashboard", label: "Dashboard" }],
@@ -239,6 +241,8 @@ export default function GeneralDashboard() {
           </>
         ) : active === "societario" && submenuKey === "certificado-digital" ? (
           <SocietarioDashboard />
+        ) : active === "societario" && submenuKey === "alvara-localizacao" ? (
+          <AlvaraLocalizacaoDashboard />
         ) : !active ? (
           <Card className="border-dashed">
             <CardHeader>
