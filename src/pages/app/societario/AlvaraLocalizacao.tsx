@@ -117,15 +117,26 @@ export default function AlvaraLocalizacao() {
     (records ?? []).map((record) => [record.company_id, record])
   );
 
-  /** Observação efetiva: usa o ano atual; senão herda do ano anterior mais recente. */
-  const effectiveObservacao = (companyId: string): string | null => {
+  /** Campo efetivo: usa o ano atual; senão herda do ano anterior mais recente. */
+  const effectiveField = (
+    companyId: string,
+    field: "observacao" | "vencimento"
+  ): string | null => {
     const current = recordByCompany.get(companyId);
-    if (current && current.observacao) return current.observacao;
+    if (current && current[field]) return current[field];
     const prior = (allRecords ?? [])
       .filter((record) => record.company_id === companyId && record.ano < ano)
       .sort((a, b) => b.ano.localeCompare(a.ano));
-    return prior.find((record) => record.observacao)?.observacao ?? null;
+    return prior.find((record) => record[field])?.[field] ?? null;
   };
+
+  /** Observação efetiva (herdada dos anos anteriores até ser alterada). */
+  const effectiveObservacao = (companyId: string): string | null =>
+    effectiveField(companyId, "observacao");
+
+  /** Vencimento efetivo (levado para os anos seguintes até ser alterado). */
+  const effectiveVencimento = (companyId: string): string | null =>
+    effectiveField(companyId, "vencimento");
 
   const ufOptions = Array.from(
     new Set(
@@ -146,7 +157,7 @@ export default function AlvaraLocalizacao() {
 
   /** Vencimento (dd/mm) combinado com o ano selecionado → "YYYY-MM-DD". */
   const vencimentoIso = (companyId: string): string => {
-    const venc = recordByCompany.get(companyId)?.vencimento ?? "";
+    const venc = effectiveVencimento(companyId) ?? "";
     const match = /^(\d{1,2})\/(\d{1,2})$/.exec(venc);
     if (!match) return "";
     const [, dd, mm] = match;
@@ -181,7 +192,8 @@ export default function AlvaraLocalizacao() {
       selectOrBlank(company.uf, busca.uf) &&
       selectOrBlank(company.municipio, busca.municipio) &&
       match(effectiveObservacao(company.id), busca.observacao) &&
-      match(record?.vencimento, busca.vencimento) &&
+      match(record?.vencimento, busca.vencimento) === true &&
+      match(effectiveVencimento(company.id), busca.vencimento) &&
       selectOrBlank(record?.gerado, busca.gerado) &&
       selectOrBlank(record?.enviado, busca.enviado)
     );
