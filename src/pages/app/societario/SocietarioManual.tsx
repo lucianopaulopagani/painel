@@ -60,6 +60,38 @@ const SECTIONS: ManualSection[] = [
     ],
   },
   {
+    title: "Alvará de Localização",
+    description:
+      "Controle anual do alvará de localização das empresas do departamento.",
+    items: [
+      {
+        label: "Empresas",
+        detail:
+          "Aparecem as empresas com o subdepartamento 'Alvará de Localização' marcado no cadastro de empresas. Nº, Empresa, CNPJ, UF e Município vêm do cadastro.",
+      },
+      {
+        label: "Filtros fora da tabela",
+        detail:
+          "Ano, UF e Município (lado a lado), além de 'Vencimento entre' duas datas — o intervalo combina o dia/mês com o ano selecionado.",
+      },
+      {
+        label: "Colunas e filtros",
+        detail:
+          "Nº, Empresa, CNPJ, UF, Município, Observação, Venc., Gerado e Enviado, com filtro no cabeçalho de cada coluna.",
+      },
+      {
+        label: "Herança entre anos",
+        detail:
+          "Observação e Venc. são levados para os anos seguintes até serem alterados.",
+      },
+      {
+        label: "Relatório",
+        detail:
+          "Botão 'Relatório' com geração em PDF e Excel, respeitando os filtros aplicados.",
+      },
+    ],
+  },
+  {
     title: "Certificado digital",
     description:
       "Tabela com o certificado de cada empresa: vencimento, situação, status, produto, avisado, agendamento e observações.",

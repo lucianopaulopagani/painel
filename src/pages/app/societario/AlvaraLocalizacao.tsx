@@ -192,7 +192,6 @@ export default function AlvaraLocalizacao() {
       selectOrBlank(company.uf, busca.uf) &&
       selectOrBlank(company.municipio, busca.municipio) &&
       match(effectiveObservacao(company.id), busca.observacao) &&
-      match(record?.vencimento, busca.vencimento) === true &&
       match(effectiveVencimento(company.id), busca.vencimento) &&
       selectOrBlank(record?.gerado, busca.gerado) &&
       selectOrBlank(record?.enviado, busca.enviado)
@@ -214,6 +213,7 @@ export default function AlvaraLocalizacao() {
         ano,
         ...fields,
         observacao: effectiveObservacao(companyId) ?? null,
+        vencimento: effectiveVencimento(companyId) ?? null,
         ...patch,
       } as unknown as AlvaraLocalizacaoInput,
       {
@@ -252,7 +252,7 @@ export default function AlvaraLocalizacao() {
       uf: company.uf ?? "",
       municipio: company.municipio ?? "",
       observacao: effectiveObservacao(company.id) ?? "",
-      vencimento: record?.vencimento ?? "",
+      vencimento: effectiveVencimento(company.id) ?? "",
       gerado: record?.gerado ?? "",
       enviado: record?.enviado ?? "",
     };
@@ -544,7 +544,7 @@ export default function AlvaraLocalizacao() {
                     <TableCell className={`${CELL} w-20`}>
                       <Input
                         key={`${company.id}:${ano}:venc`}
-                        defaultValue={record?.vencimento ?? ""}
+                        defaultValue={effectiveVencimento(company.id) ?? ""}
                         placeholder="xx/xx"
                         onBlur={(event) =>
                           save(company.id, {
