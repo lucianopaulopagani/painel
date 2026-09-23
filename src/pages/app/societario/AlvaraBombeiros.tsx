@@ -103,7 +103,7 @@ export default function AlvaraBombeiros() {
   const rows = (companies ?? [])
     .filter(
       (company) =>
-        companyUsesSubmenu(company, societario?.id, "Alvará dos Bombeiros") &&
+        companyUsesSubmenu(company, societario?.id, "Alvará Bombeiros") &&
         !isCompanyInactiveToday(company)
     )
     .sort((a, b) => {
@@ -262,7 +262,7 @@ export default function AlvaraBombeiros() {
     const opened = printAlvaraReport(
       reportRows,
       reportFilters,
-      "Alvará dos Bombeiros"
+      "Alvará Bombeiros"
     );
     if (!opened) {
       toast.error("Permita pop-ups no navegador para gerar o relatório.");
@@ -270,7 +270,7 @@ export default function AlvaraBombeiros() {
   };
 
   const handleReportExcel = () => {
-    downloadAlvaraReportExcel(reportRows, reportFilters, "Alvará dos Bombeiros");
+    downloadAlvaraReportExcel(reportRows, reportFilters, "Alvará Bombeiros");
   };
 
   const renderSelectCell = (
@@ -354,7 +354,7 @@ export default function AlvaraBombeiros() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-semibold">Alvará dos Bombeiros</h2>
+        <h2 className="text-lg font-semibold">Alvará Bombeiros</h2>
         <p className="text-sm text-muted-foreground">
           Empresas vinculadas ao departamento {SOCIETARIO_DEPARTMENT_NAME}.
         </p>
@@ -590,7 +590,7 @@ export default function AlvaraBombeiros() {
                   >
                     {Object.values(busca).some(Boolean) && rows.length > 0
                       ? "Nenhuma empresa encontrada com os filtros."
-                      : `Nenhuma empresa com o subdepartamento "Alvará dos Bombeiros" no departamento ${SOCIETARIO_DEPARTMENT_NAME}. Marque-o no cadastro de empresas para que elas apareçam aqui.`}
+                      : `Nenhuma empresa com o subdepartamento "Alvará Bombeiros" no departamento ${SOCIETARIO_DEPARTMENT_NAME}. Marque-o no cadastro de empresas para que elas apareçam aqui.`}
                   </TableCell>
                 </TableRow>
               )}

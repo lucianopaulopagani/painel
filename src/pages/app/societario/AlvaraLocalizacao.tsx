@@ -103,7 +103,7 @@ export default function AlvaraLocalizacao() {
   const rows = (companies ?? [])
     .filter(
       (company) =>
-        companyUsesSubmenu(company, societario?.id, "Alvará de Localização") &&
+        companyUsesSubmenu(company, societario?.id, "Alvará localização") &&
         !isCompanyInactiveToday(company)
     )
     .sort((a, b) => {
@@ -350,7 +350,7 @@ export default function AlvaraLocalizacao() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-semibold">Alvará de Localização</h2>
+        <h2 className="text-lg font-semibold">Alvará localização</h2>
         <p className="text-sm text-muted-foreground">
           Empresas vinculadas ao departamento {SOCIETARIO_DEPARTMENT_NAME}.
         </p>
@@ -586,7 +586,7 @@ export default function AlvaraLocalizacao() {
                   >
                     {Object.values(busca).some(Boolean) && rows.length > 0
                       ? "Nenhuma empresa encontrada com os filtros."
-                      : `Nenhuma empresa com o subdepartamento "Alvará de Localização" no departamento ${SOCIETARIO_DEPARTMENT_NAME}. Marque-o no cadastro de empresas para que elas apareçam aqui.`}
+                      : `Nenhuma empresa com o subdepartamento "Alvará localização" no departamento ${SOCIETARIO_DEPARTMENT_NAME}. Marque-o no cadastro de empresas para que elas apareçam aqui.`}
                   </TableCell>
                 </TableRow>
               )}

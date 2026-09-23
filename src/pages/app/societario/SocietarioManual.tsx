@@ -60,14 +60,14 @@ const SECTIONS: ManualSection[] = [
     ],
   },
   {
-    title: "Alvará de Localização",
+    title: "Alvará localização",
     description:
       "Controle anual do alvará de localização das empresas do departamento.",
     items: [
       {
         label: "Empresas",
         detail:
-          "Aparecem as empresas com o subdepartamento 'Alvará de Localização' marcado no cadastro de empresas. Nº, Empresa, CNPJ, UF e Município vêm do cadastro.",
+          "Aparecem as empresas com o subdepartamento 'Alvará localização' marcado no cadastro de empresas. Nº, Empresa, CNPJ, UF e Município vêm do cadastro.",
       },
       {
         label: "Filtros fora da tabela",
@@ -87,7 +87,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Dashboard (Dashboard geral)",
         detail:
-          "No Dashboard geral, o submenu 'Alvará de Localização' mostra os cartões Gerado, Enviado, Total e Sem vencimento (com quantidade e porcentagem), o gráfico de alvarás a vencer nos meses do ano selecionado, e os filtros de Ano, UF e Município.",
+          "No Dashboard geral, o submenu 'Alvará localização' mostra os cartões Gerado, Enviado, Total e Sem vencimento (com quantidade e porcentagem), o gráfico de alvarás a vencer nos meses do ano selecionado, e os filtros de Ano, UF e Município.",
       },
       {
         label: "Relatório",
@@ -134,14 +134,14 @@ const SECTIONS: ManualSection[] = [
     ],
   },
   {
-    title: "Alvará dos Bombeiros",
+    title: "Alvará Bombeiros",
     description:
       "Controle anual do alvará dos bombeiros das empresas do departamento.",
     items: [
       {
         label: "Empresas",
         detail:
-          "Aparecem as empresas com o subdepartamento 'Alvará dos Bombeiros' marcado no cadastro de empresas. Nº, Empresa, CNPJ, UF e Município vêm do cadastro.",
+          "Aparecem as empresas com o subdepartamento 'Alvará Bombeiros' marcado no cadastro de empresas. Nº, Empresa, CNPJ, UF e Município vêm do cadastro.",
       },
       {
         label: "Filtros fora da tabela",
@@ -161,7 +161,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Dashboard (Dashboard geral)",
         detail:
-          "No Dashboard geral, o submenu 'Alvará dos Bombeiros' mostra os cartões Gerado, Enviado, Total e Sem vencimento (com quantidade e porcentagem), o gráfico de alvarás a vencer nos meses do ano selecionado, e os filtros de Ano, UF e Município.",
+          "No Dashboard geral, o submenu 'Alvará Bombeiros' mostra os cartões Gerado, Enviado, Total e Sem vencimento (com quantidade e porcentagem), o gráfico de alvarás a vencer nos meses do ano selecionado, e os filtros de Ano, UF e Município.",
       },
       {
         label: "Relatório",

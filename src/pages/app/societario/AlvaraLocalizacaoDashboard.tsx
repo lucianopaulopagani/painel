@@ -68,7 +68,7 @@ export default function AlvaraLocalizacaoDashboard() {
 
   const allCompanies = (companies ?? []).filter(
     (company) =>
-      companyUsesSubmenu(company, societario?.id, "Alvará de Localização") &&
+      companyUsesSubmenu(company, societario?.id, "Alvará localização") &&
       !isCompanyInactiveToday(company)
   );
 
@@ -173,7 +173,7 @@ export default function AlvaraLocalizacaoDashboard() {
       <div>
         <h2 className="text-lg font-semibold">Dashboard</h2>
         <p className="text-sm text-muted-foreground">
-          Alvará de Localização — empresas do departamento{" "}
+          Alvará localização — empresas do departamento{" "}
           {SOCIETARIO_DEPARTMENT_NAME}.
         </p>
       </div>

@@ -68,7 +68,7 @@ export default function AlvaraBombeirosDashboard() {
 
   const allCompanies = (companies ?? []).filter(
     (company) =>
-      companyUsesSubmenu(company, societario?.id, "Alvará dos Bombeiros") &&
+      companyUsesSubmenu(company, societario?.id, "Alvará Bombeiros") &&
       !isCompanyInactiveToday(company)
   );
 
@@ -173,7 +173,7 @@ export default function AlvaraBombeirosDashboard() {
       <div>
         <h2 className="text-lg font-semibold">Dashboard</h2>
         <p className="text-sm text-muted-foreground">
-          Alvará dos Bombeiros — empresas do departamento{" "}
+          Alvará Bombeiros — empresas do departamento{" "}
           {SOCIETARIO_DEPARTMENT_NAME}.
         </p>
       </div>

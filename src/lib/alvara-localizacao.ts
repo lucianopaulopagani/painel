@@ -1,4 +1,4 @@
-/** Opções do submenu Alvará de Localização (Societário). */
+/** Opções do submenu Alvará localização (Societário). */
 export const ALVARA_GERADO_OPTIONS = ["OK"] as const;
 export const ALVARA_ENVIADO_OPTIONS = ["OK"] as const;
 

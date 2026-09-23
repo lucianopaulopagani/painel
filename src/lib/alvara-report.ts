@@ -75,7 +75,7 @@ function generatedLabel(): string {
 export function printAlvaraReport(
   rows: AlvaraReportRow[],
   filters: AlvaraReportFilters,
-  title = "Alvará de Localização"
+  title = "Alvará localização"
 ): boolean {
   const filterLines = buildFilterSummary(filters);
   const filterHtml =
@@ -143,7 +143,7 @@ export function printAlvaraReport(
 export function downloadAlvaraReportExcel(
   rows: AlvaraReportRow[],
   filters: AlvaraReportFilters,
-  title = "Alvará de Localização"
+  title = "Alvará localização"
 ): void {
   const filterLines = buildFilterSummary(filters);
   const filterHtml =

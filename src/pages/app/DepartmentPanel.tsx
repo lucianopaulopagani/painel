@@ -73,9 +73,9 @@ const SUBMENU_RENDERERS: Record<string, () => JSX.Element> = {
   "Ponto": () => <Ponto />,
   "Complemento INSS": () => <ComplementoInss />,
   "Certificado digital": () => <CertificadoDigital />,
-  "Alvará de Localização": () => <AlvaraLocalizacao />,
+  "Alvará localização": () => <AlvaraLocalizacao />,
   "Alvará Sanitário": () => <AlvaraSanitario />,
-  "Alvará dos Bombeiros": () => <AlvaraBombeiros />,
+  "Alvará Bombeiros": () => <AlvaraBombeiros />,
   "Balancete/Balanço": () => <BalanceteBalanco />,
 };
 

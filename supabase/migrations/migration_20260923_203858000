@@ -1,0 +1,10 @@
+update public.department_submenus set name = 'Alvará localização' where name = 'Alvará de Localização';
+update public.department_submenus set name = 'Alvará Bombeiros' where name = 'Alvará dos Bombeiros';
+
+update public.company_departments
+  set subdepartments = array_replace(subdepartments, 'Alvará de Localização', 'Alvará localização')
+  where 'Alvará de Localização' = any(subdepartments);
+
+update public.company_departments
+  set subdepartments = array_replace(subdepartments, 'Alvará dos Bombeiros', 'Alvará Bombeiros')
+  where 'Alvará dos Bombeiros' = any(subdepartments);

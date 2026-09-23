@@ -64,9 +64,9 @@ const DEPT_SUBMENUS: Record<DashboardKey, { key: string; label: string }[]> = {
   pessoal: [{ key: "dashboard", label: "Dashboard" }],
   societario: [
     { key: "certificado-digital", label: "Certificado digital" },
-    { key: "alvara-localizacao", label: "Alvará de Localização" },
+    { key: "alvara-localizacao", label: "Alvará localização" },
     { key: "alvara-sanitario", label: "Alvará Sanitário" },
-    { key: "alvara-bombeiros", label: "Alvará dos Bombeiros" },
+    { key: "alvara-bombeiros", label: "Alvará Bombeiros" },
   ],
   contabil: [{ key: "dashboard", label: "Dashboard" }],
   "nota-fiscal": [{ key: "dashboard", label: "Dashboard" }],

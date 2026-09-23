@@ -203,7 +203,7 @@ export type ComplementoInssInput = Omit<
   "id" | "created_at" | "updated_at"
 >;
 
-/** Registro anual do Alvará de Localização (Societário). */
+/** Registro anual do Alvará localização (Societário). */
 export interface AlvaraLocalizacaoRecord {
   id: string;
   company_id: string;
@@ -239,7 +239,7 @@ export type AlvaraSanitarioInput = Omit<
   "id" | "created_at" | "updated_at"
 >;
 
-/** Registro anual do Alvará dos Bombeiros (Societário). */
+/** Registro anual do Alvará Bombeiros (Societário). */
 export interface AlvaraBombeirosRecord {
   id: string;
   company_id: string;

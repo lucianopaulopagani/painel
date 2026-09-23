@@ -1,4 +1,4 @@
-/** Opções do submenu Alvará dos Bombeiros (Societário). */
+/** Opções do submenu Alvará Bombeiros (Societário). */
 export const ALVARA_BOMBEIROS_GERADO_OPTIONS = ["OK"] as const;
 export const ALVARA_BOMBEIROS_ENVIADO_OPTIONS = ["OK"] as const;
 
