@@ -74,7 +74,8 @@ function generatedLabel(): string {
 /** Abre o relatório do Alvará em nova janela para imprimir/salvar em PDF. */
 export function printAlvaraReport(
   rows: AlvaraReportRow[],
-  filters: AlvaraReportFilters
+  filters: AlvaraReportFilters,
+  title = "Alvará de Localização"
 ): boolean {
   const filterLines = buildFilterSummary(filters);
   const filterHtml =
@@ -102,7 +103,7 @@ export function printAlvaraReport(
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
-<title>Relatório de Alvará de Localização</title>
+<title>Relatório de ${title}</title>
 <style>
   * { box-sizing: border-box; }
   body { font-family: Arial, Helvetica, sans-serif; color: #0f172a; margin: 24px; }
@@ -117,7 +118,7 @@ export function printAlvaraReport(
 </style>
 </head>
 <body>
-  <h1>Relatório de Alvará de Localização</h1>
+  <h1>Relatório de ${title}</h1>
   <p class="meta">Gerado em ${generatedLabel()} — ${rows.length} registro(s)</p>
   ${filterHtml}
   <table>
@@ -141,7 +142,8 @@ export function printAlvaraReport(
 /** Gera o arquivo Excel (.xls) do relatório do Alvará. */
 export function downloadAlvaraReportExcel(
   rows: AlvaraReportRow[],
-  filters: AlvaraReportFilters
+  filters: AlvaraReportFilters,
+  title = "Alvará de Localização"
 ): void {
   const filterLines = buildFilterSummary(filters);
   const filterHtml =
@@ -169,9 +171,9 @@ export function downloadAlvaraReportExcel(
 
   const html = `<!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8" /><title>Alvará de Localização</title></head>
+<head><meta charset="utf-8" /><title>${title}</title></head>
 <body>
-  <h1 style="font-size:16px;margin:0 0 4px;">Relatório de Alvará de Localização</h1>
+  <h1 style="font-size:16px;margin:0 0 4px;">Relatório de ${title}</h1>
   <p style="font-size:12px;color:#475569;margin:0 0 4px;">Gerado em ${generatedLabel()} — ${rows.length} registro(s)</p>
   ${filterHtml}
   <table border="1" cellspacing="0" cellpadding="4" style="border-collapse:collapse;font-size:12px;">
@@ -191,7 +193,11 @@ export function downloadAlvaraReportExcel(
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `alvara-localizacao-${stamp()}.xls`;
+  link.download = `${title
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "-")}-${stamp()}.xls`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

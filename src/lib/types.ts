@@ -221,6 +221,24 @@ export type AlvaraLocalizacaoInput = Omit<
   "id" | "created_at" | "updated_at"
 >;
 
+/** Registro anual do Alvará Sanitário (Societário). */
+export interface AlvaraSanitarioRecord {
+  id: string;
+  company_id: string;
+  ano: string;
+  vencimento: string | null;
+  gerado: string | null;
+  enviado: string | null;
+  observacao: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type AlvaraSanitarioInput = Omit<
+  AlvaraSanitarioRecord,
+  "id" | "created_at" | "updated_at"
+>;
+
 /** Cadastro de domésticas (pessoas físicas atendidas pelo Pessoal). */
 export interface DomesticasRecord {
   id: string;

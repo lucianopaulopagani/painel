@@ -30,6 +30,7 @@ import BalanceteBalanco from "./contabil/BalanceteBalanco";
 import ContabilManual from "./contabil/ContabilManual";
 import CertificadoDigital from "./societario/CertificadoDigital";
 import AlvaraLocalizacao from "./societario/AlvaraLocalizacao";
+import AlvaraSanitario from "./societario/AlvaraSanitario";
 import SocietarioManual from "./societario/SocietarioManual";
 import PessoalManual from "./pessoal/PessoalManual";
 import ComplementoInss from "./pessoal/ComplementoInss";
@@ -72,6 +73,7 @@ const SUBMENU_RENDERERS: Record<string, () => JSX.Element> = {
   "Complemento INSS": () => <ComplementoInss />,
   "Certificado digital": () => <CertificadoDigital />,
   "Alvará de Localização": () => <AlvaraLocalizacao />,
+  "Alvará Sanitário": () => <AlvaraSanitario />,
   "Balancete/Balanço": () => <BalanceteBalanco />,
 };
 
