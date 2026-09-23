@@ -134,6 +134,43 @@ const SECTIONS: ManualSection[] = [
     ],
   },
   {
+    title: "Alvará dos Bombeiros",
+    description:
+      "Controle anual do alvará dos bombeiros das empresas do departamento.",
+    items: [
+      {
+        label: "Empresas",
+        detail:
+          "Aparecem as empresas com o subdepartamento 'Alvará dos Bombeiros' marcado no cadastro de empresas. Nº, Empresa, CNPJ, UF e Município vêm do cadastro.",
+      },
+      {
+        label: "Filtros fora da tabela",
+        detail:
+          "Ano, UF e Município (lado a lado), além de 'Vencimento entre' duas datas (formato dd/mm, combinado com o ano selecionado) e o botão Relatório.",
+      },
+      {
+        label: "Colunas e filtros",
+        detail:
+          "Nº, Empresa, CNPJ, UF, Município, Observação, Venc. (dd/mm), Gerado e Enviado, com filtro no cabeçalho de cada coluna.",
+      },
+      {
+        label: "Herança entre anos",
+        detail:
+          "Observação e Venc. são levados para os anos seguintes até serem alterados.",
+      },
+      {
+        label: "Dashboard (Dashboard geral)",
+        detail:
+          "No Dashboard geral, o submenu 'Alvará dos Bombeiros' mostra os cartões Gerado, Enviado, Total e Sem vencimento (com quantidade e porcentagem), o gráfico de alvarás a vencer nos meses do ano selecionado, e os filtros de Ano, UF e Município.",
+      },
+      {
+        label: "Relatório",
+        detail:
+          "Botão 'Relatório' com geração em PDF e Excel, respeitando os filtros aplicados.",
+      },
+    ],
+  },
+  {
     title: "Certificado digital",
     description:
       "Tabela com o certificado de cada empresa: vencimento, situação, status, produto, avisado, agendamento e observações.",

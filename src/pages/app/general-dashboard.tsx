@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import SocietarioDashboard from "./societario/SocietarioDashboard";
 import AlvaraLocalizacaoDashboard from "./societario/AlvaraLocalizacaoDashboard";
 import AlvaraSanitarioDashboard from "./societario/AlvaraSanitarioDashboard";
+import AlvaraBombeirosDashboard from "./societario/AlvaraBombeirosDashboard";
 import {
   defaultReferenceMonth,
   readStoredMonth,
@@ -65,6 +66,7 @@ const DEPT_SUBMENUS: Record<DashboardKey, { key: string; label: string }[]> = {
     { key: "certificado-digital", label: "Certificado digital" },
     { key: "alvara-localizacao", label: "Alvará de Localização" },
     { key: "alvara-sanitario", label: "Alvará Sanitário" },
+    { key: "alvara-bombeiros", label: "Alvará dos Bombeiros" },
   ],
   contabil: [{ key: "dashboard", label: "Dashboard" }],
   "nota-fiscal": [{ key: "dashboard", label: "Dashboard" }],
@@ -247,6 +249,8 @@ export default function GeneralDashboard() {
           <AlvaraLocalizacaoDashboard />
         ) : active === "societario" && submenuKey === "alvara-sanitario" ? (
           <AlvaraSanitarioDashboard />
+        ) : active === "societario" && submenuKey === "alvara-bombeiros" ? (
+          <AlvaraBombeirosDashboard />
         ) : !active ? (
           <Card className="border-dashed">
             <CardHeader>

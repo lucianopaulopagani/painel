@@ -239,6 +239,24 @@ export type AlvaraSanitarioInput = Omit<
   "id" | "created_at" | "updated_at"
 >;
 
+/** Registro anual do Alvará dos Bombeiros (Societário). */
+export interface AlvaraBombeirosRecord {
+  id: string;
+  company_id: string;
+  ano: string;
+  vencimento: string | null;
+  gerado: string | null;
+  enviado: string | null;
+  observacao: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type AlvaraBombeirosInput = Omit<
+  AlvaraBombeirosRecord,
+  "id" | "created_at" | "updated_at"
+>;
+
 /** Cadastro de domésticas (pessoas físicas atendidas pelo Pessoal). */
 export interface DomesticasRecord {
   id: string;
