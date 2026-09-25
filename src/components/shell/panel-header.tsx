@@ -127,12 +127,18 @@ export function PanelHeader({ title, subtitle, children }: PanelHeaderProps) {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Link to="/agenda" className="shrink-0">
+          <a
+            href="/agenda"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0"
+            title="Abrir a Agenda em nova janela"
+          >
             <Button variant="ghost" size="sm" className="gap-2">
               <CalendarDays className="h-4 w-4" />
               <span className="hidden sm:inline">Agenda</span>
             </Button>
-          </Link>
+          </a>
           <Link to="/app" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2">
               <LayoutDashboard className="h-4 w-4" />
