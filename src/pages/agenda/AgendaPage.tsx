@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/context/auth";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { cn } from "@/lib/utils";
 import { DayView, MonthView, WeekView } from "./CalendarViews";
 import { PendingSharesPanel, ShareDialog } from "./ShareDialog";
@@ -147,6 +148,7 @@ interface EventDraft {
 
 export default function AgendaPage() {
   const { profile } = useAuth();
+  useDocumentTitle("Agenda P4");
   const myId = profile?.id ?? "";
   const myEmail = (profile?.email ?? "").toLowerCase();
 

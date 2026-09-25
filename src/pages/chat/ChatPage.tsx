@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/context/auth";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { cn, getInitials } from "@/lib/utils";
 import {
   useAddGroupMember,
@@ -67,6 +68,7 @@ function formatDay(value: string): string {
 
 export default function ChatPage() {
   const { profile } = useAuth();
+  useDocumentTitle("WebChat P4");
   const myId = profile?.id ?? "";
   const isManager = profile?.role === "admin" || profile?.chat_admin === true;
 
