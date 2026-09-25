@@ -1,0 +1,5 @@
+create policy "chat_conversations_select_creator" on public.chat_conversations for select
+  using (created_by = auth.uid());
+
+create policy "chat_conversations_select_members" on public.chat_conversations for select
+  using (exists (select 1 from public.chat_members m where m.conversation_id = id and m.profile_id = auth.uid()));

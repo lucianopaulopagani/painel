@@ -51,6 +51,14 @@ export const chatKeys = {
   presence: ["chat", "presence"] as const,
 };
 
+/** Gera um UUID no cliente (evita depender do RETURNING do INSERT). */
+function newId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 /** Diretório de colegas (id, nome, avatar). */
 export function useChatUsers() {
   return useQuery({
@@ -194,22 +202,22 @@ export function useStartDirectChat() {
       });
       if (found) return found.id as string;
 
-      const { data: created, error: createError } = await supabase
+      // Gera o id no cliente (evita o RETURNING, que exige permissão de SELECT).
+      const conversationId = newId();
+      const { error: createError } = await supabase
         .from("chat_conversations")
-        .insert({ type: "direct", created_by: myId })
-        .select("id")
-        .single();
+        .insert({ id: conversationId, type: "direct", created_by: myId });
       if (createError) throw createError;
 
       const { error: memberError } = await supabase
         .from("chat_members")
         .insert([
-          { conversation_id: created.id, profile_id: myId },
-          { conversation_id: created.id, profile_id: otherId },
+          { conversation_id: conversationId, profile_id: myId },
+          { conversation_id: conversationId, profile_id: otherId },
         ]);
       if (memberError) throw memberError;
 
-      return created.id as string;
+      return conversationId;
     },
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: chatKeys.conversations }),
@@ -231,20 +239,18 @@ export function useCreateGroup() {
       description: string;
       memberIds: string[];
     }) => {
-      const { data: created, error } = await supabase
-        .from("chat_conversations")
-        .insert({
-          type: "group",
-          name,
-          description: description || null,
-          created_by: myId,
-        })
-        .select("id")
-        .single();
+      const conversationId = newId();
+      const { error } = await supabase.from("chat_conversations").insert({
+        id: conversationId,
+        type: "group",
+        name,
+        description: description || null,
+        created_by: myId,
+      });
       if (error) throw error;
 
       const members = Array.from(new Set([myId, ...memberIds])).map((id) => ({
-        conversation_id: created.id,
+        conversation_id: conversationId,
         profile_id: id,
         is_admin: id === myId,
       }));
@@ -253,7 +259,7 @@ export function useCreateGroup() {
         .insert(members);
       if (memberError) throw memberError;
 
-      return created.id as string;
+      return conversationId;
     },
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: chatKeys.conversations }),
