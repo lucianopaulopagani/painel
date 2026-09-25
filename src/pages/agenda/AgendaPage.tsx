@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
+  Loader2,
   Lock,
   Plus,
   Settings2,
@@ -22,16 +23,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/context/auth";
 import { cn } from "@/lib/utils";
 import { DayView, MonthView, WeekView } from "./CalendarViews";
-import { ShareDialog, PendingSharesPanel } from "./ShareDialog";
+import { PendingSharesPanel, ShareDialog } from "./ShareDialog";
 import {
   ACCESS_LEVEL_LABELS,
   addDays,
   addMonths,
-  AGENDA_CALENDARS,
-  AGENDA_EVENTS,
-  AGENDA_TEAM,
   canEdit,
   canViewDetails,
   formatDayLabel,
@@ -39,7 +38,6 @@ import {
   formatTime,
   isSameDay,
   monthMatrix,
-  PENDING_SHARES,
   startOfWeek,
   WEEKDAYS,
   type AccessLevel,
@@ -47,12 +45,27 @@ import {
   type AgendaEvent,
   type ViewMode,
 } from "./agenda-data";
+import {
+  toUiCalendar,
+  toUiEvent,
+  useAgendaCalendars,
+  useAgendaEvents,
+  useCreateCalendar,
+  useCreateEvent,
+  useDeleteEvent,
+  useRemoveShare,
+  useRespondToShare,
+  useShareCalendar,
+  useUpdateEvent,
+} from "./use-agenda";
 
 const VIEW_OPTIONS: { key: ViewMode; label: string }[] = [
   { key: "day", label: "Dia" },
   { key: "week", label: "Semana" },
   { key: "month", label: "Mês" },
 ];
+
+const PRIMARY_COLOR = "#1d4ed8";
 
 /** Mini calendário de navegação mensal. */
 function MiniCalendar({
@@ -109,7 +122,8 @@ function MiniCalendar({
             className={cn(
               "flex h-6 items-center justify-center rounded text-[10px] transition-colors hover:bg-muted",
               day.getMonth() !== date.getMonth() && "text-muted-foreground/50",
-              isSameDay(day, today) && "bg-primary font-semibold text-primary-foreground"
+              isSameDay(day, today) &&
+                "bg-primary font-semibold text-primary-foreground"
             )}
           >
             {day.getDate()}
@@ -132,26 +146,101 @@ interface EventDraft {
 }
 
 export default function AgendaPage() {
+  const { profile } = useAuth();
+  const myId = profile?.id ?? "";
+  const myEmail = (profile?.email ?? "").toLowerCase();
+
   const [view, setView] = useState<ViewMode>("month");
   const [date, setDate] = useState(new Date());
-  const [calendarList] = useState<AgendaCalendar[]>(AGENDA_CALENDARS);
-  const [events, setEvents] = useState<AgendaEvent[]>(AGENDA_EVENTS);
   const [hidden, setHidden] = useState<Set<string>>(new Set());
   const [draft, setDraft] = useState<EventDraft | null>(null);
   const [reading, setReading] = useState<AgendaEvent | null>(null);
-  const [shareCalendar, setShareCalendar] = useState<AgendaCalendar | null>(null);
-  const [pending, setPending] = useState(PENDING_SHARES);
+  const [shareCalendarId, setShareCalendarId] = useState<string | null>(null);
+  const ensuredRef = useRef(false);
 
-  const myCalendars = calendarList.filter(
-    (calendar) => calendar.access === "owner" || calendar.access === "edit_events"
-  );
-  const sharedCalendars = calendarList.filter(
-    (calendar) => calendar.access === "view_busy" || calendar.access === "view_details"
+  const { data: calendarRows, isLoading: loadingCalendars } =
+    useAgendaCalendars();
+  const createCalendar = useCreateCalendar();
+  const createEvent = useCreateEvent();
+  const updateEvent = useUpdateEvent();
+  const deleteEvent = useDeleteEvent();
+  const shareCalendar = useShareCalendar();
+  const removeShare = useRemoveShare();
+  const respondToShare = useRespondToShare();
+
+  const calendars: AgendaCalendar[] = useMemo(
+    () => (calendarRows ?? []).map((row) => toUiCalendar(row, myId, myEmail)),
+    [calendarRows, myId, myEmail]
   );
 
-  const visibleEvents = useMemo(
-    () => events.filter((event) => !hidden.has(event.calendarId)),
-    [events, hidden]
+  const calendarColorById = useMemo(
+    () => new Map(calendars.map((calendar) => [calendar.id, calendar.color])),
+    [calendars]
+  );
+
+  const { data: eventRows, isLoading: loadingEvents } = useAgendaEvents(
+    calendars.map((calendar) => calendar.id)
+  );
+
+  const events: AgendaEvent[] = useMemo(
+    () =>
+      (eventRows ?? []).map((row) =>
+        toUiEvent(row, calendarColorById.get(row.calendar_id) ?? PRIMARY_COLOR)
+      ),
+    [eventRows, calendarColorById]
+  );
+
+  // Garante uma agenda principal para o usuário.
+  useEffect(() => {
+    if (ensuredRef.current || loadingCalendars || !myId) return;
+    if (calendars.length === 0) {
+      ensuredRef.current = true;
+      createCalendar.mutate({
+        owner_id: myId,
+        name: "Minha agenda",
+        color: PRIMARY_COLOR,
+      });
+    }
+  }, [calendars.length, loadingCalendars, myId, createCalendar]);
+
+  const myCalendars = calendars.filter((calendar) => canEdit(calendar.access));
+  const sharedCalendars = calendars.filter(
+    (calendar) => !canEdit(calendar.access)
+  );
+
+  const pendingRequests = useMemo(() => {
+    const requests: {
+      id: string;
+      calendarName: string;
+      fromName: string;
+      level: AccessLevel;
+    }[] = [];
+    for (const row of calendarRows ?? []) {
+      for (const share of row.calendar_shares ?? []) {
+        if (
+          share.status === "pending" &&
+          share.shared_with_user_email.toLowerCase() === myEmail
+        ) {
+          requests.push({
+            id: share.id,
+            calendarName: row.name,
+            fromName: "Equipe P4",
+            level: share.permission_level,
+          });
+        }
+      }
+    }
+    return requests;
+  }, [calendarRows, myEmail]);
+
+  const shareCalendarItem =
+    calendars.find((calendar) => calendar.id === shareCalendarId) ?? null;
+  const shareRows =
+    (calendarRows ?? []).find((row) => row.id === shareCalendarId)
+      ?.calendar_shares ?? [];
+
+  const visibleEvents = events.filter(
+    (event) => !hidden.has(event.calendarId)
   );
 
   const toggleCalendar = (id: string) => {
@@ -164,8 +253,12 @@ export default function AgendaPage() {
   };
 
   const openCreate = (day: Date, hour = 9) => {
+    if (myCalendars.length === 0) {
+      toast.error("Você não tem uma agenda editável.");
+      return;
+    }
     setDraft({
-      calendarId: myCalendars[0]?.id ?? calendarList[0].id,
+      calendarId: myCalendars[0].id,
       title: "",
       description: "",
       location: "",
@@ -176,7 +269,7 @@ export default function AgendaPage() {
   };
 
   const openEvent = (event: AgendaEvent) => {
-    const calendar = calendarList.find((item) => item.id === event.calendarId);
+    const calendar = calendars.find((item) => item.id === event.calendarId);
     const access: AccessLevel = calendar?.access ?? "view_details";
     if (!canViewDetails(access)) {
       setReading({ ...event, title: "Ocupado" });
@@ -210,51 +303,60 @@ export default function AgendaPage() {
     start.setHours(startHour, startMinute, 0, 0);
     const end = new Date(draft.date);
     end.setHours(endHour, endMinute, 0, 0);
-    const calendar = calendarList.find((item) => item.id === draft.calendarId);
-    const color = calendar?.color ?? "#1d4ed8";
+    const color = calendarColorById.get(draft.calendarId) ?? PRIMARY_COLOR;
 
     if (draft.id) {
-      setEvents((prev) =>
-        prev.map((event) =>
-          event.id === draft.id
-            ? {
-                ...event,
-                calendarId: draft.calendarId,
-                title: draft.title.trim(),
-                description: draft.description.trim(),
-                location: draft.location.trim(),
-                start: start.toISOString(),
-                end: end.toISOString(),
-                color,
-              }
-            : event
-        )
-      );
-      toast.success("Compromisso atualizado.");
-    } else {
-      setEvents((prev) => [
-        ...prev,
+      updateEvent.mutate(
         {
-          id: `ev-${Date.now()}`,
-          calendarId: draft.calendarId,
+          id: draft.id,
+          calendar_id: draft.calendarId,
           title: draft.title.trim(),
-          description: draft.description.trim(),
-          location: draft.location.trim(),
-          start: start.toISOString(),
-          end: end.toISOString(),
+          description: draft.description.trim() || null,
+          location: draft.location.trim() || null,
+          start_time: start.toISOString(),
+          end_time: end.toISOString(),
           color,
         },
-      ]);
-      toast.success("Compromisso criado.");
+        {
+          onSuccess: () => toast.success("Compromisso atualizado."),
+          onError: (error) =>
+            toast.error(
+              error instanceof Error ? error.message : "Erro ao salvar."
+            ),
+        }
+      );
+    } else {
+      createEvent.mutate(
+        {
+          calendar_id: draft.calendarId,
+          creator_id: myId,
+          title: draft.title.trim(),
+          description: draft.description.trim() || null,
+          location: draft.location.trim() || null,
+          start_time: start.toISOString(),
+          end_time: end.toISOString(),
+          color,
+        },
+        {
+          onSuccess: () => toast.success("Compromisso criado."),
+          onError: (error) =>
+            toast.error(
+              error instanceof Error ? error.message : "Erro ao salvar."
+            ),
+        }
+      );
     }
     setDraft(null);
   };
 
   const handleDelete = () => {
     if (!draft?.id) return;
-    setEvents((prev) => prev.filter((event) => event.id !== draft.id));
+    deleteEvent.mutate(draft.id, {
+      onSuccess: () => toast.success("Compromisso excluído."),
+      onError: (error) =>
+        toast.error(error instanceof Error ? error.message : "Erro ao excluir."),
+    });
     setDraft(null);
-    toast.success("Compromisso excluído.");
   };
 
   const title =
@@ -304,94 +406,113 @@ export default function AgendaPage() {
           <MiniCalendar date={date} onSelect={setDate} onNavigate={setDate} />
 
           <PendingSharesPanel
-            requests={pending}
-            onRespond={(id, accepted) => {
-              setPending((prev) => prev.filter((request) => request.id !== id));
-              toast.success(
-                accepted
-                  ? "Compartilhamento aceito — agenda adicionada."
-                  : "Compartilhamento recusado."
-              );
-            }}
+            requests={pendingRequests}
+            onRespond={(id, accepted) =>
+              respondToShare.mutate(
+                { id, accepted },
+                {
+                  onSuccess: () =>
+                    toast.success(
+                      accepted
+                        ? "Compartilhamento aceito — agenda adicionada."
+                        : "Compartilhamento recusado."
+                    ),
+                }
+              )
+            }
           />
 
           <div className="flex flex-col gap-2">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Minhas agendas
             </span>
-            <ul className="flex flex-col gap-1">
-              {myCalendars.map((calendar) => (
-                <li
-                  key={calendar.id}
-                  className="flex items-center justify-between gap-2 rounded-md px-2 py-1 hover:bg-muted"
-                >
-                  <label className="flex min-w-0 cursor-pointer items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={!hidden.has(calendar.id)}
-                      onChange={() => toggleCalendar(calendar.id)}
-                      className="h-3.5 w-3.5 accent-primary"
-                    />
-                    <span
-                      className="h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: calendar.color }}
-                    />
-                    <span className="truncate text-sm">{calendar.name}</span>
-                  </label>
-                  {calendar.access === "owner" && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      title="Compartilhamento"
-                      onClick={() => setShareCalendar(calendar)}
-                    >
-                      <Settings2 className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
-                </li>
-              ))}
-            </ul>
+            {loadingCalendars ? (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            ) : myCalendars.length === 0 ? (
+              <p className="text-xs text-muted-foreground">
+                Nenhuma agenda própria ainda.
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-1">
+                {myCalendars.map((calendar) => (
+                  <li
+                    key={calendar.id}
+                    className="flex items-center justify-between gap-2 rounded-md px-2 py-1 hover:bg-muted"
+                  >
+                    <label className="flex min-w-0 cursor-pointer items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={!hidden.has(calendar.id)}
+                        onChange={() => toggleCalendar(calendar.id)}
+                        className="h-3.5 w-3.5 accent-primary"
+                      />
+                      <span
+                        className="h-2.5 w-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: calendar.color }}
+                      />
+                      <span className="truncate text-sm">{calendar.name}</span>
+                    </label>
+                    {calendar.access === "owner" && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="Compartilhamento"
+                        onClick={() => setShareCalendarId(calendar.id)}
+                      >
+                        <Settings2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="flex flex-col gap-2">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Agendas compartilhadas
             </span>
-            <ul className="flex flex-col gap-1">
-              {sharedCalendars.map((calendar) => (
-                <li
-                  key={calendar.id}
-                  className="flex items-center justify-between gap-2 rounded-md px-2 py-1 hover:bg-muted"
-                >
-                  <label className="flex min-w-0 cursor-pointer items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={!hidden.has(calendar.id)}
-                      onChange={() => toggleCalendar(calendar.id)}
-                      className="h-3.5 w-3.5 accent-primary"
-                    />
-                    <span
-                      className="h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: calendar.color }}
-                    />
-                    <span className="truncate text-sm">{calendar.name}</span>
-                  </label>
-                  {calendar.access === "view_busy" ? (
-                    <Badge variant="outline" className="gap-1 text-[10px]">
-                      <Lock className="h-3 w-3" />
-                      Ocupado
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="gap-1 text-[10px]">
-                      <Users className="h-3 w-3" />
-                      Detalhes
-                    </Badge>
-                  )}
-                </li>
-              ))}
-            </ul>
+            {sharedCalendars.length === 0 ? (
+              <p className="text-xs text-muted-foreground">
+                Nenhuma agenda compartilhada com você.
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-1">
+                {sharedCalendars.map((calendar) => (
+                  <li
+                    key={calendar.id}
+                    className="flex items-center justify-between gap-2 rounded-md px-2 py-1 hover:bg-muted"
+                  >
+                    <label className="flex min-w-0 cursor-pointer items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={!hidden.has(calendar.id)}
+                        onChange={() => toggleCalendar(calendar.id)}
+                        className="h-3.5 w-3.5 accent-primary"
+                      />
+                      <span
+                        className="h-2.5 w-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: calendar.color }}
+                      />
+                      <span className="truncate text-sm">{calendar.name}</span>
+                    </label>
+                    {calendar.access === "view_busy" ? (
+                      <Badge variant="outline" className="gap-1 text-[10px]">
+                        <Lock className="h-3 w-3" />
+                        Ocupado
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="gap-1 text-[10px]">
+                        <Users className="h-3 w-3" />
+                        Detalhes
+                      </Badge>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </aside>
 
@@ -414,7 +535,9 @@ export default function AgendaPage() {
                 className="h-8 w-8"
                 onClick={() =>
                   setDate(
-                    view === "month" ? addMonths(date, -1) : addDays(date, view === "week" ? -7 : -1)
+                    view === "month"
+                      ? addMonths(date, -1)
+                      : addDays(date, view === "week" ? -7 : -1)
                   )
                 }
               >
@@ -427,7 +550,9 @@ export default function AgendaPage() {
                 className="h-8 w-8"
                 onClick={() =>
                   setDate(
-                    view === "month" ? addMonths(date, 1) : addDays(date, view === "week" ? 7 : 1)
+                    view === "month"
+                      ? addMonths(date, 1)
+                      : addDays(date, view === "week" ? 7 : 1)
                   )
                 }
               >
@@ -455,29 +580,37 @@ export default function AgendaPage() {
             </div>
           </div>
 
-          {view === "month" && (
-            <MonthView
-              date={date}
-              events={visibleEvents}
-              onSelectDay={(day) => openCreate(day)}
-              onSelectEvent={openEvent}
-            />
-          )}
-          {view === "week" && (
-            <WeekView
-              date={date}
-              events={visibleEvents}
-              onSelectDay={(day) => openCreate(day, day.getHours() || 9)}
-              onSelectEvent={openEvent}
-            />
-          )}
-          {view === "day" && (
-            <DayView
-              date={date}
-              events={visibleEvents}
-              onSelectDay={(day) => openCreate(day, day.getHours() || 9)}
-              onSelectEvent={openEvent}
-            />
+          {loadingEvents || loadingCalendars ? (
+            <div className="flex items-center justify-center py-16 text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin" />
+            </div>
+          ) : (
+            <>
+              {view === "month" && (
+                <MonthView
+                  date={date}
+                  events={visibleEvents}
+                  onSelectDay={(day) => openCreate(day)}
+                  onSelectEvent={openEvent}
+                />
+              )}
+              {view === "week" && (
+                <WeekView
+                  date={date}
+                  events={visibleEvents}
+                  onSelectDay={(day) => openCreate(day, day.getHours() || 9)}
+                  onSelectEvent={openEvent}
+                />
+              )}
+              {view === "day" && (
+                <DayView
+                  date={date}
+                  events={visibleEvents}
+                  onSelectDay={(day) => openCreate(day, day.getHours() || 9)}
+                  onSelectEvent={openEvent}
+                />
+              )}
+            </>
           )}
         </main>
       </div>
@@ -500,9 +633,7 @@ export default function AgendaPage() {
                 <Input
                   id="ev-title"
                   value={draft.title}
-                  onChange={(e) =>
-                    setDraft({ ...draft, title: e.target.value })
-                  }
+                  onChange={(e) => setDraft({ ...draft, title: e.target.value })}
                   placeholder="Ex.: Entrega DCTFWeb"
                 />
               </div>
@@ -569,9 +700,6 @@ export default function AgendaPage() {
                   placeholder="Detalhes do compromisso"
                 />
               </div>
-              <p className="text-xs text-muted-foreground">
-                Convidados disponíveis: {AGENDA_TEAM.map((u) => u.email).join(", ")}
-              </p>
             </div>
           )}
           <DialogFooter className="gap-2 sm:justify-between">
@@ -609,7 +737,9 @@ export default function AgendaPage() {
           <DialogHeader>
             <DialogTitle>{reading?.title}</DialogTitle>
             <DialogDescription>
-              {reading ? `${formatTime(reading.start)} — ${formatTime(reading.end)}` : ""}
+              {reading
+                ? `${formatTime(reading.start)} — ${formatTime(reading.end)}`
+                : ""}
             </DialogDescription>
           </DialogHeader>
           {reading && (
@@ -634,7 +764,7 @@ export default function AgendaPage() {
                   <p className="text-xs text-muted-foreground">
                     Você tem acesso de{" "}
                     {ACCESS_LEVEL_LABELS[
-                      calendarList.find((c) => c.id === reading.calendarId)
+                      calendars.find((c) => c.id === reading.calendarId)
                         ?.access ?? "view_details"
                     ].toLowerCase()}
                     .
@@ -647,9 +777,33 @@ export default function AgendaPage() {
       </Dialog>
 
       <ShareDialog
-        calendar={shareCalendar}
-        open={!!shareCalendar}
-        onOpenChange={(open) => !open && setShareCalendar(null)}
+        calendar={shareCalendarItem}
+        shares={shareRows}
+        open={!!shareCalendarId}
+        onOpenChange={(open) => !open && setShareCalendarId(null)}
+        onInvite={(email, level) => {
+          if (!shareCalendarId) return;
+          shareCalendar.mutate(
+            {
+              calendar_id: shareCalendarId,
+              shared_with_user_email: email,
+              permission_level: level,
+            },
+            {
+              onSuccess: () =>
+                toast.success("Convite enviado — aguarda aceite do usuário."),
+              onError: (error) =>
+                toast.error(
+                  error instanceof Error ? error.message : "Erro ao compartilhar."
+                ),
+            }
+          );
+        }}
+        onRemove={(id) =>
+          removeShare.mutate(id, {
+            onSuccess: () => toast.success("Acesso removido."),
+          })
+        }
       />
     </div>
   );

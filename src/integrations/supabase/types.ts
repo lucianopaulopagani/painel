@@ -3559,6 +3559,80 @@ export type Database = {
           },
         ]
       }
+      calendar_shares: {
+        Row: {
+          calendar_id: string
+          created_at: string
+          id: string
+          permission_level: string
+          shared_with_user_email: string
+          status: string
+        }
+        Insert: {
+          calendar_id: string
+          created_at?: string
+          id?: string
+          permission_level: string
+          shared_with_user_email: string
+          status?: string
+        }
+        Update: {
+          calendar_id?: string
+          created_at?: string
+          id?: string
+          permission_level?: string
+          shared_with_user_email?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_shares_calendar_id_fkey"
+            columns: ["calendar_id"]
+            referencedRelation: "calendars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calendars: {
+        Row: {
+          color: string
+          created_at: string
+          description: string | null
+          id: string
+          is_primary: boolean
+          name: string
+          owner_id: string
+          timezone: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_primary?: boolean
+          name: string
+          owner_id: string
+          timezone?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_primary?: boolean
+          name?: string
+          owner_id?: string
+          timezone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendars_owner_id_fkey"
+            columns: ["owner_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certificates: {
         Row: {
           agendamento_at: string | null
@@ -3965,6 +4039,92 @@ export type Database = {
           },
         ]
       }
+      event_guests: {
+        Row: {
+          created_at: string
+          email: string
+          event_id: string
+          id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          event_id: string
+          id?: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          event_id?: string
+          id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_guests_event_id_fkey"
+            columns: ["event_id"]
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          calendar_id: string
+          color: string | null
+          created_at: string
+          creator_id: string | null
+          description: string | null
+          end_time: string
+          id: string
+          is_all_day: boolean
+          location: string | null
+          start_time: string
+          title: string
+        }
+        Insert: {
+          calendar_id: string
+          color?: string | null
+          created_at?: string
+          creator_id?: string | null
+          description?: string | null
+          end_time: string
+          id?: string
+          is_all_day?: boolean
+          location?: string | null
+          start_time: string
+          title: string
+        }
+        Update: {
+          calendar_id?: string
+          color?: string | null
+          created_at?: string
+          creator_id?: string | null
+          description?: string | null
+          end_time?: string
+          id?: string
+          is_all_day?: boolean
+          location?: string | null
+          start_time?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_calendar_id_fkey"
+            columns: ["calendar_id"]
+            referencedRelation: "calendars"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_creator_id_fkey"
+            columns: ["creator_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       movimento_fiscal: {
         Row: {
           antecipacao: string | null
@@ -4159,12 +4319,20 @@ export type Database = {
           id: string
         }[]
       }
+      calendar_access_level: {
+        Args: { p_calendar_id: string }
+        Returns: string
+      }
       contabil_usuarios: {
         Args: Record<PropertyKey, never>
         Returns: {
           full_name: string
           id: string
         }[]
+      }
+      current_email: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       dashboard_fiscal: {
         Args: { mes: string }

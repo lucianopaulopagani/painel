@@ -24,38 +24,28 @@ import {
   ACCESS_LEVEL_ORDER,
   type AccessLevel,
   type AgendaCalendar,
-  type ShareRequest,
 } from "./agenda-data";
+import type { CalendarShareRow } from "./use-agenda";
 
 interface ShareDialogProps {
   calendar: AgendaCalendar | null;
+  shares: CalendarShareRow[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onInvite: (email: string, level: AccessLevel) => void;
+  onRemove: (id: string) => void;
 }
 
-interface ShareEntry {
-  email: string;
-  level: AccessLevel;
-  status: "pending" | "accepted";
-}
-
-const INITIAL_SHARES: ShareEntry[] = [
-  {
-    email: "pessoal@p4contabilidade.app",
-    level: "edit_events",
-    status: "accepted",
-  },
-  {
-    email: "diretor@mercado-bompreco.com.br",
-    level: "view_busy",
-    status: "pending",
-  },
-];
-
-export function ShareDialog({ calendar, open, onOpenChange }: ShareDialogProps) {
+export function ShareDialog({
+  calendar,
+  shares,
+  open,
+  onOpenChange,
+  onInvite,
+  onRemove,
+}: ShareDialogProps) {
   const [email, setEmail] = useState("");
   const [level, setLevel] = useState<AccessLevel>("view_busy");
-  const [shares, setShares] = useState<ShareEntry[]>(INITIAL_SHARES);
 
   const handleAdd = () => {
     const value = email.trim().toLowerCase();
@@ -63,13 +53,12 @@ export function ShareDialog({ calendar, open, onOpenChange }: ShareDialogProps) 
       toast.error("Informe um e-mail válido.");
       return;
     }
-    if (shares.some((share) => share.email === value)) {
+    if (shares.some((share) => share.shared_with_user_email === value)) {
       toast.error("Este e-mail já tem acesso a esta agenda.");
       return;
     }
-    setShares((prev) => [...prev, { email: value, level, status: "pending" }]);
+    onInvite(value, level);
     setEmail("");
-    toast.success("Convite enviado — aguarda aceite do usuário.");
   };
 
   return (
@@ -125,15 +114,15 @@ export function ShareDialog({ calendar, open, onOpenChange }: ShareDialogProps) 
               <ul className="flex flex-col gap-2">
                 {shares.map((share) => (
                   <li
-                    key={share.email}
+                    key={share.id}
                     className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-2"
                   >
                     <div className="min-w-0">
                       <div className="truncate text-sm font-medium">
-                        {share.email}
+                        {share.shared_with_user_email}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {ACCESS_LEVEL_LABELS[share.level]}
+                        {ACCESS_LEVEL_LABELS[share.permission_level]}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -143,10 +132,7 @@ export function ShareDialog({ calendar, open, onOpenChange }: ShareDialogProps) 
                           Aceito
                         </Badge>
                       ) : (
-                        <Badge
-                          variant="secondary"
-                          className="gap-1"
-                        >
+                        <Badge variant="secondary" className="gap-1">
                           <Clock className="h-3 w-3" />
                           Pendente
                         </Badge>
@@ -157,11 +143,7 @@ export function ShareDialog({ calendar, open, onOpenChange }: ShareDialogProps) 
                         size="icon"
                         title="Remover acesso"
                         className="text-destructive hover:text-destructive"
-                        onClick={() =>
-                          setShares((prev) =>
-                            prev.filter((item) => item.email !== share.email)
-                          )
-                        }
+                        onClick={() => onRemove(share.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -178,7 +160,12 @@ export function ShareDialog({ calendar, open, onOpenChange }: ShareDialogProps) 
 }
 
 interface PendingSharesPanelProps {
-  requests: ShareRequest[];
+  requests: {
+    id: string;
+    calendarName: string;
+    fromName: string;
+    level: AccessLevel;
+  }[];
   onRespond: (id: string, accepted: boolean) => void;
 }
 

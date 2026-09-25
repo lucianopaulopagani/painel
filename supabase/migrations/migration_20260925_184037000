@@ -1,0 +1,129 @@
+create table if not exists public.calendars (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references public.profiles(id) on delete cascade,
+  name text not null,
+  description text,
+  color text not null default '#1d4ed8',
+  timezone text not null default 'America/Sao_Paulo',
+  is_primary boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.calendar_shares (
+  id uuid primary key default gen_random_uuid(),
+  calendar_id uuid not null references public.calendars(id) on delete cascade,
+  shared_with_user_email text not null,
+  permission_level text not null check (permission_level in ('view_busy','view_details','edit_events','owner')),
+  status text not null default 'pending' check (status in ('pending','accepted')),
+  created_at timestamptz not null default now(),
+  unique (calendar_id, shared_with_user_email)
+);
+
+create table if not exists public.events (
+  id uuid primary key default gen_random_uuid(),
+  calendar_id uuid not null references public.calendars(id) on delete cascade,
+  creator_id uuid references public.profiles(id) on delete set null,
+  title text not null,
+  description text,
+  location text,
+  start_time timestamptz not null,
+  end_time timestamptz not null,
+  is_all_day boolean not null default false,
+  color text,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.event_guests (
+  id uuid primary key default gen_random_uuid(),
+  event_id uuid not null references public.events(id) on delete cascade,
+  email text not null,
+  status text not null default 'pending' check (status in ('accepted','declined','tentative','pending')),
+  created_at timestamptz not null default now(),
+  unique (event_id, email)
+);
+
+create or replace function public.current_email()
+returns text language sql security definer set search_path = public as $$
+  select email from public.profiles where id = auth.uid();
+$$;
+
+create or replace function public.calendar_access_level(p_calendar_id uuid)
+returns text language sql security definer set search_path = public as $$
+  select case
+    when c.owner_id = auth.uid() then 'owner'
+    else (
+      select s.permission_level
+      from public.calendar_shares s
+      where s.calendar_id = c.id
+        and s.status = 'accepted'
+        and lower(s.shared_with_user_email) = lower(public.current_email())
+      limit 1
+    )
+  end
+  from public.calendars c where c.id = p_calendar_id;
+$$;
+
+alter table public.calendars enable row level security;
+alter table public.calendar_shares enable row level security;
+alter table public.events enable row level security;
+alter table public.event_guests enable row level security;
+
+create policy "calendars_select" on public.calendars for select
+  using (owner_id = auth.uid() or public.calendar_access_level(id) is not null);
+create policy "calendars_insert" on public.calendars for insert
+  with check (owner_id = auth.uid());
+create policy "calendars_update" on public.calendars for update
+  using (owner_id = auth.uid() or public.calendar_access_level(id) = 'owner');
+create policy "calendars_delete" on public.calendars for delete
+  using (owner_id = auth.uid());
+
+create policy "calendar_shares_select" on public.calendar_shares for select
+  using (
+    lower(shared_with_user_email) = lower(public.current_email())
+    or exists (select 1 from public.calendars c where c.id = calendar_id and c.owner_id = auth.uid())
+  );
+create policy "calendar_shares_insert" on public.calendar_shares for insert
+  with check (exists (select 1 from public.calendars c where c.id = calendar_id and c.owner_id = auth.uid()));
+create policy "calendar_shares_update" on public.calendar_shares for update
+  using (
+    lower(shared_with_user_email) = lower(public.current_email())
+    or exists (select 1 from public.calendars c where c.id = calendar_id and c.owner_id = auth.uid())
+  );
+create policy "calendar_shares_delete" on public.calendar_shares for delete
+  using (exists (select 1 from public.calendars c where c.id = calendar_id and c.owner_id = auth.uid()));
+
+create policy "events_select" on public.events for select
+  using (public.calendar_access_level(calendar_id) is not null);
+create policy "events_insert" on public.events for insert
+  with check (public.calendar_access_level(calendar_id) in ('edit_events','owner'));
+create policy "events_update" on public.events for update
+  using (public.calendar_access_level(calendar_id) in ('edit_events','owner'));
+create policy "events_delete" on public.events for delete
+  using (public.calendar_access_level(calendar_id) in ('edit_events','owner'));
+
+create policy "event_guests_select" on public.event_guests for select
+  using (exists (select 1 from public.events e where e.id = event_id and public.calendar_access_level(e.calendar_id) is not null));
+create policy "event_guests_write" on public.event_guests for all
+  using (exists (select 1 from public.events e where e.id = event_id and public.calendar_access_level(e.calendar_id) in ('edit_events','owner')))
+  with check (exists (select 1 from public.events e where e.id = event_id and public.calendar_access_level(e.calendar_id) in ('edit_events','owner')));
+
+create or replace function public.create_primary_calendar()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  insert into public.calendars (owner_id, name, color, is_primary)
+  values (new.id, 'Minha agenda', '#1d4ed8', true);
+  return new;
+end;
+$$;
+
+create trigger profiles_create_primary_calendar
+  after insert on public.profiles
+  for each row execute function public.create_primary_calendar();
+
+grant execute on function public.current_email() to authenticated;
+grant execute on function public.calendar_access_level(uuid) to authenticated;
+
+insert into public.calendars (owner_id, name, color, is_primary)
+select p.id, 'Minha agenda', '#1d4ed8', true
+from public.profiles p
+where not exists (select 1 from public.calendars c where c.owner_id = p.id);

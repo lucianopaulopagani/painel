@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
+  CalendarDays,
   Camera,
   ChevronDown,
   KeyRound,
@@ -126,6 +127,12 @@ export function PanelHeader({ title, subtitle, children }: PanelHeaderProps) {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+          <Link to="/agenda" className="shrink-0">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <CalendarDays className="h-4 w-4" />
+              <span className="hidden sm:inline">Agenda</span>
+            </Button>
+          </Link>
           <Link to="/app" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2">
               <LayoutDashboard className="h-4 w-4" />
