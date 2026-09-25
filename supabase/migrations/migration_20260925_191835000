@@ -1,0 +1,123 @@
+alter table public.profiles
+  add column if not exists chat_admin boolean not null default false;
+
+create table if not exists public.chat_conversations (
+  id uuid primary key default gen_random_uuid(),
+  type text not null check (type in ('direct','group')),
+  name text,
+  description text,
+  created_by uuid references public.profiles(id) on delete set null,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.chat_members (
+  id uuid primary key default gen_random_uuid(),
+  conversation_id uuid not null references public.chat_conversations(id) on delete cascade,
+  profile_id uuid not null references public.profiles(id) on delete cascade,
+  is_admin boolean not null default false,
+  last_read_at timestamptz,
+  created_at timestamptz not null default now(),
+  unique (conversation_id, profile_id)
+);
+
+create table if not exists public.chat_messages (
+  id uuid primary key default gen_random_uuid(),
+  conversation_id uuid not null references public.chat_conversations(id) on delete cascade,
+  sender_id uuid not null references public.profiles(id) on delete cascade,
+  body text,
+  attachment_url text,
+  attachment_name text,
+  attachment_type text,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.chat_presence (
+  profile_id uuid primary key references public.profiles(id) on delete cascade,
+  last_seen_at timestamptz not null default now(),
+  typing_conversation_id uuid,
+  typing_at timestamptz
+);
+
+create or replace function public.is_chat_admin()
+returns boolean language sql security definer set search_path = public as $$
+  select exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid() and (p.role = 'admin' or p.chat_admin = true)
+  );
+$$;
+
+create or replace function public.is_chat_member(p_conversation_id uuid)
+returns boolean language sql security definer set search_path = public as $$
+  select exists (
+    select 1 from public.chat_members m
+    where m.conversation_id = p_conversation_id and m.profile_id = auth.uid()
+  );
+$$;
+
+create or replace function public.is_conversation_admin(p_conversation_id uuid)
+returns boolean language sql security definer set search_path = public as $$
+  select exists (
+    select 1 from public.chat_members m
+    where m.conversation_id = p_conversation_id and m.profile_id = auth.uid() and m.is_admin = true
+  );
+$$;
+
+create or replace function public.chat_users()
+returns table (id uuid, full_name text, avatar_url text)
+language sql security definer set search_path = public as $$
+  select p.id, p.full_name, p.avatar_url
+  from public.profiles p
+  where auth.uid() is not null
+  order by p.full_name;
+$$;
+
+alter table public.chat_conversations enable row level security;
+alter table public.chat_members enable row level security;
+alter table public.chat_messages enable row level security;
+alter table public.chat_presence enable row level security;
+
+create policy "chat_conversations_select" on public.chat_conversations for select
+  using (public.is_chat_member(id));
+create policy "chat_conversations_insert" on public.chat_conversations for insert
+  with check (auth.uid() is not null and (type = 'direct' or public.is_chat_admin()));
+create policy "chat_conversations_update" on public.chat_conversations for update
+  using (public.is_conversation_admin(id) or public.is_chat_admin());
+create policy "chat_conversations_delete" on public.chat_conversations for delete
+  using (public.is_chat_admin());
+
+create policy "chat_members_select" on public.chat_members for select
+  using (public.is_chat_member(conversation_id));
+create policy "chat_members_insert" on public.chat_members for insert
+  with check (
+    public.is_chat_admin()
+    or public.is_conversation_admin(conversation_id)
+    or profile_id = auth.uid()
+    or exists (select 1 from public.chat_conversations c where c.id = conversation_id and c.created_by = auth.uid())
+  );
+create policy "chat_members_update" on public.chat_members for update
+  using (public.is_chat_admin() or public.is_conversation_admin(conversation_id) or profile_id = auth.uid());
+create policy "chat_members_delete" on public.chat_members for delete
+  using (public.is_chat_admin() or public.is_conversation_admin(conversation_id) or profile_id = auth.uid());
+
+create policy "chat_messages_select" on public.chat_messages for select
+  using (public.is_chat_member(conversation_id));
+create policy "chat_messages_insert" on public.chat_messages for insert
+  with check (public.is_chat_member(conversation_id) and sender_id = auth.uid());
+create policy "chat_messages_delete" on public.chat_messages for delete
+  using (sender_id = auth.uid() or public.is_chat_admin());
+
+create policy "chat_presence_select" on public.chat_presence for select
+  using (auth.uid() is not null);
+create policy "chat_presence_insert" on public.chat_presence for insert
+  with check (profile_id = auth.uid());
+create policy "chat_presence_update" on public.chat_presence for update
+  using (profile_id = auth.uid());
+
+grant execute on function public.is_chat_admin() to authenticated;
+grant execute on function public.is_chat_member(uuid) to authenticated;
+grant execute on function public.is_conversation_admin(uuid) to authenticated;
+grant execute on function public.chat_users() to authenticated;
+revoke execute on function public.chat_users() from anon;
+
+alter publication supabase_realtime add table public.chat_messages;
+alter publication supabase_realtime add table public.chat_presence;

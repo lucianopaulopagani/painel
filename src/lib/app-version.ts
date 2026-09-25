@@ -12,7 +12,7 @@ const VERSION_STATE = {
   /** Mês (YYYY-MM) em que o contador está valendo. */
   month: "2026-09",
   /** Contador atual (incrementar a cada versão lançada). */
-  count: 43,
+  count: 44,
 };
 
 function currentMonth(): string {

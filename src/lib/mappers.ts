@@ -17,6 +17,7 @@ export interface RawProfileRow {
   empresas_criar: boolean;
   empresas_importar: boolean;
   empresas_bulk: boolean;
+  chat_admin: boolean;
   avatar_url: string | null;
   created_at: string;
   profile_departments?: { departments: DepartmentRef | null }[] | null;
@@ -37,6 +38,7 @@ export function toProfileWithDepartments(
     empresas_criar: row.empresas_criar,
     empresas_importar: row.empresas_importar,
     empresas_bulk: row.empresas_bulk,
+    chat_admin: row.chat_admin ?? false,
     avatar_url: row.avatar_url ?? null,
     created_at: row.created_at,
     departments: (row.profile_departments ?? [])

@@ -7,6 +7,7 @@ import {
   KeyRound,
   LayoutDashboard,
   LogOut,
+  MessageCircle,
   Palette,
   RefreshCw,
   ShieldCheck,
@@ -127,6 +128,18 @@ export function PanelHeader({ title, subtitle, children }: PanelHeaderProps) {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+          <a
+            href="/chat"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0"
+            title="Abrir o Chat interno em nova janela"
+          >
+            <Button variant="ghost" size="sm" className="gap-2">
+              <MessageCircle className="h-4 w-4" />
+              <span className="hidden sm:inline">Chat</span>
+            </Button>
+          </a>
           <a
             href="/agenda"
             target="_blank"

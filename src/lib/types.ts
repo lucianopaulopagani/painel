@@ -23,6 +23,8 @@ export interface Profile {
   empresas_criar: boolean;
   empresas_importar: boolean;
   empresas_bulk: boolean;
+  /** Gestor de departamento (administrador do chat). */
+  chat_admin: boolean;
   avatar_url: string | null;
   created_at: string;
 }

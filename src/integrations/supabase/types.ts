@@ -3679,6 +3679,154 @@ export type Database = {
           },
         ]
       }
+      chat_conversations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string | null
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string | null
+          type: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_conversations_created_by_fkey"
+            columns: ["created_by"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_members: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          id: string
+          is_admin: boolean
+          last_read_at: string | null
+          profile_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          last_read_at?: string | null
+          profile_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          last_read_at?: string | null
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_members_conversation_id_fkey"
+            columns: ["conversation_id"]
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_members_profile_id_fkey"
+            columns: ["profile_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          attachment_name: string | null
+          attachment_type: string | null
+          attachment_url: string | null
+          body: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          attachment_name?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
+          body?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          attachment_name?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
+          body?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_presence: {
+        Row: {
+          last_seen_at: string
+          profile_id: string
+          typing_at: string | null
+          typing_conversation_id: string | null
+        }
+        Insert: {
+          last_seen_at?: string
+          profile_id: string
+          typing_at?: string | null
+          typing_conversation_id?: string | null
+        }
+        Update: {
+          last_seen_at?: string
+          profile_id?: string
+          typing_at?: string | null
+          typing_conversation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_presence_profile_id_fkey"
+            columns: ["profile_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           ativa: boolean
@@ -4257,6 +4405,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          chat_admin: boolean
           created_at: string
           dashboard_access: boolean
           email: string
@@ -4271,6 +4420,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          chat_admin?: boolean
           created_at?: string
           dashboard_access?: boolean
           email: string
@@ -4285,6 +4435,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          chat_admin?: boolean
           created_at?: string
           dashboard_access?: boolean
           email?: string
@@ -4323,6 +4474,14 @@ export type Database = {
         Args: { p_calendar_id: string }
         Returns: string
       }
+      chat_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          avatar_url: string
+          full_name: string
+          id: string
+        }[]
+      }
       contabil_usuarios: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -4348,6 +4507,18 @@ export type Database = {
       }
       is_admin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_chat_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_chat_member: {
+        Args: { p_conversation_id: string }
+        Returns: boolean
+      }
+      is_conversation_admin: {
+        Args: { p_conversation_id: string }
         Returns: boolean
       }
       month_is_released: {

@@ -5,6 +5,7 @@ import DepartmentPanel from "./pages/app/DepartmentPanel";
 import AdminPanel from "./pages/admin/AdminPanel";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AgendaPage from "./pages/agenda/AgendaPage";
+import ChatPage from "./pages/chat/ChatPage";
 import ProtectedRoute from "./components/guards/protected-route";
 import AdminRoute from "./components/guards/admin-route";
 import NotFound from "./pages/NotFound";
@@ -47,6 +48,11 @@ export const routers = [
         <AdminPanel />
       </AdminRoute>
     ),
+  },
+  {
+    path: "/chat",
+    name: "chat",
+    element: <ChatPage />,
   },
   {
     path: "/agenda",
