@@ -4,6 +4,7 @@ import ResetPassword from "./pages/ResetPassword";
 import DepartmentPanel from "./pages/app/DepartmentPanel";
 import AdminPanel from "./pages/admin/AdminPanel";
 import AdminLogin from "./pages/admin/AdminLogin";
+import AgendaPage from "./pages/agenda/AgendaPage";
 import ProtectedRoute from "./components/guards/protected-route";
 import AdminRoute from "./components/guards/admin-route";
 import NotFound from "./pages/NotFound";
@@ -46,6 +47,11 @@ export const routers = [
         <AdminPanel />
       </AdminRoute>
     ),
+  },
+  {
+    path: "/agenda",
+    name: "agenda",
+    element: <AgendaPage />,
   },
   /* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */
   {
