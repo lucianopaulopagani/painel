@@ -1,0 +1,26 @@
+create or replace function public.can_manage_chat_members(p_conversation_id uuid)
+returns boolean language sql security definer set search_path = public as $$
+  select exists (
+    select 1 from public.chat_conversations c
+    where c.id = p_conversation_id
+      and (
+        c.created_by = auth.uid()
+        or public.is_chat_admin()
+        or exists (
+          select 1 from public.chat_members m
+          where m.conversation_id = c.id and m.profile_id = auth.uid() and m.is_admin = true
+        )
+      )
+  );
+$$;
+
+grant execute on function public.can_manage_chat_members(uuid) to authenticated;
+
+create policy "chat_members_insert_creator" on public.chat_members for insert
+  with check (public.can_manage_chat_members(conversation_id) or profile_id = auth.uid());
+
+create policy "chat_members_update_creator" on public.chat_members for update
+  using (public.can_manage_chat_members(conversation_id) or profile_id = auth.uid());
+
+create policy "chat_members_delete_creator" on public.chat_members for delete
+  using (public.can_manage_chat_members(conversation_id) or profile_id = auth.uid());
