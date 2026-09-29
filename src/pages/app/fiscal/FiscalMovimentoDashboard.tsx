@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCompanies } from "@/hooks/use-companies";
+import { useCarneLeao } from "@/hooks/use-carne-leao";
 import { useDepartments } from "@/hooks/use-departments";
 import { useMovimentoFiscal } from "@/hooks/use-movimento-fiscal";
 import { usePeopleDirectory } from "@/hooks/use-people-directory";
@@ -55,6 +56,7 @@ export default function FiscalMovimentoDashboard() {
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: records } = useMovimentoFiscal(mes);
+  const { data: carneRecords } = useCarneLeao(mes);
   const { data: directory } = usePeopleDirectory();
 
   const fiscal = findDepartmentByName(departments, FISCAL_DEPARTMENT_NAME);
@@ -84,13 +86,22 @@ export default function FiscalMovimentoDashboard() {
           responsaveisOf(company).includes(responsavelFiltro)
         );
 
+  // Situação: empresas com tributação Carne Leão usam a tabela do Carne Leão;
+  // as demais usam o Movimento Fiscal.
   const situacaoByCompany = new Map(
     (records ?? []).map((record) => [record.company_id, record.situacao])
   );
+  const carneSituacaoByCompany = new Map(
+    (carneRecords ?? []).map((record) => [record.company_id, record.situacao])
+  );
+  const situacaoOf = (companyId: string): string =>
+    carneSituacaoByCompany.get(companyId) ??
+    situacaoByCompany.get(companyId) ??
+    "";
 
   // OK e OK-SM contam como FINALIZADAS; o restante como PENDENTE.
   const finalizadas = scoped.filter((company) =>
-    isSituacaoFinalizada(situacaoByCompany.get(company.id) ?? "")
+    isSituacaoFinalizada(situacaoOf(company.id))
   ).length;
   const total = scoped.length;
   const pendentes = total - finalizadas;
@@ -222,34 +233,37 @@ export default function FiscalMovimentoDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-64">
+                <div
+                  className="w-full"
+                  style={{ height: Math.max(240, bars.length * 34) }}
+                >
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={bars}
-                      margin={{ top: 4, right: 16, bottom: 4, left: 0 }}
+                      layout="vertical"
+                      margin={{ top: 4, right: 24, bottom: 4, left: 8 }}
                     >
-                      <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                      <CartesianGrid horizontal={false} strokeDasharray="3 3" />
                       <XAxis
-                        dataKey="nome"
-                        fontSize={11}
-                        tickLine={false}
-                        interval={0}
-                        angle={-15}
-                        textAnchor="end"
-                        height={60}
-                      />
-                      <YAxis
+                        type="number"
                         allowDecimals={false}
                         fontSize={11}
                         tickLine={false}
-                        width={28}
+                      />
+                      <YAxis
+                        type="category"
+                        dataKey="nome"
+                        fontSize={11}
+                        tickLine={false}
+                        width={170}
+                        interval={0}
                       />
                       <Tooltip />
                       <Bar
                         dataKey="count"
                         name="Empresas"
-                        fill="hsl(var(--primary))"
-                        radius={[4, 4, 0, 0]}
+                        fill="hsl(var(--chart-orange))"
+                        radius={[0, 4, 4, 0]}
                       />
                     </BarChart>
                   </ResponsiveContainer>

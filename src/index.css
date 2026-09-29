@@ -30,6 +30,7 @@
     /* Cor mais escura usada nos gráficos (pendentes) */
     --chart-warning: 32 90% 42%;
     --chart-success: 125 55% 32%;
+    --chart-orange: 25 95% 50%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -114,6 +115,7 @@
 
     --chart-warning: 35 90% 58%;
     --chart-success: 130 55% 55%;
+    --chart-orange: 25 95% 58%;
   }
 
   /* Temas de acento (aplicados como classe em <html>, além de claro/escuro). */
