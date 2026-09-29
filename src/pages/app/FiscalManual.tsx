@@ -36,7 +36,12 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Gráfico por responsável",
         detail:
-          "Quando o filtro está em 'Todos os responsáveis', exibe um gráfico de barras com a quantidade de empresas por responsável (empresas com mais de um responsável contam para cada um).",
+          "Quando o filtro está em 'Todos os responsáveis', exibe um gráfico de barras horizontais (laranja) com a quantidade de empresas por responsável (empresas com mais de um responsável contam para cada um).",
+      },
+      {
+        label: "Gráfico por responsável e tributação",
+        detail:
+          "Ainda com 'Todos os responsáveis', um segundo gráfico de barras horizontais mostra, para cada responsável, a quantidade de empresas separada por tributação (barras empilhadas em tons de laranja).",
       },
     ],
   },

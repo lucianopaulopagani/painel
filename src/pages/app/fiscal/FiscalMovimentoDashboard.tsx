@@ -4,6 +4,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -147,6 +148,51 @@ export default function FiscalMovimentoDashboard() {
     },
   ];
 
+  // Responsável × tributação: quantidade de empresas por tributação.
+  const tributacoes = Array.from(
+    new Set(
+      all
+        .map((company) => company.tributacao)
+        .filter((tributacao): tributacao is string => Boolean(tributacao))
+    )
+  ).sort();
+
+  const responsavelGroups = [
+    ...responsavelOptions.map((id) => ({
+      nome: nameById.get(id) ?? "—",
+      companies: all.filter((company) => responsaveisOf(company).includes(id)),
+    })),
+    ...(semResponsavel > 0
+      ? [
+          {
+            nome: SEM_RESPONSAVEL,
+            companies: all.filter(
+              (company) => responsaveisOf(company).length === 0
+            ),
+          },
+        ]
+      : []),
+  ];
+
+  const stackData = responsavelGroups
+    .map((group) => {
+      const entry: Record<string, string | number> = {
+        nome: group.nome,
+        total: group.companies.length,
+      };
+      for (const tributacao of tributacoes) {
+        entry[tributacao] = group.companies.filter(
+          (company) => company.tributacao === tributacao
+        ).length;
+      }
+      return entry;
+    })
+    .sort((a, b) => (b.total as number) - (a.total as number));
+
+  /** Tons de laranja para as tributações empilhadas. */
+  const orangeShade = (index: number): string =>
+    `hsl(25 95% ${32 + index * 9}%)`;
+
   const handleMonthChange = (value: string) => {
     setMes(value);
     writeStoredMonth(value);
@@ -221,6 +267,7 @@ export default function FiscalMovimentoDashboard() {
           </div>
 
           {responsavelFiltro === "todos" && (
+            <>
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">
@@ -270,6 +317,61 @@ export default function FiscalMovimentoDashboard() {
                 </div>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">
+                  Empresas por responsável e tributação
+                </CardTitle>
+                <CardDescription>
+                  Quantidade de empresas de cada responsável, separada por
+                  tributação (empresas com mais de um responsável contam para
+                  cada um).
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div
+                  className="w-full"
+                  style={{ height: Math.max(240, stackData.length * 34) }}
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={stackData}
+                      layout="vertical"
+                      margin={{ top: 4, right: 24, bottom: 4, left: 8 }}
+                    >
+                      <CartesianGrid horizontal={false} strokeDasharray="3 3" />
+                      <XAxis
+                        type="number"
+                        allowDecimals={false}
+                        fontSize={11}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        type="category"
+                        dataKey="nome"
+                        fontSize={11}
+                        tickLine={false}
+                        width={170}
+                        interval={0}
+                      />
+                      <Tooltip />
+                      <Legend />
+                      {tributacoes.map((tributacao, index) => (
+                        <Bar
+                          key={tributacao}
+                          dataKey={tributacao}
+                          stackId="tributacao"
+                          name={tributacao}
+                          fill={orangeShade(index)}
+                        />
+                      ))}
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+            </>
           )}
         </>
       )}
