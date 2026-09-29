@@ -71,6 +71,37 @@ const SECTIONS: ManualSection[] = [
       },
     ],
   },
+  {
+    title: "Carne Leão",
+    description:
+      "Tabela mensal das empresas com tributação Carne Leão.",
+    items: [
+      {
+        label: "Empresas",
+        detail:
+          "Aparecem automaticamente as empresas cadastradas com tributação 'Carne Leão' (N, UF, Empresa e CPF vêm do cadastro de empresas).",
+      },
+      {
+        label: "Mês de referência",
+        detail:
+          "Seletor de mês (com atalhos 'Atual' e 'Próximo'); as marcações são individuais por mês.",
+      },
+      {
+        label: "Colunas",
+        detail:
+          "N, UF, Empresa, CPF, Situação (OK/FAZENDO/OK-ENT/OK-SM), Prestados e Tomados (OK/SM), ISS Fixo, Carne Leão e Envio/Guia (OK/OK-SM) e Observações (texto).",
+      },
+      {
+        label: "Cores",
+        detail:
+          "OK e OK-SM em verde, OK-ENT em âmbar, FAZENDO em vermelho e SM em azul, seguindo o padrão dos departamentos.",
+      },
+      {
+        label: "Filtros",
+        detail: "Filtros por coluna no cabeçalho, no padrão das demais tabelas.",
+      },
+    ],
+  },
 ];
 
 export default function FiscalManual() {

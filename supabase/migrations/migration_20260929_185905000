@@ -1,0 +1,38 @@
+create table if not exists public.movimento_fiscal_carne_leao (
+  id uuid primary key default gen_random_uuid(),
+  company_id uuid not null references public.companies(id) on delete cascade,
+  mes_referencia text not null,
+  situacao text,
+  prestados text,
+  tomados text,
+  iss_fixo text,
+  carne_leao text,
+  envio_guia text,
+  observacoes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (company_id, mes_referencia)
+);
+
+alter table public.movimento_fiscal_carne_leao enable row level security;
+
+create policy "carne_leao_admin_all" on public.movimento_fiscal_carne_leao
+  for all using (public.is_admin()) with check (public.is_admin());
+
+create policy "carne_leao_member_all" on public.movimento_fiscal_carne_leao
+  for all
+  using (exists (
+    select 1 from public.company_departments cd
+    join public.profile_departments pd on pd.department_id = cd.department_id
+    where cd.company_id = movimento_fiscal_carne_leao.company_id and pd.profile_id = auth.uid()))
+  with check (exists (
+    select 1 from public.company_departments cd
+    join public.profile_departments pd on pd.department_id = cd.department_id
+    where cd.company_id = movimento_fiscal_carne_leao.company_id and pd.profile_id = auth.uid()));
+
+insert into public.department_submenus (department_id, name, position)
+select d.id, 'Carne Leão',
+  coalesce((select max(ds.position) + 1 from public.department_submenus ds where ds.department_id = d.id), 0)
+from public.departments d
+where d.name = 'Depart. Fiscal'
+on conflict (department_id, name) do nothing;

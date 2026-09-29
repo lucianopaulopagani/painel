@@ -205,6 +205,27 @@ export type ComplementoInssInput = Omit<
   "id" | "created_at" | "updated_at"
 >;
 
+/** Registro mensal do Carne Leão (Movimento Fiscal — empresas Carne Leão). */
+export interface MovimentoCarneLeaoRecord {
+  id: string;
+  company_id: string;
+  mes_referencia: string;
+  situacao: string | null;
+  prestados: string | null;
+  tomados: string | null;
+  iss_fixo: string | null;
+  carne_leao: string | null;
+  envio_guia: string | null;
+  observacoes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type MovimentoCarneLeaoInput = Omit<
+  MovimentoCarneLeaoRecord,
+  "id" | "created_at" | "updated_at"
+>;
+
 /** Registro anual do Alvará localização (Societário). */
 export interface AlvaraLocalizacaoRecord {
   id: string;
