@@ -60,6 +60,8 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
   const [busca, setBusca] = useState<Record<string, string>>({
     numero: "",
     empresa: "",
+    cnpj: "",
+    ie: "",
     situacao: "",
     observacoes: "",
     ...Object.fromEntries(
@@ -112,6 +114,12 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
       (value ?? "")
         .toLocaleLowerCase("pt-BR")
         .includes(query.toLocaleLowerCase("pt-BR"));
+    const matchDigits = (
+      value: string | null | undefined,
+      query: string
+    ): boolean =>
+      !query ||
+      (value ?? "").replace(/\D/g, "").includes(query.replace(/\D/g, ""));
     const selectOrBlank = (
       value: string | null | undefined,
       query: string
@@ -122,6 +130,8 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
     return (
       match(company.numero, busca.numero) &&
       match(company.name, busca.empresa) &&
+      matchDigits(company.documento, busca.cnpj) &&
+      match(company.inscricao_estadual, busca.ie) &&
       selectOrBlank(record?.situacao, busca.situacao) &&
       MOVIMENTO_FISCAL_FIELDS.every((field) =>
         field.type === "checkbox"
@@ -196,9 +206,10 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
   const renderFilterSelect = (
     key: string,
     label: string,
-    options: readonly string[]
+    options: readonly string[],
+    widthClass = "w-16"
   ) => (
-    <TableHead className={`${HEAD} w-24 align-bottom`}>
+    <TableHead className={`${HEAD} ${widthClass} align-bottom`}>
       <span className="mb-1 block whitespace-nowrap">{label}</span>
       <Select
         value={busca[key] === "" ? "todos" : busca[key]}
@@ -228,17 +239,19 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
         Simples Nacional — empresas com tributação {SIMPLES_NACIONAL_TRIBUTACAO}
       </p>
       <div className="overflow-x-auto rounded-lg border">
-        <Table className="table-fixed min-w-[1700px]">
+        <Table className="table-fixed min-w-[1224px]">
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
-              {renderFilterInput("numero", "Nº", "w-12")}
-              {renderFilterInput("empresa", "Empresa", "w-56")}
-              {renderFilterSelect("situacao", "Situação", SITUACAO_OPTIONS)}
+              {renderFilterInput("numero", "Nº", "w-10")}
+              {renderFilterInput("empresa", "Empresa", "w-36")}
+              {renderFilterInput("cnpj", "CNPJ", "w-28")}
+              {renderFilterInput("ie", "Insc. Estadual", "w-20")}
+              {renderFilterSelect("situacao", "Situação", SITUACAO_OPTIONS, "w-20")}
               {MOVIMENTO_FISCAL_FIELDS.map((field) =>
                 field.type === "checkbox" ? (
                   <TableHead
                     key={field.key}
-                    className={`${HEAD} w-16 text-center align-bottom`}
+                    className={`${HEAD} w-12 text-center align-bottom`}
                   >
                     <span className="mb-1 block whitespace-nowrap">
                       {field.short}
@@ -248,13 +261,14 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
                   renderFilterSelect(
                     field.key,
                     field.short,
-                    field.options ?? []
+                    field.options ?? [],
+                    "w-16"
                   )
                 ) : (
-                  renderFilterInput(field.key, field.short, "w-24")
+                  renderFilterInput(field.key, field.short, "w-20")
                 )
               )}
-              {renderFilterInput("observacoes", "Observações", "w-64")}
+              {renderFilterInput("observacoes", "Observações", "w-36")}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -274,11 +288,19 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
                     >
                       {company.name}
                     </span>
-                    <span className="block truncate text-[10px] text-muted-foreground">
-                      {formatCpfCnpj(company.documento)}
-                    </span>
                   </TableCell>
-                  <TableCell className={`${CELL} w-28`}>
+                  <TableCell
+                    className={`${CELL} w-28 whitespace-nowrap text-muted-foreground`}
+                  >
+                    {formatCpfCnpj(company.documento)}
+                  </TableCell>
+                  <TableCell
+                    className={`${CELL} w-20 truncate`}
+                    title={company.inscricao_estadual ?? undefined}
+                  >
+                    {company.inscricao_estadual || "—"}
+                  </TableCell>
+                  <TableCell className={`${CELL} w-20`}>
                     {renderSelectCell(
                       company.id,
                       record?.situacao ?? "",
@@ -290,7 +312,11 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
                     <TableCell
                       key={field.key}
                       className={`${CELL} ${
-                        field.type === "checkbox" ? "w-16 text-center" : "w-24"
+                        field.type === "checkbox"
+                          ? "w-12 text-center"
+                          : field.type === "select"
+                            ? "w-16"
+                            : "w-20"
                       }`}
                     >
                       {field.type === "checkbox" ? (
@@ -325,7 +351,7 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
                       )}
                     </TableCell>
                   ))}
-                  <TableCell className={`${CELL} w-64`}>
+                  <TableCell className={`${CELL} w-36`}>
                     <Input
                       key={`${company.id}:${mes}:obs`}
                       defaultValue={effectiveObservacoes(company.id) ?? ""}
@@ -344,7 +370,7 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
             {filteredRows.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={13}
+                  colSpan={15}
                   className={`${CELL} py-8 text-center text-muted-foreground`}
                 >
                   {rows.length > 0
