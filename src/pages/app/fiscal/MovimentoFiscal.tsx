@@ -426,7 +426,7 @@ export function MovimentoFiscal() {
         </p>
 
       <div className="flex flex-wrap items-end gap-4">
-        <div className="w-40">
+        <div className="w-52">
           <Label htmlFor="mes-referencia">Mês de referência</Label>
           <Input
             id="mes-referencia"

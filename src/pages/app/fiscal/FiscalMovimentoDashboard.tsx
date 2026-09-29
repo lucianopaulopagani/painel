@@ -201,7 +201,7 @@ export default function FiscalMovimentoDashboard() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-4">
-        <div className="w-40">
+        <div className="w-52">
           <Label htmlFor="dash-fiscal-mes">Mês de referência</Label>
           <Input
             id="dash-fiscal-mes"
