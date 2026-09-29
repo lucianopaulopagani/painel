@@ -26,7 +26,6 @@ import FiscalManual from "./FiscalManual";
 import NotaFiscalManual from "./NotaFiscalManual";
 import GeneralDashboard from "./general-dashboard";
 import { MovimentoFiscal as FiscalMovimento } from "./fiscal/MovimentoFiscal";
-import CarneLeao from "./fiscal/CarneLeao";
 import BalanceteBalanco from "./contabil/BalanceteBalanco";
 import ContabilManual from "./contabil/ContabilManual";
 import CertificadoDigital from "./societario/CertificadoDigital";
@@ -68,7 +67,6 @@ const PANEL_DEPARTMENT_NAME: Record<AvailablePanelKey, string | null> = {
 /** Renderizador por nome de subdepartamento (novos nomes caem no placeholder). */
 const SUBMENU_RENDERERS: Record<string, () => JSX.Element> = {
   "Movimento Fiscal": () => <FiscalMovimento />,
-  "Carne Leão": () => <CarneLeao />,
   "Empresas com funcionários": () => <EmpresasFuncionarios />,
   "Empresas Fiscal": () => <EmpresasFiscal />,
   "Domésticas": () => <Domesticas />,

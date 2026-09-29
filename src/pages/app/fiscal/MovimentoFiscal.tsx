@@ -45,6 +45,8 @@ import { useAuth } from "@/context/auth";
 import { FISCAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import { companyUsesSubmenu } from "@/lib/department-submenus";
 import { isCompanyInactiveInMonth } from "@/lib/companies";
+import { CARNE_LEAO_TRIBUTACAO } from "@/lib/carne-leao";
+import { CarneLeaoTable } from "./CarneLeao";
 import {
   MOVIMENTO_FISCAL_FIELDS,
   SITUACAO_OPTIONS,
@@ -489,7 +491,13 @@ export function MovimentoFiscal() {
         </p>
       )}
 
-      {!isLoading && !isError && (
+      {!isLoading && !isError && tributacaoFiltro === CARNE_LEAO_TRIBUTACAO && (
+        <CarneLeaoTable mes={mes} />
+      )}
+
+      {!isLoading &&
+        !isError &&
+        tributacaoFiltro !== CARNE_LEAO_TRIBUTACAO && (
         <div className="rounded-lg border">
           <Table className="table-fixed">
             <TableHeader>

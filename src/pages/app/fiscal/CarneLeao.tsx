@@ -1,8 +1,5 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
-import { toast } from "@/components/ui/sonner";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -30,22 +27,8 @@ import {
   CARNE_LEAO_TOMADOS_OPTIONS,
   CARNE_LEAO_TRIBUTACAO,
 } from "@/lib/carne-leao";
-import {
-  currentMonth,
-  defaultReferenceMonth,
-} from "@/lib/fiscal-month";
 import { cn, formatCpfCnpj } from "@/lib/utils";
 import type { MovimentoCarneLeaoInput } from "@/lib/types";
-
-const STORAGE_KEY = "fiscal:carne-leao-mes";
-
-function readStoredMes(): string {
-  try {
-    return localStorage.getItem(STORAGE_KEY) ?? defaultReferenceMonth();
-  } catch {
-    return defaultReferenceMonth();
-  }
-}
 
 const CELL = "px-1 py-1 text-[11px]";
 const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
@@ -62,8 +45,16 @@ const TONE: Record<string, string> = {
   SM: "bg-primary/10 text-primary hover:bg-primary/15",
 };
 
-export default function CarneLeao() {
-  const [mes, setMes] = useState<string>(readStoredMes);
+interface CarneLeaoTableProps {
+  /** Mês de referência do Movimento Fiscal (mesma referência da tabela principal). */
+  mes: string;
+}
+
+/**
+ * Subtabela do Carne Leão — exibida dentro do Movimento Fiscal quando a
+ * tributação "Carne Leão" é selecionada no filtro.
+ */
+export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
   const [busca, setBusca] = useState({
     numero: "",
     uf: "",
@@ -82,7 +73,7 @@ export default function CarneLeao() {
     setBusca((prev) => ({ ...prev, [key]: value }));
   };
 
-  const { data: companies, isLoading, isError } = useCompanies();
+  const { data: companies } = useCompanies();
   const { data: records } = useCarneLeao(mes);
   const saveMutation = useSaveCarneLeao(mes);
 
@@ -141,30 +132,13 @@ export default function CarneLeao() {
       updated_at: _updatedAt,
       ...fields
     } = base;
-    saveMutation.mutate(
-      {
-        company_id: companyId,
-        mes_referencia: mes,
-        ...fields,
-        ...patch,
-      } as unknown as MovimentoCarneLeaoInput,
-      {
-        onError: (error) => {
-          toast.error(
-            error instanceof Error ? error.message : "Erro ao salvar."
-          );
-        },
-      }
-    );
-  };
-
-  const handleMonthChange = (value: string) => {
-    setMes(value);
-    try {
-      localStorage.setItem(STORAGE_KEY, value);
-    } catch {
-      // ignora armazenamento indisponível
-    }
+    const next = {
+      company_id: companyId,
+      mes_referencia: mes,
+      ...fields,
+      ...patch,
+    } as unknown as MovimentoCarneLeaoInput;
+    saveMutation.mutate(next);
   };
 
   const renderSelectCell = (
@@ -240,191 +214,146 @@ export default function CarneLeao() {
   );
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold">Carne Leão</h2>
-        <p className="text-sm text-muted-foreground">
-          Empresas com tributação {CARNE_LEAO_TRIBUTACAO}.
-        </p>
-      </div>
-
-      <div className="flex flex-wrap items-end gap-4">
-        <div className="w-40">
-          <Label htmlFor="carne-mes">Mês de referência</Label>
-          <Input
-            id="carne-mes"
-            type="month"
-            value={mes}
-            onChange={(e) => handleMonthChange(e.target.value)}
-            className="mt-1.5"
-          />
-        </div>
-        <div className="flex items-center gap-2 pb-1">
-          <button
-            type="button"
-            onClick={() => handleMonthChange(defaultReferenceMonth())}
-            className="rounded-md border px-2 py-1 text-xs hover:bg-muted"
-          >
-            Atual
-          </button>
-          <button
-            type="button"
-            onClick={() => handleMonthChange(currentMonth())}
-            className="rounded-md border px-2 py-1 text-xs hover:bg-muted"
-          >
-            Próximo
-          </button>
-        </div>
-      </div>
-
-      {isLoading && (
-        <div className="flex items-center justify-center py-12 text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" />
-        </div>
-      )}
-
-      {isError && (
-        <p className="py-12 text-center text-sm text-destructive">
-          Não foi possível carregar as empresas.
-        </p>
-      )}
-
-      {!isLoading && !isError && (
-        <div className="overflow-x-auto rounded-lg border">
-          <Table className="table-fixed min-w-[1500px]">
-            <TableHeader>
-              <TableRow className="bg-muted hover:bg-muted">
-                <TableHead className={`${HEAD} w-12 align-bottom`}>
-                  <span className="mb-1 block">N</span>
-                  <Input
-                    value={busca.numero}
-                    onChange={(e) => setBuscaField("numero", e.target.value)}
-                    placeholder="Filtrar"
-                    className="h-6 w-full min-w-0 px-1 text-xs"
-                  />
-                </TableHead>
-                <TableHead className={`${HEAD} w-12 align-bottom`}>
-                  <span className="mb-1 block">UF</span>
-                  <Input
-                    value={busca.uf}
-                    onChange={(e) => setBuscaField("uf", e.target.value)}
-                    placeholder="Filtrar"
-                    className="h-6 w-full min-w-0 px-1 text-xs"
-                  />
-                </TableHead>
-                {renderFilterInput("empresa", "Empresa")}
-                {renderFilterInput("cpf", "CPF")}
-                {renderFilterSelect("situacao", "Situação", CARNE_LEAO_SITUACAO_OPTIONS)}
-                {renderFilterSelect("prestados", "Prestados", CARNE_LEAO_PRESTADOS_OPTIONS)}
-                {renderFilterSelect("tomados", "Tomados", CARNE_LEAO_TOMADOS_OPTIONS)}
-                {renderFilterSelect("iss", "ISS Fixo", CARNE_LEAO_ISS_OPTIONS)}
-                {renderFilterSelect("carne", "Carne Leão", CARNE_LEAO_CARNE_OPTIONS)}
-                {renderFilterSelect("envio", "Envio/Guia", CARNE_LEAO_ENVIO_OPTIONS)}
-                {renderFilterInput("observacoes", "Observações")}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredRows.map((company) => {
-                const record = recordByCompany.get(company.id);
-                return (
-                  <TableRow key={company.id}>
-                    <TableCell className={`${CELL} whitespace-nowrap text-center font-medium`}>
-                      {company.numero || "—"}
-                    </TableCell>
-                    <TableCell className={`${CELL} whitespace-nowrap`}>
-                      {company.uf || "—"}
-                    </TableCell>
-                    <TableCell className={CELL}>
-                      <span
-                        className="block truncate font-medium"
-                        title={company.name}
-                      >
-                        {company.name}
-                      </span>
-                    </TableCell>
-                    <TableCell className={`${CELL} whitespace-nowrap text-muted-foreground`}>
-                      {formatCpfCnpj(company.documento)}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-28`}>
-                      {renderSelectCell(
-                        company.id,
-                        record?.situacao ?? "",
-                        CARNE_LEAO_SITUACAO_OPTIONS,
-                        "situacao"
-                      )}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-24`}>
-                      {renderSelectCell(
-                        company.id,
-                        record?.prestados ?? "",
-                        CARNE_LEAO_PRESTADOS_OPTIONS,
-                        "prestados"
-                      )}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-24`}>
-                      {renderSelectCell(
-                        company.id,
-                        record?.tomados ?? "",
-                        CARNE_LEAO_TOMADOS_OPTIONS,
-                        "tomados"
-                      )}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-24`}>
-                      {renderSelectCell(
-                        company.id,
-                        record?.iss_fixo ?? "",
-                        CARNE_LEAO_ISS_OPTIONS,
-                        "iss_fixo"
-                      )}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-24`}>
-                      {renderSelectCell(
-                        company.id,
-                        record?.carne_leao ?? "",
-                        CARNE_LEAO_CARNE_OPTIONS,
-                        "carne_leao"
-                      )}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-28`}>
-                      {renderSelectCell(
-                        company.id,
-                        record?.envio_guia ?? "",
-                        CARNE_LEAO_ENVIO_OPTIONS,
-                        "envio_guia"
-                      )}
-                    </TableCell>
-                    <TableCell className={`${CELL} w-72`}>
-                      <Input
-                        key={`${company.id}:${mes}:obs`}
-                        defaultValue={record?.observacoes ?? ""}
-                        title={record?.observacoes ?? ""}
-                        onBlur={(event) =>
-                          save(company.id, {
-                            observacoes: event.target.value.trim() || null,
-                          })
-                        }
-                        className="h-7 w-full min-w-0 px-1 text-[11px]"
-                      />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-              {filteredRows.length === 0 && (
-                <TableRow>
-                  <TableCell
-                    colSpan={11}
-                    className={`${CELL} py-8 text-center text-muted-foreground`}
-                  >
-                    {Object.values(busca).some(Boolean) && rows.length > 0
-                      ? "Nenhuma empresa encontrada com os filtros."
-                      : `Nenhuma empresa com tributação ${CARNE_LEAO_TRIBUTACAO}. Defina essa tributação no cadastro de empresas para que ela apareça aqui.`}
+    <div className="space-y-2">
+      <p className="text-sm font-medium">
+        Carne Leão — empresas com tributação {CARNE_LEAO_TRIBUTACAO}
+      </p>
+      <div className="overflow-x-auto rounded-lg border">
+        <Table className="table-fixed min-w-[1500px]">
+          <TableHeader>
+            <TableRow className="bg-muted hover:bg-muted">
+              <TableHead className={`${HEAD} w-12 align-bottom`}>
+                <span className="mb-1 block">N</span>
+                <Input
+                  value={busca.numero}
+                  onChange={(e) => setBuscaField("numero", e.target.value)}
+                  placeholder="Filtrar"
+                  className="h-6 w-full min-w-0 px-1 text-xs"
+                />
+              </TableHead>
+              <TableHead className={`${HEAD} w-12 align-bottom`}>
+                <span className="mb-1 block">UF</span>
+                <Input
+                  value={busca.uf}
+                  onChange={(e) => setBuscaField("uf", e.target.value)}
+                  placeholder="Filtrar"
+                  className="h-6 w-full min-w-0 px-1 text-xs"
+                />
+              </TableHead>
+              {renderFilterInput("empresa", "Empresa")}
+              {renderFilterInput("cpf", "CPF")}
+              {renderFilterSelect("situacao", "Situação", CARNE_LEAO_SITUACAO_OPTIONS)}
+              {renderFilterSelect("prestados", "Prestados", CARNE_LEAO_PRESTADOS_OPTIONS)}
+              {renderFilterSelect("tomados", "Tomados", CARNE_LEAO_TOMADOS_OPTIONS)}
+              {renderFilterSelect("iss", "ISS Fixo", CARNE_LEAO_ISS_OPTIONS)}
+              {renderFilterSelect("carne", "Carne Leão", CARNE_LEAO_CARNE_OPTIONS)}
+              {renderFilterSelect("envio", "Envio/Guia", CARNE_LEAO_ENVIO_OPTIONS)}
+              {renderFilterInput("observacoes", "Observações")}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredRows.map((company) => {
+              const record = recordByCompany.get(company.id);
+              return (
+                <TableRow key={company.id}>
+                  <TableCell className={`${CELL} whitespace-nowrap text-center font-medium`}>
+                    {company.numero || "—"}
+                  </TableCell>
+                  <TableCell className={`${CELL} whitespace-nowrap`}>
+                    {company.uf || "—"}
+                  </TableCell>
+                  <TableCell className={CELL}>
+                    <span
+                      className="block truncate font-medium"
+                      title={company.name}
+                    >
+                      {company.name}
+                    </span>
+                  </TableCell>
+                  <TableCell className={`${CELL} whitespace-nowrap text-muted-foreground`}>
+                    {formatCpfCnpj(company.documento)}
+                  </TableCell>
+                  <TableCell className={`${CELL} w-28`}>
+                    {renderSelectCell(
+                      company.id,
+                      record?.situacao ?? "",
+                      CARNE_LEAO_SITUACAO_OPTIONS,
+                      "situacao"
+                    )}
+                  </TableCell>
+                  <TableCell className={`${CELL} w-24`}>
+                    {renderSelectCell(
+                      company.id,
+                      record?.prestados ?? "",
+                      CARNE_LEAO_PRESTADOS_OPTIONS,
+                      "prestados"
+                    )}
+                  </TableCell>
+                  <TableCell className={`${CELL} w-24`}>
+                    {renderSelectCell(
+                      company.id,
+                      record?.tomados ?? "",
+                      CARNE_LEAO_TOMADOS_OPTIONS,
+                      "tomados"
+                    )}
+                  </TableCell>
+                  <TableCell className={`${CELL} w-24`}>
+                    {renderSelectCell(
+                      company.id,
+                      record?.iss_fixo ?? "",
+                      CARNE_LEAO_ISS_OPTIONS,
+                      "iss_fixo"
+                    )}
+                  </TableCell>
+                  <TableCell className={`${CELL} w-24`}>
+                    {renderSelectCell(
+                      company.id,
+                      record?.carne_leao ?? "",
+                      CARNE_LEAO_CARNE_OPTIONS,
+                      "carne_leao"
+                    )}
+                  </TableCell>
+                  <TableCell className={`${CELL} w-28`}>
+                    {renderSelectCell(
+                      company.id,
+                      record?.envio_guia ?? "",
+                      CARNE_LEAO_ENVIO_OPTIONS,
+                      "envio_guia"
+                    )}
+                  </TableCell>
+                  <TableCell className={`${CELL} w-72`}>
+                    <Input
+                      key={`${company.id}:${mes}:obs`}
+                      defaultValue={record?.observacoes ?? ""}
+                      title={record?.observacoes ?? ""}
+                      onBlur={(event) =>
+                        save(company.id, {
+                          observacoes: event.target.value.trim() || null,
+                        })
+                      }
+                      className="h-7 w-full min-w-0 px-1 text-[11px]"
+                    />
                   </TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+              );
+            })}
+            {filteredRows.length === 0 && (
+              <TableRow>
+                <TableCell
+                  colSpan={11}
+                  className={`${CELL} py-8 text-center text-muted-foreground`}
+                >
+                  {Object.values(busca).some(Boolean) && rows.length > 0
+                    ? "Nenhuma empresa encontrada com os filtros."
+                    : `Nenhuma empresa com tributação ${CARNE_LEAO_TRIBUTACAO}. Defina essa tributação no cadastro de empresas para que ela apareça aqui.`}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
+
+export default CarneLeaoTable;

@@ -1,0 +1,9 @@
+delete from public.department_submenus ds
+using public.departments d
+where ds.department_id = d.id
+  and d.name = 'Depart. Fiscal'
+  and ds.name = 'Carne Leão';
+
+update public.company_departments
+  set subdepartments = array_remove(subdepartments, 'Carne Leão')
+  where 'Carne Leão' = any(subdepartments);

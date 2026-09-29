@@ -72,19 +72,19 @@ const SECTIONS: ManualSection[] = [
     ],
   },
   {
-    title: "Carne Leão",
+    title: "Carne Leão (subtabela do Movimento Fiscal)",
     description:
-      "Tabela mensal das empresas com tributação Carne Leão.",
+      "Tabela específica das empresas com tributação Carne Leão, exibida dentro do Movimento Fiscal.",
     items: [
+      {
+        label: "Como abrir",
+        detail:
+          "No Movimento Fiscal, selecione a tributação 'Carne Leão' no filtro de Tributação — a subtabela do Carne Leão substitui a tabela padrão, usando o mesmo mês de referência.",
+      },
       {
         label: "Empresas",
         detail:
           "Aparecem automaticamente as empresas cadastradas com tributação 'Carne Leão' (N, UF, Empresa e CPF vêm do cadastro de empresas).",
-      },
-      {
-        label: "Mês de referência",
-        detail:
-          "Seletor de mês (com atalhos 'Atual' e 'Próximo'); as marcações são individuais por mês.",
       },
       {
         label: "Colunas",
