@@ -356,18 +356,7 @@ export function MovimentoFiscal() {
         </p>
       </div>
 
-      <div className="max-w-md space-y-3">
-        <div>
-          <Label htmlFor="mes-referencia">Mês de referência</Label>
-          <Input
-            id="mes-referencia"
-            type="month"
-            value={mes}
-            onChange={(e) => handleMonthChange(e.target.value)}
-            className="mt-1.5 max-w-xs"
-          />
-        </div>
-
+      <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
@@ -435,6 +424,35 @@ export function MovimentoFiscal() {
         </p>
 
       <div className="flex flex-wrap items-end gap-4">
+        <div className="w-40">
+          <Label htmlFor="mes-referencia">Mês de referência</Label>
+          <Input
+            id="mes-referencia"
+            type="month"
+            value={mes}
+            onChange={(e) => handleMonthChange(e.target.value)}
+            className="mt-1.5"
+          />
+        </div>
+        <div className="w-60">
+          <Label htmlFor="filtro-tributacao">Tributação</Label>
+          <Select
+            value={tributacaoFiltro}
+            onValueChange={setTributacaoFiltro}
+          >
+            <SelectTrigger id="filtro-tributacao" className="mt-1.5">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todas as tributação</SelectItem>
+              {tributacaoOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         {isAdmin && (
           <div className="w-60">
             <Label>Responsável</Label>
@@ -456,25 +474,6 @@ export function MovimentoFiscal() {
             </Select>
           </div>
         )}
-        <div className="w-60">
-          <Label htmlFor="filtro-tributacao">Tributação</Label>
-          <Select
-            value={tributacaoFiltro}
-            onValueChange={setTributacaoFiltro}
-          >
-            <SelectTrigger id="filtro-tributacao" className="mt-1.5">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">Todas as tributação</SelectItem>
-              {tributacaoOptions.map((option) => (
-                <SelectItem key={option} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
       </div>
       </div>
 
