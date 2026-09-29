@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { UserMultiSelect } from "@/components/admin/user-multi-select";
 import { MultiSelectDropdown } from "@/components/ui/multi-select-dropdown";
-import { useCreateCompany, useUpdateCompany } from "@/hooks/use-companies";
+import { useCreateCompany, useCompanies, useUpdateCompany } from "@/hooks/use-companies";
 import { useAllUsersWithDepartments } from "@/hooks/use-all-users";
 import { useMunicipios } from "@/hooks/use-municipios";
 import { useAllDepartmentSubmenus } from "@/hooks/use-department-submenus";
@@ -56,6 +56,7 @@ export default function CompanyFormDialog({
 }: CompanyFormDialogProps) {
   const createMutation = useCreateCompany();
   const updateMutation = useUpdateCompany();
+  const { data: companies } = useCompanies();
   const { data: departments } = useDepartments();
   const { data: usersWithDepartments } = useAllUsersWithDepartments();
   const { data: allSubmenus } = useAllDepartmentSubmenus();
@@ -146,6 +147,19 @@ export default function CompanyFormDialog({
     }
     if (!isValidCpfCnpj(documento)) {
       toast.error("Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.");
+      return;
+    }
+    // Só permite cadastrar empresas ainda não cadastradas (sem CPF/CNPJ repetido).
+    const digits = documento.replace(/\D/g, "");
+    const duplicated = (companies ?? []).some(
+      (item) =>
+        item.id !== company?.id &&
+        item.documento.replace(/\D/g, "") === digits
+    );
+    if (duplicated) {
+      toast.error(
+        "Este CPF/CNPJ já está cadastrado. Não é possível duplicar empresas."
+      );
       return;
     }
     if (!uf) {
