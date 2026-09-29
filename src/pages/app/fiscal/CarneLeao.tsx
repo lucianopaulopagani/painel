@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useCarneLeao, useSaveCarneLeao } from "@/hooks/use-carne-leao";
+import { useCarneLeao, useCarneLeaoAll, useSaveCarneLeao } from "@/hooks/use-carne-leao";
 import { useCompanies } from "@/hooks/use-companies";
 import { isCompanyInactiveInMonth } from "@/lib/companies";
 import {
@@ -75,6 +75,7 @@ export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
 
   const { data: companies } = useCompanies();
   const { data: records } = useCarneLeao(mes);
+  const { data: allRecords } = useCarneLeaoAll();
   const saveMutation = useSaveCarneLeao(mes);
 
   const rows = (companies ?? [])
@@ -93,6 +94,22 @@ export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
   const recordByCompany = new Map(
     (records ?? []).map((record) => [record.company_id, record])
   );
+
+  /**
+   * Observação efetiva: usa o mês atual; se estiver vazia, herda do mês
+   * anterior mais recente (leva para os meses seguintes até ser alterada).
+   */
+  const effectiveObservacoes = (companyId: string): string | null => {
+    const current = recordByCompany.get(companyId);
+    if (current && current.observacoes) return current.observacoes;
+    const prior = (allRecords ?? [])
+      .filter(
+        (record) =>
+          record.company_id === companyId && record.mes_referencia < mes
+      )
+      .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia));
+    return prior.find((record) => record.observacoes)?.observacoes ?? null;
+  };
 
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
@@ -119,7 +136,7 @@ export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
       selectOrBlank(record?.iss_fixo, busca.iss) &&
       selectOrBlank(record?.carne_leao, busca.carne) &&
       selectOrBlank(record?.envio_guia, busca.envio) &&
-      match(record?.observacoes, busca.observacoes)
+      match(effectiveObservacoes(company.id), busca.observacoes)
     );
   });
 
@@ -136,6 +153,7 @@ export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
       company_id: companyId,
       mes_referencia: mes,
       ...fields,
+      observacoes: effectiveObservacoes(companyId) ?? null,
       ...patch,
     } as unknown as MovimentoCarneLeaoInput;
     saveMutation.mutate(next);
@@ -324,8 +342,8 @@ export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
                   <TableCell className={`${CELL} w-72`}>
                     <Input
                       key={`${company.id}:${mes}:obs`}
-                      defaultValue={record?.observacoes ?? ""}
-                      title={record?.observacoes ?? ""}
+                      defaultValue={effectiveObservacoes(company.id) ?? ""}
+                      title={effectiveObservacoes(company.id) ?? ""}
                       onBlur={(event) =>
                         save(company.id, {
                           observacoes: event.target.value.trim() || null,

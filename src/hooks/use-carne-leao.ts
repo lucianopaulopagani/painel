@@ -24,8 +24,20 @@ export function useCarneLeao(mes: string) {
   });
 }
 
-export function useSaveCarneLeao(mes: string) {
-  const queryClient = useQueryClient();
+export function useCarneLeaoAll() {
+  return useQuery({
+    queryKey: ["carne-leao", "all"] as const,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("movimento_fiscal_carne_leao")
+        .select("*");
+      if (error) throw error;
+      return data as MovimentoCarneLeaoRecord[];
+    },
+  });
+}
+
+export function useSaveCarneLeao(mes: string) {  const queryClient = useQueryClient();
   const queryKey = carneLeaoKeys.byMonth(mes);
 
   return useMutation({
