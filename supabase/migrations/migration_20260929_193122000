@@ -1,0 +1,11 @@
+create or replace function public.people_directory()
+returns table (id uuid, full_name text, avatar_url text)
+language sql security definer set search_path = public as $$
+  select p.id, p.full_name, p.avatar_url
+  from public.profiles p
+  where auth.uid() is not null
+  order by p.full_name;
+$$;
+
+grant execute on function public.people_directory() to authenticated;
+revoke execute on function public.people_directory() from anon;

@@ -20,17 +20,23 @@ const SECTIONS: ManualSection[] = [
   },
   {
     title: "Dashboard",
-    description: "Situação do fechamento do mês de referência.",
+    description:
+      "Visão do Movimento Fiscal do mês de referência (disponível a todos os usuários do departamento Fiscal).",
     items: [
       {
-        label: "Gráfico de situação",
+        label: "Filtros",
         detail:
-          "Mostra empresas finalizadas e pendentes. OK e OK-SM contam como finalizadas; as demais situações como pendentes.",
+          "Mês de referência e Responsável, lado a lado. Ao escolher um responsável, os resultados passam a considerar apenas as empresas dele.",
       },
       {
-        label: "Filtro por responsável",
+        label: "Cartões",
         detail:
-          "Administradores veem todas as empresas; os demais veem apenas as suas.",
+          "Finalizadas, Pendentes e Total de empresas, cada um com a quantidade e a porcentagem abaixo. Considera a coluna Situação: OK e OK-SM contam como finalizadas; as demais como pendentes — em todas as tributações.",
+      },
+      {
+        label: "Gráfico por responsável",
+        detail:
+          "Quando o filtro está em 'Todos os responsáveis', exibe um gráfico de barras com a quantidade de empresas por responsável (empresas com mais de um responsável contam para cada um).",
       },
     ],
   },

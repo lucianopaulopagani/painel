@@ -4581,6 +4581,14 @@ export type Database = {
         Args: { mes: string }
         Returns: boolean
       }
+      people_directory: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          avatar_url: string
+          full_name: string
+          id: string
+        }[]
+      }
       update_own_profile: {
         Args: { avatar_url: string; full_name: string }
         Returns: boolean

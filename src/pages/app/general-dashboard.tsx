@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Construction, Loader2 } from "lucide-react";
+import { ChevronDown, Construction } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,15 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { StatusDonut } from "@/components/fiscal/status-donut";
-import {
-  ResponsavelBars,
-  type ResponsavelBarData,
-} from "@/components/fiscal/responsavel-bars";
-import { useFiscalDashboard } from "@/hooks/use-fiscal-dashboard";
-import { isSituacaoFinalizada } from "@/lib/fiscal";
 import { useAuth } from "@/context/auth";
 import {
   CONTABIL_DEPARTMENT_NAME,
@@ -26,17 +17,11 @@ import {
   SOCIETARIO_DEPARTMENT_NAME,
 } from "@/lib/departments";
 import { cn } from "@/lib/utils";
+import FiscalMovimentoDashboard from "./fiscal/FiscalMovimentoDashboard";
 import SocietarioDashboard from "./societario/SocietarioDashboard";
 import AlvaraLocalizacaoDashboard from "./societario/AlvaraLocalizacaoDashboard";
 import AlvaraSanitarioDashboard from "./societario/AlvaraSanitarioDashboard";
 import AlvaraBombeirosDashboard from "./societario/AlvaraBombeirosDashboard";
-import {
-  defaultReferenceMonth,
-  readStoredMonth,
-  writeStoredMonth,
-} from "@/lib/fiscal-month";
-
-const SEM_RESPONSAVEL = "Sem responsável";
 
 /** Dashboards por departamento — novos dashboards entram nesta lista. */
 const DASHBOARDS = [
@@ -89,40 +74,6 @@ export default function GeneralDashboard() {
   const [activeSubmenu, setActiveSubmenu] = useState<
     Partial<Record<DashboardKey, string>>
   >({});
-  const [mes, setMes] = useState<string>(
-    () => readStoredMonth() || defaultReferenceMonth()
-  );
-
-  const { data, isLoading, isError } = useFiscalDashboard(mes);
-
-  const rows = data ?? [];
-  const finalizadas = rows.filter((row) =>
-    isSituacaoFinalizada(row.situacao)
-  ).length;
-  const pendentes = rows.length - finalizadas;
-
-  const byResponsavel = new Map<string, ResponsavelBarData>();
-  for (const row of rows) {
-    const finalizada = isSituacaoFinalizada(row.situacao);
-    const nomes =
-      row.responsaveis.length > 0 ? row.responsaveis : [SEM_RESPONSAVEL];
-    for (const nome of nomes) {
-      const entry =
-        byResponsavel.get(nome) ??
-        ({ nome, finalizadas: 0, pendentes: 0 } as ResponsavelBarData);
-      if (finalizada) entry.finalizadas += 1;
-      else entry.pendentes += 1;
-      byResponsavel.set(nome, entry);
-    }
-  }
-  const responsavelData = Array.from(byResponsavel.values()).sort((a, b) =>
-    a.nome.localeCompare(b.nome, "pt-BR")
-  );
-
-  const handleMonthChange = (value: string) => {
-    setMes(value);
-    writeStoredMonth(value);
-  };
 
   const active = activeDept ?? visibleDashboards[0]?.key ?? null;
   const activeLabel = active
@@ -193,56 +144,7 @@ export default function GeneralDashboard() {
       </div>
 
       {active === "fiscal" && submenuKey === "dashboard" ? (
-          <>
-            <div className="max-w-xs">
-              <Label htmlFor="geral-mes">Mês de referência</Label>
-              <Input
-                id="geral-mes"
-                type="month"
-                value={mes}
-                onChange={(e) => handleMonthChange(e.target.value)}
-                className="mt-1.5"
-              />
-            </div>
-
-            {isLoading && (
-              <div className="flex items-center justify-center py-12 text-muted-foreground">
-                <Loader2 className="h-5 w-5 animate-spin" />
-              </div>
-            )}
-
-            {isError && (
-              <p className="py-12 text-center text-sm text-destructive">
-                Não foi possível carregar o dashboard.
-              </p>
-            )}
-
-            {!isLoading && !isError && (
-              <>
-                <StatusDonut
-                  finalizadas={finalizadas}
-                  pendentes={pendentes}
-                  title="Todas as empresas"
-                  subtitle="Total geral do departamento Fiscal no mês de referência."
-                />
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">
-                      Por responsável
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Finalizadas e pendentes por responsável. Empresas com mais
-                      de um responsável contam para cada um.
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsavelBars data={responsavelData} />
-                  </CardContent>
-                </Card>
-              </>
-            )}
-          </>
+          <FiscalMovimentoDashboard />
         ) : active === "societario" && submenuKey === "certificado-digital" ? (
           <SocietarioDashboard />
         ) : active === "societario" && submenuKey === "alvara-localizacao" ? (
