@@ -1,0 +1,363 @@
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  useAllMovimentoFiscal,
+  useMovimentoFiscal,
+  useSaveMovimentoFiscal,
+} from "@/hooks/use-movimento-fiscal";
+import { useCompanies } from "@/hooks/use-companies";
+import { isCompanyInactiveInMonth } from "@/lib/companies";
+import {
+  MOVIMENTO_FISCAL_FIELDS,
+  SITUACAO_OPTIONS,
+  isSituacaoFinalizada,
+} from "@/lib/fiscal";
+import { cn, formatCpfCnpj } from "@/lib/utils";
+import type { MovementFiscalInput, MovementFiscalRecord } from "@/lib/types";
+
+const CELL = "px-1 py-1 text-[11px]";
+const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
+
+/** Tributação desta subtabela. */
+export const SIMPLES_NACIONAL_TRIBUTACAO = "Simples Nacional";
+
+const TONE: Record<string, string> = {
+  OK: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+  "OK-SM":
+    "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+  "OK-ENT":
+    "bg-status-warning text-status-warning-foreground hover:bg-status-warning/90",
+  FAZENDO:
+    "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
+};
+
+interface SimplesNacionalTableProps {
+  /** Mês de referência do Movimento Fiscal. */
+  mes: string;
+}
+
+/**
+ * Subtabela do Simples Nacional — exibida dentro do Movimento Fiscal quando a
+ * tributação "Simples Nacional" é selecionada. As demais tributações seguem na
+ * tabela padrão até ganharem suas próprias tabelas.
+ */
+export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
+  const [busca, setBusca] = useState<Record<string, string>>({
+    numero: "",
+    empresa: "",
+    situacao: "",
+    observacoes: "",
+    ...Object.fromEntries(
+      MOVIMENTO_FISCAL_FIELDS.map((field) => [field.key, ""])
+    ),
+  });
+
+  const setBuscaField = (key: string, value: string) =>
+    setBusca((prev) => ({ ...prev, [key]: value }));
+
+  const { data: companies } = useCompanies();
+  const { data: records } = useMovimentoFiscal(mes);
+  const { data: allRecords } = useAllMovimentoFiscal();
+  const saveMutation = useSaveMovimentoFiscal(mes);
+
+  const rows = (companies ?? [])
+    .filter(
+      (company) =>
+        company.tributacao === SIMPLES_NACIONAL_TRIBUTACAO &&
+        !isCompanyInactiveInMonth(company, mes)
+    )
+    .sort((a, b) => {
+      if (!a.numero && !b.numero) return a.name.localeCompare(b.name, "pt-BR");
+      if (!a.numero) return 1;
+      if (!b.numero) return -1;
+      return a.numero.localeCompare(b.numero, "pt-BR", { numeric: true });
+    });
+
+  const recordByCompany = new Map<string, MovementFiscalRecord>(
+    (records ?? []).map((record) => [record.company_id, record])
+  );
+
+  /** Observação efetiva (herdada do mês anterior mais recente). */
+  const effectiveObservacoes = (companyId: string): string | null => {
+    const current = recordByCompany.get(companyId);
+    if (current && current.observacoes) return current.observacoes;
+    const prior = (allRecords ?? [])
+      .filter(
+        (record) =>
+          record.company_id === companyId && record.mes_referencia < mes
+      )
+      .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia));
+    return prior.find((record) => record.observacoes)?.observacoes ?? null;
+  };
+
+  const filteredRows = rows.filter((company) => {
+    const record = recordByCompany.get(company.id);
+    const match = (value: string | null | undefined, query: string): boolean =>
+      !query ||
+      (value ?? "")
+        .toLocaleLowerCase("pt-BR")
+        .includes(query.toLocaleLowerCase("pt-BR"));
+    const selectOrBlank = (
+      value: string | null | undefined,
+      query: string
+    ): boolean => {
+      if (query === "branco") return !value;
+      return !query || (value ?? "") === query;
+    };
+    return (
+      match(company.numero, busca.numero) &&
+      match(company.name, busca.empresa) &&
+      selectOrBlank(record?.situacao, busca.situacao) &&
+      MOVIMENTO_FISCAL_FIELDS.every((field) =>
+        field.type === "checkbox"
+          ? true
+          : selectOrBlank(record?.[field.key] as string | null, busca[field.key])
+      ) &&
+      match(effectiveObservacoes(company.id), busca.observacoes)
+    );
+  });
+
+  const save = (companyId: string, patch: Record<string, unknown>) => {
+    const current = recordByCompany.get(companyId);
+    const base = current ?? {};
+    const {
+      id: _id,
+      created_at: _createdAt,
+      updated_at: _updatedAt,
+      ...fields
+    } = base;
+    saveMutation.mutate({
+      company_id: companyId,
+      mes_referencia: mes,
+      ...fields,
+      observacoes: effectiveObservacoes(companyId) ?? null,
+      ...patch,
+    } as unknown as MovementFiscalInput);
+  };
+
+  const renderSelectCell = (
+    companyId: string,
+    value: string,
+    options: readonly string[],
+    patchKey: string
+  ) => (
+    <Select
+      value={value === "" ? "none" : value}
+      onValueChange={(next) =>
+        save(companyId, { [patchKey]: next === "none" ? null : next })
+      }
+    >
+      <SelectTrigger
+        className={cn(
+          "h-7 w-full min-w-0 px-1 text-[11px] font-semibold",
+          TONE[value]
+        )}
+      >
+        <SelectValue placeholder="—" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="none">—</SelectItem>
+        {options.map((option) => (
+          <SelectItem key={option} value={option}>
+            {option}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
+  const renderFilterInput = (key: string, label: string, widthClass = "") => (
+    <TableHead className={`${HEAD} ${widthClass} align-bottom`}>
+      <span className="mb-1 block whitespace-nowrap">{label}</span>
+      <Input
+        value={busca[key] ?? ""}
+        onChange={(e) => setBuscaField(key, e.target.value)}
+        placeholder="Filtrar"
+        className="h-6 w-full min-w-0 px-1 text-xs"
+      />
+    </TableHead>
+  );
+
+  const renderFilterSelect = (
+    key: string,
+    label: string,
+    options: readonly string[]
+  ) => (
+    <TableHead className={`${HEAD} w-24 align-bottom`}>
+      <span className="mb-1 block whitespace-nowrap">{label}</span>
+      <Select
+        value={busca[key] === "" ? "todos" : busca[key]}
+        onValueChange={(value) =>
+          setBuscaField(key, value === "todos" ? "" : value)
+        }
+      >
+        <SelectTrigger className="h-6 w-full min-w-0 px-1 text-xs">
+          <SelectValue placeholder="Todos" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todos</SelectItem>
+          <SelectItem value="branco">Em branco</SelectItem>
+          {options.map((option) => (
+            <SelectItem key={option} value={option}>
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </TableHead>
+  );
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm font-medium">
+        Simples Nacional — empresas com tributação {SIMPLES_NACIONAL_TRIBUTACAO}
+      </p>
+      <div className="overflow-x-auto rounded-lg border">
+        <Table className="table-fixed min-w-[1700px]">
+          <TableHeader>
+            <TableRow className="bg-muted hover:bg-muted">
+              {renderFilterInput("numero", "Nº", "w-12")}
+              {renderFilterInput("empresa", "Empresa", "w-56")}
+              {renderFilterSelect("situacao", "Situação", SITUACAO_OPTIONS)}
+              {MOVIMENTO_FISCAL_FIELDS.map((field) =>
+                field.type === "checkbox" ? (
+                  <TableHead
+                    key={field.key}
+                    className={`${HEAD} w-16 text-center align-bottom`}
+                  >
+                    <span className="mb-1 block whitespace-nowrap">
+                      {field.short}
+                    </span>
+                  </TableHead>
+                ) : field.type === "select" ? (
+                  renderFilterSelect(
+                    field.key,
+                    field.short,
+                    field.options ?? []
+                  )
+                ) : (
+                  renderFilterInput(field.key, field.short, "w-24")
+                )
+              )}
+              {renderFilterInput("observacoes", "Observações", "w-64")}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredRows.map((company) => {
+              const record = recordByCompany.get(company.id);
+              return (
+                <TableRow key={company.id}>
+                  <TableCell
+                    className={`${CELL} whitespace-nowrap text-center font-medium`}
+                  >
+                    {company.numero || "—"}
+                  </TableCell>
+                  <TableCell className={CELL}>
+                    <span
+                      className="block truncate font-medium"
+                      title={company.name}
+                    >
+                      {company.name}
+                    </span>
+                    <span className="block truncate text-[10px] text-muted-foreground">
+                      {formatCpfCnpj(company.documento)}
+                    </span>
+                  </TableCell>
+                  <TableCell className={`${CELL} w-28`}>
+                    {renderSelectCell(
+                      company.id,
+                      record?.situacao ?? "",
+                      SITUACAO_OPTIONS,
+                      "situacao"
+                    )}
+                  </TableCell>
+                  {MOVIMENTO_FISCAL_FIELDS.map((field) => (
+                    <TableCell
+                      key={field.key}
+                      className={`${CELL} ${
+                        field.type === "checkbox" ? "w-16 text-center" : "w-24"
+                      }`}
+                    >
+                      {field.type === "checkbox" ? (
+                        <Checkbox
+                          checked={record?.[field.key] === true}
+                          onCheckedChange={(checked) =>
+                            save(company.id, {
+                              [field.key]: checked === true,
+                            })
+                          }
+                        />
+                      ) : field.type === "input" ? (
+                        <Input
+                          key={`${company.id}:${mes}:${field.key}`}
+                          defaultValue={
+                            (record?.[field.key] as string) ?? ""
+                          }
+                          onBlur={(event) =>
+                            save(company.id, {
+                              [field.key]: event.target.value.trim() || null,
+                            })
+                          }
+                          className="h-7 w-full min-w-0 px-1 text-[11px]"
+                        />
+                      ) : (
+                        renderSelectCell(
+                          company.id,
+                          (record?.[field.key] as string) ?? "",
+                          field.options ?? [],
+                          field.key
+                        )
+                      )}
+                    </TableCell>
+                  ))}
+                  <TableCell className={`${CELL} w-64`}>
+                    <Input
+                      key={`${company.id}:${mes}:obs`}
+                      defaultValue={effectiveObservacoes(company.id) ?? ""}
+                      title={effectiveObservacoes(company.id) ?? ""}
+                      onBlur={(event) =>
+                        save(company.id, {
+                          observacoes: event.target.value.trim() || null,
+                        })
+                      }
+                      className="h-7 w-full min-w-0 px-1 text-[11px]"
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+            {filteredRows.length === 0 && (
+              <TableRow>
+                <TableCell
+                  colSpan={13}
+                  className={`${CELL} py-8 text-center text-muted-foreground`}
+                >
+                  {rows.length > 0
+                    ? "Nenhuma empresa encontrada com os filtros."
+                    : `Nenhuma empresa com tributação ${SIMPLES_NACIONAL_TRIBUTACAO}. Defina essa tributação no cadastro de empresas para que ela apareça aqui.`}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}
+
+export default SimplesNacionalTable;

@@ -48,6 +48,10 @@ import { isCompanyInactiveInMonth } from "@/lib/companies";
 import { CARNE_LEAO_TRIBUTACAO } from "@/lib/carne-leao";
 import { CarneLeaoTable } from "./CarneLeao";
 import {
+  SIMPLES_NACIONAL_TRIBUTACAO,
+  SimplesNacionalTable,
+} from "./SimplesNacional";
+import {
   MOVIMENTO_FISCAL_FIELDS,
   SITUACAO_OPTIONS,
 } from "@/lib/fiscal";
@@ -497,7 +501,14 @@ export function MovimentoFiscal() {
 
       {!isLoading &&
         !isError &&
-        tributacaoFiltro !== CARNE_LEAO_TRIBUTACAO && (
+        tributacaoFiltro === SIMPLES_NACIONAL_TRIBUTACAO && (
+          <SimplesNacionalTable mes={mes} />
+        )}
+
+      {!isLoading &&
+        !isError &&
+        tributacaoFiltro !== CARNE_LEAO_TRIBUTACAO &&
+        tributacaoFiltro !== SIMPLES_NACIONAL_TRIBUTACAO && (
         <div className="rounded-lg border">
           <Table className="table-fixed">
             <TableHeader>

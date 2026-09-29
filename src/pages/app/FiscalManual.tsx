@@ -83,6 +83,23 @@ const SECTIONS: ManualSection[] = [
     ],
   },
   {
+    title: "Subtabelas por tributação",
+    description:
+      "Ao selecionar uma tributação no filtro do Movimento Fiscal, a tabela padrão é substituída pela subtabela específica daquela tributação.",
+    items: [
+      {
+        label: "Simples Nacional",
+        detail:
+          "Selecionando 'Simples Nacional' no filtro de Tributação, é exibida a subtabela específica dessa tributação (Situação, DAS, Antecipação, ST, DIF ALIQ, DIF ALIQ C/ST, Guia, DESTDA, Envio/SN, Envio/ICMS e Observações).",
+      },
+      {
+        label: "Demais tributações",
+        detail:
+          "As outras tributações seguem usando a tabela padrão do Movimento Fiscal e ganharão subtabelas específicas no futuro.",
+      },
+    ],
+  },
+  {
     title: "Carne Leão (subtabela do Movimento Fiscal)",
     description:
       "Tabela específica das empresas com tributação Carne Leão, exibida dentro do Movimento Fiscal.",
