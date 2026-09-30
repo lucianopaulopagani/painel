@@ -6,6 +6,7 @@ import {
   ChevronDown,
   KeyRound,
   LayoutDashboard,
+  ListChecks,
   LogOut,
   MessageCircle,
   Palette,
@@ -138,6 +139,18 @@ export function PanelHeader({ title, subtitle, children }: PanelHeaderProps) {
             <Button variant="ghost" size="sm" className="gap-2">
               <MessageCircle className="h-4 w-4" />
               <span className="hidden sm:inline">Chat</span>
+            </Button>
+          </a>
+          <a
+            href="/tarefas"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0"
+            title="Abrir o Controle de Tarefas em nova janela"
+          >
+            <Button variant="ghost" size="sm" className="gap-2">
+              <ListChecks className="h-4 w-4" />
+              <span className="hidden sm:inline">Tarefas</span>
             </Button>
           </a>
           <a

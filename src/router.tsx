@@ -6,6 +6,7 @@ import AdminPanel from "./pages/admin/AdminPanel";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AgendaPage from "./pages/agenda/AgendaPage";
 import ChatPage from "./pages/chat/ChatPage";
+import TarefasPage from "./pages/tarefas/TarefasPage";
 import ProtectedRoute from "./components/guards/protected-route";
 import AdminRoute from "./components/guards/admin-route";
 import NotFound from "./pages/NotFound";
@@ -58,6 +59,11 @@ export const routers = [
     path: "/agenda",
     name: "agenda",
     element: <AgendaPage />,
+  },
+  {
+    path: "/tarefas",
+    name: "tarefas",
+    element: <TarefasPage />,
   },
   /* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */
   {

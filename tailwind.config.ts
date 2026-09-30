@@ -46,6 +46,10 @@ export default {
 					neutral: {
 						DEFAULT: 'hsl(var(--status-neutral))',
 						foreground: 'hsl(var(--status-neutral-foreground))'
+					},
+					info: {
+						DEFAULT: 'hsl(var(--status-info))',
+						foreground: 'hsl(var(--status-info-foreground))'
 					}
 				},
 				background: 'hsl(var(--background))',
