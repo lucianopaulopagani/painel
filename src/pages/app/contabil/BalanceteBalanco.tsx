@@ -55,7 +55,9 @@ const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
 /* Colunas fixas: Nº (w-10 = 40px) e Empresa (w-48 = 192px). */
 const STICKY_HEAD = "sticky z-20 bg-muted";
 const STICKY_CELL = "sticky z-10 bg-background";
-const EMPRESA_LEFT = "left-[40px]";
+const N_LEFT = "left-0";
+const UF_LEFT = "left-[40px]";
+const EMPRESA_LEFT = "left-[80px]";
 const EMPRESA_EDGE = "border-r border-border";
 
 export default function BalanceteBalanco() {
@@ -63,6 +65,7 @@ export default function BalanceteBalanco() {
   const [busca, setBusca] = useState<Record<string, string>>({
     usuario: "",
     numero: "",
+    uf: "",
     empresa: "",
     jan: "",
     fev: "",
@@ -131,6 +134,7 @@ export default function BalanceteBalanco() {
     return (
       matchesUsuario &&
       match(company.numero, busca.numero) &&
+      match(company.uf, busca.uf) &&
       match(company.name, busca.empresa) &&
       BALANCETE_MESES.every((mes) =>
         selectOrBlank(record?.[mes.key], busca[mes.key])
@@ -305,14 +309,25 @@ export default function BalanceteBalanco() {
 
       {!isLoading && !isError && (
         <div className="overflow-x-auto rounded-lg border">
-          <Table className="table-fixed min-w-[1064px]">
+          <Table className="table-fixed min-w-[1104px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
-                <TableHead className={`${HEAD} w-10 ${STICKY_HEAD}`}>
+                <TableHead className={`${HEAD} w-10 ${N_LEFT} ${STICKY_HEAD}`}>
                   <span className="mb-1 block">Nº</span>
                   <Input
                     value={busca.numero}
                     onChange={(e) => setBuscaField("numero", e.target.value)}
+                    placeholder="Filtrar"
+                    className="h-6 w-full min-w-0 px-1 text-xs"
+                  />
+                </TableHead>
+                <TableHead
+                  className={`${HEAD} w-10 ${UF_LEFT} ${STICKY_HEAD}`}
+                >
+                  <span className="mb-1 block">UF</span>
+                  <Input
+                    value={busca.uf}
+                    onChange={(e) => setBuscaField("uf", e.target.value)}
                     placeholder="Filtrar"
                     className="h-6 w-full min-w-0 px-1 text-xs"
                   />
@@ -340,9 +355,14 @@ export default function BalanceteBalanco() {
                 return (
                   <TableRow key={company.id}>
                     <TableCell
-                      className={`${CELL} w-10 whitespace-nowrap text-center font-medium ${STICKY_CELL}`}
+                      className={`${CELL} w-10 whitespace-nowrap text-center font-medium ${N_LEFT} ${STICKY_CELL}`}
                     >
                       {company.numero || "—"}
+                    </TableCell>
+                    <TableCell
+                      className={`${CELL} w-10 whitespace-nowrap ${UF_LEFT} ${STICKY_CELL}`}
+                    >
+                      {company.uf || "—"}
                     </TableCell>
                     <TableCell
                       className={`${CELL} w-48 ${STICKY_CELL} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`}
@@ -378,7 +398,7 @@ export default function BalanceteBalanco() {
               {filteredRows.length === 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={15}
+                    colSpan={16}
                     className={`${CELL} py-8 text-center text-muted-foreground`}
                   >
                     {Object.values(busca).some(Boolean) && rows.length > 0

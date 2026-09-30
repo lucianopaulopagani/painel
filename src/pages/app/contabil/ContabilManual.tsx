@@ -35,7 +35,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Colunas",
         detail:
-          "Nº, Empresa, os 12 meses (JAN a DEZ) com marcação OK/em branco, e o campo Fechamento (texto livre).",
+          "Nº, UF, Empresa, os 12 meses (JAN a DEZ) com marcação OK/em branco, e o campo Fechamento (texto livre).",
       },
       {
         label: "Filtros por coluna",
