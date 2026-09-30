@@ -241,7 +241,7 @@ export default function BalanceteBalanco() {
     key: string,
     label: string,
     options: readonly string[] = BALANCETE_MES_OPTIONS,
-    widthClass = "w-16"
+    widthClass = "w-20"
   ) => (
     <TableHead className={`${HEAD} ${widthClass} align-bottom`}>
       <span className="mb-1 block whitespace-nowrap">{label}</span>
@@ -362,7 +362,7 @@ export default function BalanceteBalanco() {
 
       {!isLoading && !isError && (
         <div className="overflow-x-auto rounded-lg border">
-          <Table className="table-fixed min-w-[1256px]">
+          <Table className="table-fixed min-w-[1448px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
                 <TableHead className={`${HEAD} w-10 ${N_LEFT} ${STICKY_HEAD}`}>
@@ -442,7 +442,7 @@ export default function BalanceteBalanco() {
                       </span>
                     </TableCell>
                     {BALANCETE_MESES.map((mes) => (
-                      <TableCell key={mes.key} className={`${CELL} w-16`}>
+                      <TableCell key={mes.key} className={`${CELL} w-20`}>
                         {renderMonthCell(company.id, mes.key)}
                       </TableCell>
                     ))}
