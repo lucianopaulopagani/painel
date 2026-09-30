@@ -30,6 +30,7 @@ import { companyUsesSubmenu } from "@/lib/department-submenus";
 import {
   BALANCETE_MESES,
   BALANCETE_MES_OPTIONS,
+  BALANCETE_FECHAMENTO_OPTIONS,
   balanceteAnos,
 } from "@/lib/contabil";
 import { cn } from "@/lib/utils";
@@ -80,6 +81,7 @@ export default function BalanceteBalanco() {
     nov: "",
     dez: "",
     fechamento: "",
+    observacoes: "",
   });
 
   const setBuscaField = (key: string, value: string) => {
@@ -147,7 +149,8 @@ export default function BalanceteBalanco() {
       BALANCETE_MESES.every((mes) =>
         selectOrBlank(record?.[mes.key], busca[mes.key])
       ) &&
-      match(record?.fechamento, busca.fechamento)
+      selectOrBlank(record?.fechamento, busca.fechamento) &&
+      match(record?.observacoes, busca.observacoes)
     );
   });
 
@@ -200,7 +203,9 @@ export default function BalanceteBalanco() {
         className={cn(
           "h-7 w-full min-w-0 px-1 text-xs font-semibold",
           recordByCompany.get(companyId)?.[mesKey] === "OK" &&
-            "bg-status-success text-status-success-foreground hover:bg-status-success/90"
+            "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+          recordByCompany.get(companyId)?.[mesKey] === "LANÇADO" &&
+            "bg-primary/10 text-primary hover:bg-primary/15"
         )}
       >
         <SelectValue placeholder="—" />
@@ -216,8 +221,12 @@ export default function BalanceteBalanco() {
     </Select>
   );
 
-  const renderFilterInput = (key: string, label: string) => (
-    <TableHead className={`${HEAD} align-bottom`}>
+  const renderFilterInput = (
+    key: string,
+    label: string,
+    widthClass = ""
+  ) => (
+    <TableHead className={`${HEAD} ${widthClass} align-bottom`}>
       <span className="mb-1 block whitespace-nowrap">{label}</span>
       <Input
         value={busca[key] ?? ""}
@@ -228,8 +237,13 @@ export default function BalanceteBalanco() {
     </TableHead>
   );
 
-  const renderFilterMonth = (key: string, label: string) => (
-    <TableHead className={`${HEAD} w-14 align-bottom`}>
+  const renderFilterMonth = (
+    key: string,
+    label: string,
+    options: readonly string[] = BALANCETE_MES_OPTIONS,
+    widthClass = "w-16"
+  ) => (
+    <TableHead className={`${HEAD} ${widthClass} align-bottom`}>
       <span className="mb-1 block whitespace-nowrap">{label}</span>
       <Select
         value={busca[key] === "" ? "todos" : busca[key]}
@@ -252,6 +266,37 @@ export default function BalanceteBalanco() {
       </Select>
     </TableHead>
   );
+
+  const renderFechamentoCell = (companyId: string) => {
+    const value = recordByCompany.get(companyId)?.fechamento ?? "";
+    return (
+      <Select
+        value={value === "" ? "none" : value}
+        onValueChange={(next) =>
+          save(companyId, { fechamento: next === "none" ? null : next })
+        }
+      >
+        <SelectTrigger
+          className={cn(
+            "h-7 w-full min-w-0 px-1 text-xs font-semibold",
+            value === "ENCERRADA" &&
+              "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+            value === "LANÇADO" && "bg-primary/10 text-primary hover:bg-primary/15"
+          )}
+        >
+          <SelectValue placeholder="—" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">—</SelectItem>
+          {BALANCETE_FECHAMENTO_OPTIONS.map((option) => (
+            <SelectItem key={option} value={option}>
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -317,7 +362,7 @@ export default function BalanceteBalanco() {
 
       {!isLoading && !isError && (
         <div className="overflow-x-auto rounded-lg border">
-          <Table className="table-fixed min-w-[1112px]">
+          <Table className="table-fixed min-w-[1256px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
                 <TableHead className={`${HEAD} w-10 ${N_LEFT} ${STICKY_HEAD}`}>
@@ -354,7 +399,7 @@ export default function BalanceteBalanco() {
                   </Select>
                 </TableHead>
                 <TableHead
-                  className={`${HEAD} w-48 ${STICKY_HEAD} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`}
+                  className={`${HEAD} w-40 ${STICKY_HEAD} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`}
                 >
                   <span className="mb-1 block">Empresa</span>
                   <Input
@@ -367,7 +412,8 @@ export default function BalanceteBalanco() {
                 {BALANCETE_MESES.map((mes) =>
                   renderFilterMonth(mes.key, mes.label)
                 )}
-                {renderFilterInput("fechamento", "Fechamento")}
+                {renderFilterMonth("fechamento", "Fechamento", BALANCETE_FECHAMENTO_OPTIONS, "w-24")}
+                {renderFilterInput("observacoes", "Observações", "w-36")}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -386,7 +432,7 @@ export default function BalanceteBalanco() {
                       {company.uf || "—"}
                     </TableCell>
                     <TableCell
-                      className={`${CELL} w-48 ${STICKY_CELL} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`}
+                      className={`${CELL} w-40 ${STICKY_CELL} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`}
                     >
                       <span
                         className="block truncate font-medium"
@@ -396,18 +442,21 @@ export default function BalanceteBalanco() {
                       </span>
                     </TableCell>
                     {BALANCETE_MESES.map((mes) => (
-                      <TableCell key={mes.key} className={`${CELL} w-14`}>
+                      <TableCell key={mes.key} className={`${CELL} w-16`}>
                         {renderMonthCell(company.id, mes.key)}
                       </TableCell>
                     ))}
-                    <TableCell className={`${CELL} w-40`}>
+                    <TableCell className={`${CELL} w-24`}>
+                      {renderFechamentoCell(company.id)}
+                    </TableCell>
+                    <TableCell className={`${CELL} w-36`}>
                       <Input
-                        key={`${company.id}:${ano}:fechamento`}
-                        defaultValue={record?.fechamento ?? ""}
-                        title={record?.fechamento ?? ""}
+                        key={`${company.id}:${ano}:obs`}
+                        defaultValue={record?.observacoes ?? ""}
+                        title={record?.observacoes ?? ""}
                         onBlur={(event) =>
                           save(company.id, {
-                            fechamento: event.target.value.trim() || null,
+                            observacoes: event.target.value.trim() || null,
                           })
                         }
                         className="h-7 w-full min-w-0 px-1 text-[11px]"
@@ -419,7 +468,7 @@ export default function BalanceteBalanco() {
               {filteredRows.length === 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={16}
+                    colSpan={17}
                     className={`${CELL} py-8 text-center text-muted-foreground`}
                   >
                     {Object.values(busca).some(Boolean) && rows.length > 0

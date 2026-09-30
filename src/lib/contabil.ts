@@ -14,8 +14,11 @@ export const BALANCETE_MESES = [
   { key: "dez", label: "DEZ" },
 ] as const;
 
-/** Opções das células mensais (OK ou em branco). */
-export const BALANCETE_MES_OPTIONS = ["OK"] as const;
+/** Opções das células mensais (OK, LANÇADO ou em branco). */
+export const BALANCETE_MES_OPTIONS = ["OK", "LANÇADO"] as const;
+
+/** Opções da coluna Fechamento. */
+export const BALANCETE_FECHAMENTO_OPTIONS = ["LANÇADO", "ENCERRADA"] as const;
 
 /** Anos disponíveis no filtro por ano (ano corrente ± 3). */
 export function balanceteAnos(): string[] {

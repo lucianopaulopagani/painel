@@ -62,6 +62,7 @@ export function useSaveBalanceteBalanco(ano: string) {
           nov: record.nov ?? null,
           dez: record.dez ?? null,
           fechamento: record.fechamento ?? null,
+          observacoes: record.observacoes ?? null,
           created_at: "",
           updated_at: "",
         });

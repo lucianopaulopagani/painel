@@ -3506,6 +3506,7 @@ export type Database = {
           mai: string | null
           mar: string | null
           nov: string | null
+          observacoes: string | null
           out: string | null
           set: string | null
           updated_at: string
@@ -3526,6 +3527,7 @@ export type Database = {
           mai?: string | null
           mar?: string | null
           nov?: string | null
+          observacoes?: string | null
           out?: string | null
           set?: string | null
           updated_at?: string
@@ -3546,6 +3548,7 @@ export type Database = {
           mai?: string | null
           mar?: string | null
           nov?: string | null
+          observacoes?: string | null
           out?: string | null
           set?: string | null
           updated_at?: string
