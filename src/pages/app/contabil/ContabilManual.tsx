@@ -49,6 +49,33 @@ const SECTIONS: ManualSection[] = [
       },
     ],
   },
+  {
+    title: "Dashboard",
+    description:
+      "Visão geral do ano escolhido no Dashboard geral, departamento Contábil.",
+    items: [
+      {
+        label: "Acesso",
+        detail:
+          "Menu 'Dashboard geral' no topo da página, botão Contábil e, na lista ao lado, 'Balancete/Balanço'. Usuários do departamento Contábil (e administradores) visualizam.",
+      },
+      {
+        label: "Filtros",
+        detail:
+          "Ano e Responsável, lado a lado. O responsável mostra apenas as empresas em que ele está vinculado no departamento.",
+      },
+      {
+        label: "Cartões",
+        detail:
+          "Encerradas (Fechamento = ENCERRADA), Pendentes (Fechamento em branco ou LANÇADO) e Total de empresas, cada um com a porcentagem sobre o total.",
+      },
+      {
+        label: "Empresas por responsável",
+        detail:
+          "Gráfico de barras horizontais com a quantidade de empresas de cada responsável, da maior para a menor. Aparece quando o filtro Responsável está em 'Todos os responsáveis'.",
+      },
+    ],
+  },
 ];
 
 export default function ContabilManual() {

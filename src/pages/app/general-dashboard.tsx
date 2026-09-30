@@ -18,6 +18,7 @@ import {
 } from "@/lib/departments";
 import { cn } from "@/lib/utils";
 import FiscalMovimentoDashboard from "./fiscal/FiscalMovimentoDashboard";
+import ContabilDashboard from "./contabil/ContabilDashboard";
 import SocietarioDashboard from "./societario/SocietarioDashboard";
 import AlvaraLocalizacaoDashboard from "./societario/AlvaraLocalizacaoDashboard";
 import AlvaraSanitarioDashboard from "./societario/AlvaraSanitarioDashboard";
@@ -53,7 +54,7 @@ const DEPT_SUBMENUS: Record<DashboardKey, { key: string; label: string }[]> = {
     { key: "alvara-sanitario", label: "Alvará Sanitário" },
     { key: "alvara-bombeiros", label: "Alvará Bombeiros" },
   ],
-  contabil: [{ key: "dashboard", label: "Dashboard" }],
+  contabil: [{ key: "balancete-balanco", label: "Balancete/Balanço" }],
   "nota-fiscal": [{ key: "dashboard", label: "Dashboard" }],
 };
 
@@ -145,6 +146,8 @@ export default function GeneralDashboard() {
 
       {active === "fiscal" && submenuKey === "dashboard" ? (
           <FiscalMovimentoDashboard />
+        ) : active === "contabil" && submenuKey === "balancete-balanco" ? (
+          <ContabilDashboard />
         ) : active === "societario" && submenuKey === "certificado-digital" ? (
           <SocietarioDashboard />
         ) : active === "societario" && submenuKey === "alvara-localizacao" ? (

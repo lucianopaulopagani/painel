@@ -27,3 +27,27 @@ export function balanceteAnos(): string[] {
     String(current - 3 + index)
   );
 }
+
+/** Chave do ano selecionado no Contábil (compartilhada entre tela e dashboard). */
+export const BALANCETE_ANO_STORAGE_KEY = "contabil:balancete-ano";
+
+/** Ano selecionado pelo usuário (ano corrente quando não houver). */
+export function readStoredBalanceteAno(): string {
+  try {
+    return (
+      localStorage.getItem(BALANCETE_ANO_STORAGE_KEY) ??
+      String(new Date().getFullYear())
+    );
+  } catch {
+    return String(new Date().getFullYear());
+  }
+}
+
+/** Guarda o ano selecionado (ignora armazenamento indisponível). */
+export function writeStoredBalanceteAno(ano: string): void {
+  try {
+    localStorage.setItem(BALANCETE_ANO_STORAGE_KEY, ano);
+  } catch {
+    // ignora armazenamento indisponível
+  }
+}

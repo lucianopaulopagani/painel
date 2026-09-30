@@ -38,23 +38,11 @@ import {
   BALANCETE_MES_OPTIONS,
   BALANCETE_FECHAMENTO_OPTIONS,
   balanceteAnos,
+  readStoredBalanceteAno,
+  writeStoredBalanceteAno,
 } from "@/lib/contabil";
 import { cn } from "@/lib/utils";
 import type { BalanceteBalancoInput } from "@/lib/types";
-
-const STORAGE_KEY = "contabil:balancete-ano";
-
-function readStoredAno(): string {
-  const anos = balanceteAnos();
-  try {
-    return (
-      localStorage.getItem(STORAGE_KEY) ??
-      String(new Date().getFullYear())
-    );
-  } catch {
-    return anos[anos.length - 1];
-  }
-}
 
 const CELL = "px-1 py-1 text-[11px]";
 const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
@@ -68,7 +56,7 @@ const EMPRESA_LEFT = "left-[88px]";
 const EMPRESA_EDGE = "border-r border-border";
 
 export default function BalanceteBalanco() {
-  const [ano, setAno] = useState<string>(readStoredAno);
+  const [ano, setAno] = useState<string>(readStoredBalanceteAno);
   const [busca, setBusca] = useState<Record<string, string>>({
     usuario: "",
     numero: "",
@@ -201,11 +189,7 @@ export default function BalanceteBalanco() {
 
   const handleAnoChange = (value: string) => {
     setAno(value);
-    try {
-      localStorage.setItem(STORAGE_KEY, value);
-    } catch {
-      // ignora armazenamento indisponível
-    }
+    writeStoredBalanceteAno(value);
   };
 
   const renderMonthCell = (
