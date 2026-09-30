@@ -1,9 +1,12 @@
 /**
  * Controle de Tarefas Semanal — modelo de dados, status e persistência local.
- * As tarefas ficam no LocalStorage do navegador (nada é enviado ao servidor).
+ * As tarefas ficam no LocalStorage do navegador, separadas por usuário e por
+ * semana (nada é enviado ao servidor).
  */
 
-export const TASK_STORAGE_KEY = "p4:tarefas-semana";
+const TASK_STORAGE_KEY_PREFIX = "p4:tarefas-semana";
+/** Chave usada antes das tarefas serem individuais (migrada uma única vez). */
+const LEGACY_TASK_STORAGE_KEY = "p4:tarefas-semana";
 
 export type TaskStatus = "cadastrada" | "iniciada" | "andamento" | "concluida";
 
@@ -11,6 +14,8 @@ export interface Task {
   id: string;
   title: string;
   description: string;
+  /** Semana da tarefa: data da segunda-feira no formato AAAA-MM-DD. */
+  week: string;
   /** 0 = segunda-feira … 6 = domingo. */
   day: number;
   status: TaskStatus;
@@ -21,6 +26,7 @@ export interface TaskInput {
   title: string;
   description: string;
   day: number;
+  week: string;
 }
 
 export const WEEKDAYS = [
@@ -93,6 +99,29 @@ export function weekDates(date: Date = new Date()): Date[] {
   });
 }
 
+/** Identificador da semana (segunda-feira, AAAA-MM-DD). */
+export function weekKey(date: Date = new Date()): string {
+  const start = startOfWeek(date);
+  const month = String(start.getMonth() + 1).padStart(2, "0");
+  const day = String(start.getDate()).padStart(2, "0");
+  return `${start.getFullYear()}-${month}-${day}`;
+}
+
+/** Soma (ou subtrai) dias a uma data, sem alterar a data original. */
+export function addDays(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+export function formatFullDate(date: Date): string {
+  return date.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 export function formatDayMonth(date: Date): string {
   return date.toLocaleDateString("pt-BR", {
     day: "2-digit",
@@ -133,6 +162,7 @@ export function createTask(input: TaskInput): Task {
         : `task-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     title: input.title.trim(),
     description: input.description.trim(),
+    week: input.week,
     day: Math.min(6, Math.max(0, input.day)),
     status: "cadastrada",
     createdAt: new Date().toISOString(),
@@ -144,9 +174,18 @@ function toTask(value: unknown): Task | null {
   const raw = value as Record<string, unknown>;
   if (typeof raw.title !== "string" || raw.title.trim() === "") return null;
   return {
-    id: typeof raw.id === "string" ? raw.id : createTask({ title: "x", description: "", day: 0 }).id,
+    id:
+      typeof raw.id === "string"
+        ? raw.id
+        : createTask({
+            title: "x",
+            description: "",
+            day: 0,
+            week: weekKey(),
+          }).id,
     title: raw.title,
     description: typeof raw.description === "string" ? raw.description : "",
+    week: typeof raw.week === "string" ? raw.week : weekKey(),
     day:
       typeof raw.day === "number" && raw.day >= 0 && raw.day <= 6
         ? Math.floor(raw.day)
@@ -159,25 +198,44 @@ function toTask(value: unknown): Task | null {
   };
 }
 
-/** Lê as tarefas salvas (lista vazia quando indisponível ou corrompido). */
-export function loadTasks(): Task[] {
+/** Chave do LocalStorage das tarefas de um usuário. */
+export function tasksStorageKey(ownerId: string): string {
+  return `${TASK_STORAGE_KEY_PREFIX}:${ownerId}`;
+}
+
+function parseTasks(raw: string): Task[] {
   try {
-    const raw = localStorage.getItem(TASK_STORAGE_KEY);
-    if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed
-      .map(toTask)
-      .filter((task): task is Task => task !== null);
+    return parsed.map(toTask).filter((task): task is Task => task !== null);
   } catch {
     return [];
   }
 }
 
-/** Salva as tarefas no LocalStorage. */
-export function saveTasks(tasks: Task[]): void {
+/** Lê as tarefas salvas do usuário (migrando o formato anterior, se houver). */
+export function loadTasks(ownerId: string): Task[] {
   try {
-    localStorage.setItem(TASK_STORAGE_KEY, JSON.stringify(tasks));
+    const raw = localStorage.getItem(tasksStorageKey(ownerId));
+    if (raw !== null) return parseTasks(raw);
+
+    const legacy = localStorage.getItem(LEGACY_TASK_STORAGE_KEY);
+    if (!legacy) return [];
+    const migrated = parseTasks(legacy);
+    if (migrated.length > 0) {
+      saveTasks(ownerId, migrated);
+      localStorage.removeItem(LEGACY_TASK_STORAGE_KEY);
+    }
+    return migrated;
+  } catch {
+    return [];
+  }
+}
+
+/** Salva as tarefas do usuário no LocalStorage. */
+export function saveTasks(ownerId: string, tasks: Task[]): void {
+  try {
+    localStorage.setItem(tasksStorageKey(ownerId), JSON.stringify(tasks));
   } catch {
     // ignora armazenamento indisponível
   }

@@ -24,6 +24,8 @@ interface TaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultDay: number;
+  /** Semana exibida no quadro (segunda-feira, AAAA-MM-DD). */
+  week: string;
   onSubmit: (input: TaskInput) => void;
 }
 
@@ -32,6 +34,7 @@ export function TaskDialog({
   open,
   onOpenChange,
   defaultDay,
+  week,
   onSubmit,
 }: TaskDialogProps) {
   const [title, setTitle] = useState("");
@@ -48,7 +51,7 @@ export function TaskDialog({
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (title.trim() === "") return;
-    onSubmit({ title, description, day: Number(day) });
+    onSubmit({ title, description, day: Number(day), week });
     onOpenChange(false);
   };
 
