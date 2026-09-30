@@ -60,6 +60,7 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
   const [busca, setBusca] = useState<Record<string, string>>({
     numero: "",
     empresa: "",
+    uf: "",
     cnpj: "",
     ie: "",
     situacao: "",
@@ -130,6 +131,7 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
     return (
       match(company.numero, busca.numero) &&
       match(company.name, busca.empresa) &&
+      match(company.uf, busca.uf) &&
       matchDigits(company.documento, busca.cnpj) &&
       match(company.inscricao_estadual, busca.ie) &&
       selectOrBlank(record?.situacao, busca.situacao) &&
@@ -239,12 +241,13 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
         Simples Nacional — empresas com tributação {SIMPLES_NACIONAL_TRIBUTACAO}
       </p>
       <div className="overflow-x-auto rounded-lg border">
-        <Table className="table-fixed min-w-[1224px]">
+        <Table className="table-fixed min-w-[1232px]">
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
               {renderFilterInput("numero", "Nº", "w-10")}
               {renderFilterInput("empresa", "Empresa", "w-36")}
-              {renderFilterInput("cnpj", "CNPJ", "w-28")}
+              {renderFilterInput("uf", "UF", "w-10")}
+              {renderFilterInput("cnpj", "CNPJ", "w-24")}
               {renderFilterInput("ie", "Insc. Estadual", "w-20")}
               {renderFilterSelect("situacao", "Situação", SITUACAO_OPTIONS, "w-20")}
               {MOVIMENTO_FISCAL_FIELDS.map((field) =>
@@ -268,7 +271,7 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
                   renderFilterInput(field.key, field.short, "w-20")
                 )
               )}
-              {renderFilterInput("observacoes", "Observações", "w-36")}
+              {renderFilterInput("observacoes", "Observações", "w-32")}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -290,7 +293,12 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
                     </span>
                   </TableCell>
                   <TableCell
-                    className={`${CELL} w-28 whitespace-nowrap text-muted-foreground`}
+                    className={`${CELL} w-10 whitespace-nowrap`}
+                  >
+                    {company.uf || "—"}
+                  </TableCell>
+                  <TableCell
+                    className={`${CELL} w-24 whitespace-nowrap text-muted-foreground`}
                   >
                     {formatCpfCnpj(company.documento)}
                   </TableCell>
@@ -351,7 +359,7 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
                       )}
                     </TableCell>
                   ))}
-                  <TableCell className={`${CELL} w-36`}>
+                  <TableCell className={`${CELL} w-32`}>
                     <Input
                       key={`${company.id}:${mes}:obs`}
                       defaultValue={effectiveObservacoes(company.id) ?? ""}
@@ -370,7 +378,7 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
             {filteredRows.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={15}
+                  colSpan={16}
                   className={`${CELL} py-8 text-center text-muted-foreground`}
                 >
                   {rows.length > 0
