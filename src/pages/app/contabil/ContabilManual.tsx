@@ -67,7 +67,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Cartões",
         detail:
-          "Sem mês selecionado (Todos os meses): Encerradas (Fechamento = ENCERRADA), Pendentes (Fechamento em branco ou LANÇADO) e Total de empresas. Com um mês selecionado, o mês passa a valer para os cartões: Lançadas (mês com OK ou LANÇADO), Pendentes (mês em branco) e Total de empresas. Todos com a porcentagem sobre o total.",
+          "Sem mês selecionado (Todos os meses): Encerradas (Fechamento = ENCERRADA), Pendentes (Fechamento em branco ou LANÇADO) e Total de empresas. Com um mês selecionado, o mês passa a valer para os cartões: Encerradas (mês com OK), Pendentes (mês com LANÇADO ou em branco) e Total de empresas. Todos com a porcentagem sobre o total.",
       },
       {
         label: "Empresas por responsável",

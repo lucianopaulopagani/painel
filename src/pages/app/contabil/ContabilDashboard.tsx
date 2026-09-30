@@ -92,14 +92,13 @@ export default function ContabilDashboard() {
   ): string => (recordByCompany.get(companyId)?.[key] as string | null) ?? "";
 
   // Mês selecionado: os cartões passam a valer para ele
-  // (OK/LANÇADO = lançadas; em branco = pendentes).
+  // (OK = encerradas; LANÇADO ou em branco = pendentes).
   // Sem mês selecionado, a regra é a do Fechamento (ENCERRADA).
   const mesSelecionado = BALANCETE_MESES.find((mes) => mes.key === mesFiltro);
   const concluidas = mesSelecionado
-    ? scoped.filter((company) => {
-        const value = mesValueOf(company.id, mesSelecionado.key);
-        return value === "OK" || value === "LANÇADO";
-      }).length
+    ? scoped.filter(
+        (company) => mesValueOf(company.id, mesSelecionado.key) === "OK"
+      ).length
     : scoped.filter((company) => fechamentoOf(company.id) === "ENCERRADA")
         .length;
   const total = scoped.length;
@@ -130,7 +129,7 @@ export default function ContabilDashboard() {
 
   const CARDS = [
     {
-      label: mesSelecionado ? `Lançadas (${mesSelecionado.label})` : "Encerradas",
+      label: "Encerradas",
       value: concluidas,
       className: "bg-status-success text-status-success-foreground",
     },
