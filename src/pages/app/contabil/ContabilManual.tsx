@@ -40,7 +40,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Filtros por coluna",
         detail:
-          "Filtros no cabeçalho para Nº, Empresa, cada mês (Todos/Em branco/OK) e Fechamento. As colunas Nº e Empresa ficam fixas ao rolar.",
+          "Filtros no cabeçalho para Nº, UF (menu suspenso), Empresa, cada mês (Todos/Em branco/OK) e Fechamento. As colunas Nº, UF e Empresa ficam fixas ao rolar.",
       },
     ],
   },

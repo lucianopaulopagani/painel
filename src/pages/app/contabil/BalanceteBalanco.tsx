@@ -57,7 +57,7 @@ const STICKY_HEAD = "sticky z-20 bg-muted";
 const STICKY_CELL = "sticky z-10 bg-background";
 const N_LEFT = "left-0";
 const UF_LEFT = "left-[40px]";
-const EMPRESA_LEFT = "left-[80px]";
+const EMPRESA_LEFT = "left-[88px]";
 const EMPRESA_EDGE = "border-r border-border";
 
 export default function BalanceteBalanco() {
@@ -111,6 +111,14 @@ export default function BalanceteBalanco() {
     (records ?? []).map((record) => [record.company_id, record])
   );
 
+  const ufOptions = Array.from(
+    new Set(
+      rows
+        .map((company) => company.uf)
+        .filter((uf): uf is string => Boolean(uf))
+    )
+  ).sort();
+
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
     const match = (value: string | null | undefined, query: string): boolean =>
@@ -134,7 +142,7 @@ export default function BalanceteBalanco() {
     return (
       matchesUsuario &&
       match(company.numero, busca.numero) &&
-      match(company.uf, busca.uf) &&
+      selectOrBlank(company.uf, busca.uf) &&
       match(company.name, busca.empresa) &&
       BALANCETE_MESES.every((mes) =>
         selectOrBlank(record?.[mes.key], busca[mes.key])
@@ -309,7 +317,7 @@ export default function BalanceteBalanco() {
 
       {!isLoading && !isError && (
         <div className="overflow-x-auto rounded-lg border">
-          <Table className="table-fixed min-w-[1104px]">
+          <Table className="table-fixed min-w-[1112px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
                 <TableHead className={`${HEAD} w-10 ${N_LEFT} ${STICKY_HEAD}`}>
@@ -322,15 +330,28 @@ export default function BalanceteBalanco() {
                   />
                 </TableHead>
                 <TableHead
-                  className={`${HEAD} w-10 ${UF_LEFT} ${STICKY_HEAD}`}
+                  className={`${HEAD} w-12 ${UF_LEFT} ${STICKY_HEAD} align-bottom`}
                 >
                   <span className="mb-1 block">UF</span>
-                  <Input
-                    value={busca.uf}
-                    onChange={(e) => setBuscaField("uf", e.target.value)}
-                    placeholder="Filtrar"
-                    className="h-6 w-full min-w-0 px-1 text-xs"
-                  />
+                  <Select
+                    value={busca.uf === "" ? "todos" : busca.uf}
+                    onValueChange={(value) =>
+                      setBuscaField("uf", value === "todos" ? "" : value)
+                    }
+                  >
+                    <SelectTrigger className="h-6 w-full min-w-0 px-1 text-xs">
+                      <SelectValue placeholder="Todos" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-80">
+                      <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="branco">Em branco</SelectItem>
+                      {ufOptions.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </TableHead>
                 <TableHead
                   className={`${HEAD} w-48 ${STICKY_HEAD} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`}
@@ -360,7 +381,7 @@ export default function BalanceteBalanco() {
                       {company.numero || "—"}
                     </TableCell>
                     <TableCell
-                      className={`${CELL} w-10 whitespace-nowrap ${UF_LEFT} ${STICKY_CELL}`}
+                      className={`${CELL} w-12 whitespace-nowrap ${UF_LEFT} ${STICKY_CELL}`}
                     >
                       {company.uf || "—"}
                     </TableCell>
