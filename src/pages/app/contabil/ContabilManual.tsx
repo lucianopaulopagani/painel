@@ -42,6 +42,11 @@ const SECTIONS: ManualSection[] = [
         detail:
           "Filtros no cabeçalho para Nº, UF (menu suspenso), Empresa, cada mês (Todos/Em branco/OK) e Fechamento. As colunas Nº, UF e Empresa ficam fixas ao rolar.",
       },
+      {
+        label: "Comentários nas células",
+        detail:
+          "Clique com o botão direito em qualquer célula dos meses ou do Fechamento e escolha 'Adicionar Comentário'. A célula ganha um marcador no canto superior direito e, ao passar o mouse sobre ele, o comentário aparece em um balão. Pelo mesmo menu é possível editar ou remover o comentário.",
+      },
     ],
   },
 ];

@@ -3562,6 +3562,43 @@ export type Database = {
           },
         ]
       }
+      balancete_comentarios: {
+        Row: {
+          ano: string
+          campo: string
+          comentario: string
+          company_id: string
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          ano: string
+          campo: string
+          comentario: string
+          company_id: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          ano?: string
+          campo?: string
+          comentario?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "balancete_comentarios_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calendar_shares: {
         Row: {
           calendar_id: string

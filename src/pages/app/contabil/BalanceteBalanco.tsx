@@ -22,6 +22,12 @@ import {
   useBalanceteBalanco,
   useSaveBalanceteBalanco,
 } from "@/hooks/use-balancete-balanco";
+import {
+  useBalanceteComentarios,
+  useRemoveBalanceteComentario,
+  useSaveBalanceteComentario,
+} from "@/hooks/use-balancete-comentarios";
+import { CommentableCell } from "./CommentableCell";
 import { useCompanies } from "@/hooks/use-companies";
 import { useContabilUsuarios } from "@/hooks/use-contabil-usuarios";
 import { useDepartments } from "@/hooks/use-departments";
@@ -91,6 +97,9 @@ export default function BalanceteBalanco() {
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: records } = useBalanceteBalanco(ano);
+  const { data: comentarios } = useBalanceteComentarios(ano);
+  const saveComentario = useSaveBalanceteComentario(ano);
+  const removeComentario = useRemoveBalanceteComentario();
   const { data: usuarios } = useContabilUsuarios();
   const saveMutation = useSaveBalanceteBalanco(ano);
 
@@ -112,6 +121,16 @@ export default function BalanceteBalanco() {
   const recordByCompany = new Map(
     (records ?? []).map((record) => [record.company_id, record])
   );
+
+  /** Comentários (notas) por empresa × campo (mês ou fechamento). */
+  const commentByKey = new Map(
+    (comentarios ?? []).map((item) => [
+      `${item.company_id}:${item.campo}`,
+      item.comentario,
+    ])
+  );
+  const commentOf = (companyId: string, campo: string): string | null =>
+    commentByKey.get(`${companyId}:${campo}`) ?? null;
 
   const ufOptions = Array.from(
     new Set(
@@ -443,11 +462,47 @@ export default function BalanceteBalanco() {
                     </TableCell>
                     {BALANCETE_MESES.map((mes) => (
                       <TableCell key={mes.key} className={`${CELL} w-24`}>
-                        {renderMonthCell(company.id, mes.key)}
+                        <CommentableCell
+                          comment={commentOf(company.id, mes.key)}
+                          label={`${mes.label} ${ano} — ${company.name}`}
+                          onSave={(value) =>
+                            saveComentario.mutate({
+                              company_id: company.id,
+                              campo: mes.key,
+                              comentario: value,
+                            })
+                          }
+                          onRemove={() =>
+                            removeComentario.mutate({
+                              companyId: company.id,
+                              campo: mes.key,
+                            })
+                          }
+                        >
+                          {renderMonthCell(company.id, mes.key)}
+                        </CommentableCell>
                       </TableCell>
                     ))}
                     <TableCell className={`${CELL} w-24`}>
-                      {renderFechamentoCell(company.id)}
+                      <CommentableCell
+                        comment={commentOf(company.id, "fechamento")}
+                        label={`Fechamento ${ano} — ${company.name}`}
+                        onSave={(value) =>
+                          saveComentario.mutate({
+                            company_id: company.id,
+                            campo: "fechamento",
+                            comentario: value,
+                          })
+                        }
+                        onRemove={() =>
+                          removeComentario.mutate({
+                            companyId: company.id,
+                            campo: "fechamento",
+                          })
+                        }
+                      >
+                        {renderFechamentoCell(company.id)}
+                      </CommentableCell>
                     </TableCell>
                     <TableCell className={`${CELL} w-20`}>
                       <Input
