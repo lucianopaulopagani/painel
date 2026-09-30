@@ -32,13 +32,15 @@ import { CONTABIL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/department
 import { companyUsesSubmenu } from "@/lib/department-submenus";
 import {
   balanceteAnos,
+  BALANCETE_MESES,
   readStoredBalanceteAno,
   writeStoredBalanceteAno,
 } from "@/lib/contabil";
 import { cn } from "@/lib/utils";
-import type { CompanyWithDepartments } from "@/lib/types";
+import type { BalanceteBalancoRecord, CompanyWithDepartments } from "@/lib/types";
 
 const SEM_RESPONSAVEL = "Sem responsável";
+const TODOS_OS_MESES = "todos";
 
 /**
  * Dashboard do Contábil — mesmo modelo do Movimento Fiscal
@@ -46,6 +48,7 @@ const SEM_RESPONSAVEL = "Sem responsável";
  */
 export default function ContabilDashboard() {
   const [ano, setAno] = useState<string>(readStoredBalanceteAno);
+  const [mesFiltro, setMesFiltro] = useState<string>(TODOS_OS_MESES);
   const [responsavelFiltro, setResponsavelFiltro] = useState("todos");
 
   const { data: departments } = useDepartments();
@@ -78,17 +81,29 @@ export default function ContabilDashboard() {
         );
 
   // Fechamento ENCERRADA conta como ENCERRADA; em branco ou LANÇADO como PENDENTE.
-  const fechamentoByCompany = new Map(
-    (records ?? []).map((record) => [record.company_id, record.fechamento])
+  const recordByCompany = new Map(
+    (records ?? []).map((record) => [record.company_id, record])
   );
   const fechamentoOf = (companyId: string): string =>
-    fechamentoByCompany.get(companyId) ?? "";
+    recordByCompany.get(companyId)?.fechamento ?? "";
+  const mesValueOf = (
+    companyId: string,
+    key: keyof BalanceteBalancoRecord
+  ): string => (recordByCompany.get(companyId)?.[key] as string | null) ?? "";
 
-  const encerradas = scoped.filter(
-    (company) => fechamentoOf(company.id) === "ENCERRADA"
-  ).length;
+  // Mês selecionado: os cartões passam a valer para ele
+  // (OK/LANÇADO = lançadas; em branco = pendentes).
+  // Sem mês selecionado, a regra é a do Fechamento (ENCERRADA).
+  const mesSelecionado = BALANCETE_MESES.find((mes) => mes.key === mesFiltro);
+  const concluidas = mesSelecionado
+    ? scoped.filter((company) => {
+        const value = mesValueOf(company.id, mesSelecionado.key);
+        return value === "OK" || value === "LANÇADO";
+      }).length
+    : scoped.filter((company) => fechamentoOf(company.id) === "ENCERRADA")
+        .length;
   const total = scoped.length;
-  const pendentes = total - encerradas;
+  const pendentes = total - concluidas;
 
   const formatPct = (value: number): string =>
     value.toLocaleString("pt-BR", {
@@ -115,8 +130,8 @@ export default function ContabilDashboard() {
 
   const CARDS = [
     {
-      label: "Encerradas",
-      value: encerradas,
+      label: mesSelecionado ? `Lançadas (${mesSelecionado.label})` : "Encerradas",
+      value: concluidas,
       className: "bg-status-success text-status-success-foreground",
     },
     {
@@ -149,6 +164,22 @@ export default function ContabilDashboard() {
               {balanceteAnos().map((option) => (
                 <SelectItem key={option} value={option}>
                   {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="dash-contabil-mes">Mês</Label>
+          <Select value={mesFiltro} onValueChange={setMesFiltro}>
+            <SelectTrigger id="dash-contabil-mes" className="mt-1.5 w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={TODOS_OS_MESES}>Todos os meses</SelectItem>
+              {BALANCETE_MESES.map((mes) => (
+                <SelectItem key={mes.key} value={mes.key}>
+                  {mes.label}
                 </SelectItem>
               ))}
             </SelectContent>

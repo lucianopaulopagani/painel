@@ -62,12 +62,12 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Filtros",
         detail:
-          "Ano e Responsável, lado a lado. O responsável mostra apenas as empresas em que ele está vinculado no departamento.",
+          "Ano, Mês e Responsável, nessa ordem. O responsável mostra apenas as empresas em que ele está vinculado no departamento.",
       },
       {
         label: "Cartões",
         detail:
-          "Encerradas (Fechamento = ENCERRADA), Pendentes (Fechamento em branco ou LANÇADO) e Total de empresas, cada um com a porcentagem sobre o total.",
+          "Sem mês selecionado (Todos os meses): Encerradas (Fechamento = ENCERRADA), Pendentes (Fechamento em branco ou LANÇADO) e Total de empresas. Com um mês selecionado, o mês passa a valer para os cartões: Lançadas (mês com OK ou LANÇADO), Pendentes (mês em branco) e Total de empresas. Todos com a porcentagem sobre o total.",
       },
       {
         label: "Empresas por responsável",
