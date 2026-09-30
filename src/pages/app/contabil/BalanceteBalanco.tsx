@@ -362,7 +362,7 @@ export default function BalanceteBalanco() {
 
       {!isLoading && !isError && (
         <div className="overflow-x-auto rounded-lg border">
-          <Table className="table-fixed min-w-[1640px]">
+          <Table className="table-fixed min-w-[1544px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
                 <TableHead className={`${HEAD} w-10 ${N_LEFT} ${STICKY_HEAD}`}>
@@ -399,7 +399,7 @@ export default function BalanceteBalanco() {
                   </Select>
                 </TableHead>
                 <TableHead
-                  className={`${HEAD} w-40 ${STICKY_HEAD} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`}
+                  className={`${HEAD} w-32 ${STICKY_HEAD} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`}
                 >
                   <span className="mb-1 block">Empresa</span>
                   <Input
@@ -413,7 +413,7 @@ export default function BalanceteBalanco() {
                   renderFilterMonth(mes.key, mes.label)
                 )}
                 {renderFilterMonth("fechamento", "Fechamento", BALANCETE_FECHAMENTO_OPTIONS, "w-24")}
-                {renderFilterInput("observacoes", "Observações", "w-36")}
+                {renderFilterInput("observacoes", "Obs.", "w-20")}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -432,7 +432,7 @@ export default function BalanceteBalanco() {
                       {company.uf || "—"}
                     </TableCell>
                     <TableCell
-                      className={`${CELL} w-40 ${STICKY_CELL} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`}
+                      className={`${CELL} w-32 ${STICKY_CELL} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`}
                     >
                       <span
                         className="block truncate font-medium"
@@ -449,7 +449,7 @@ export default function BalanceteBalanco() {
                     <TableCell className={`${CELL} w-24`}>
                       {renderFechamentoCell(company.id)}
                     </TableCell>
-                    <TableCell className={`${CELL} w-36`}>
+                    <TableCell className={`${CELL} w-20`}>
                       <Input
                         key={`${company.id}:${ano}:obs`}
                         defaultValue={record?.observacoes ?? ""}
