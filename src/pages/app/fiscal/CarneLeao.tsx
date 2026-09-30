@@ -190,8 +190,12 @@ export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
     </Select>
   );
 
-  const renderFilterInput = (key: keyof typeof busca, label: string) => (
-    <TableHead className={`${HEAD} align-bottom`}>
+  const renderFilterInput = (
+    key: keyof typeof busca,
+    label: string,
+    widthClass = ""
+  ) => (
+    <TableHead className={`${HEAD} ${widthClass} align-bottom`}>
       <span className="mb-1 block whitespace-nowrap">{label}</span>
       <Input
         value={busca[key]}
@@ -205,9 +209,10 @@ export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
   const renderFilterSelect = (
     key: keyof typeof busca,
     label: string,
-    options: readonly string[]
+    options: readonly string[],
+    widthClass = "w-24"
   ) => (
-    <TableHead className={`${HEAD} w-24 align-bottom`}>
+    <TableHead className={`${HEAD} ${widthClass} align-bottom`}>
       <span className="mb-1 block whitespace-nowrap">{label}</span>
       <Select
         value={busca[key] === "" ? "todos" : busca[key]}
@@ -237,7 +242,7 @@ export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
         Carne Leão — empresas com tributação {CARNE_LEAO_TRIBUTACAO}
       </p>
       <div className="overflow-x-auto rounded-lg border">
-        <Table className="table-fixed min-w-[1500px]">
+        <Table className="table-fixed min-w-[1424px]">
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
               <TableHead className={`${HEAD} w-12 align-bottom`}>
@@ -258,15 +263,15 @@ export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
                   className="h-6 w-full min-w-0 px-1 text-xs"
                 />
               </TableHead>
-              {renderFilterInput("empresa", "Empresa")}
-              {renderFilterInput("cpf", "CPF")}
-              {renderFilterSelect("situacao", "Situação", CARNE_LEAO_SITUACAO_OPTIONS)}
+              {renderFilterInput("empresa", "Empresa", "w-48")}
+              {renderFilterInput("cpf", "CPF", "w-28")}
+              {renderFilterSelect("situacao", "Situação", CARNE_LEAO_SITUACAO_OPTIONS, "w-28")}
               {renderFilterSelect("prestados", "Prestados", CARNE_LEAO_PRESTADOS_OPTIONS)}
               {renderFilterSelect("tomados", "Tomados", CARNE_LEAO_TOMADOS_OPTIONS)}
               {renderFilterSelect("iss", "ISS Fixo", CARNE_LEAO_ISS_OPTIONS)}
               {renderFilterSelect("carne", "Carne Leão", CARNE_LEAO_CARNE_OPTIONS)}
-              {renderFilterSelect("envio", "Envio/Guia", CARNE_LEAO_ENVIO_OPTIONS)}
-              {renderFilterInput("observacoes", "Observações")}
+              {renderFilterSelect("envio", "Envio/Guia", CARNE_LEAO_ENVIO_OPTIONS, "w-28")}
+              {renderFilterInput("observacoes", "Observações", "w-[26rem]")}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -339,7 +344,7 @@ export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
                       "envio_guia"
                     )}
                   </TableCell>
-                  <TableCell className={`${CELL} w-72`}>
+                  <TableCell className={`${CELL} w-[26rem]`}>
                     <Input
                       key={`${company.id}:${mes}:obs`}
                       defaultValue={effectiveObservacoes(company.id) ?? ""}
