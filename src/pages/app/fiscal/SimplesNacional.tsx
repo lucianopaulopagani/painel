@@ -108,6 +108,12 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
     return prior.find((record) => record.observacoes)?.observacoes ?? null;
   };
 
+  const ufOptions = Array.from(
+    new Set(
+      rows.map((company) => company.uf).filter((uf): uf is string => Boolean(uf))
+    )
+  ).sort();
+
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
     const match = (value: string | null | undefined, query: string): boolean =>
@@ -131,7 +137,7 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
     return (
       match(company.numero, busca.numero) &&
       match(company.name, busca.empresa) &&
-      match(company.uf, busca.uf) &&
+      selectOrBlank(company.uf, busca.uf) &&
       matchDigits(company.documento, busca.cnpj) &&
       match(company.inscricao_estadual, busca.ie) &&
       selectOrBlank(record?.situacao, busca.situacao) &&
@@ -245,8 +251,8 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
               {renderFilterInput("numero", "Nº", "w-10")}
+              {renderFilterSelect("uf", "UF", ufOptions, "w-16")}
               {renderFilterInput("empresa", "Empresa", "w-36")}
-              {renderFilterInput("uf", "UF", "w-10")}
               {renderFilterInput("cnpj", "CNPJ", "w-24")}
               {renderFilterInput("ie", "Insc. Estadual", "w-20")}
               {renderFilterSelect("situacao", "Situação", SITUACAO_OPTIONS, "w-20")}
@@ -284,6 +290,11 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
                   >
                     {company.numero || "—"}
                   </TableCell>
+                  <TableCell
+                    className={`${CELL} w-16 whitespace-nowrap`}
+                  >
+                    {company.uf || "—"}
+                  </TableCell>
                   <TableCell className={CELL}>
                     <span
                       className="block truncate font-medium"
@@ -291,11 +302,6 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
                     >
                       {company.name}
                     </span>
-                  </TableCell>
-                  <TableCell
-                    className={`${CELL} w-10 whitespace-nowrap`}
-                  >
-                    {company.uf || "—"}
                   </TableCell>
                   <TableCell
                     className={`${CELL} w-24 whitespace-nowrap text-muted-foreground`}
