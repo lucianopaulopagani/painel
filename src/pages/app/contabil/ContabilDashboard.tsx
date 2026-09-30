@@ -92,17 +92,26 @@ export default function ContabilDashboard() {
   ): string => (recordByCompany.get(companyId)?.[key] as string | null) ?? "";
 
   // Mês selecionado: os cartões passam a valer para ele
-  // (OK = encerradas; LANÇADO ou em branco = pendentes).
+  // (OK = encerradas; LANÇADO = lançadas; em branco = pendentes).
   // Sem mês selecionado, a regra é a do Fechamento (ENCERRADA).
   const mesSelecionado = BALANCETE_MESES.find((mes) => mes.key === mesFiltro);
-  const concluidas = mesSelecionado
-    ? scoped.filter(
-        (company) => mesValueOf(company.id, mesSelecionado.key) === "OK"
-      ).length
-    : scoped.filter((company) => fechamentoOf(company.id) === "ENCERRADA")
-        .length;
+  let concluidas = 0;
+  let lancadas = 0;
+  if (mesSelecionado) {
+    const key = mesSelecionado.key;
+    concluidas = scoped.filter(
+      (company) => mesValueOf(company.id, key) === "OK"
+    ).length;
+    lancadas = scoped.filter(
+      (company) => mesValueOf(company.id, key) === "LANÇADO"
+    ).length;
+  } else {
+    concluidas = scoped.filter(
+      (company) => fechamentoOf(company.id) === "ENCERRADA"
+    ).length;
+  }
   const total = scoped.length;
-  const pendentes = total - concluidas;
+  const pendentes = total - concluidas - lancadas;
 
   const formatPct = (value: number): string =>
     value.toLocaleString("pt-BR", {
@@ -133,6 +142,15 @@ export default function ContabilDashboard() {
       value: concluidas,
       className: "bg-status-success text-status-success-foreground",
     },
+    ...(mesSelecionado
+      ? [
+          {
+            label: "Lançadas",
+            value: lancadas,
+            className: "bg-status-warning text-status-warning-foreground",
+          },
+        ]
+      : []),
     {
       label: "Pendentes",
       value: pendentes,
@@ -219,7 +237,12 @@ export default function ContabilDashboard() {
 
       {!isLoading && !isError && (
         <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div
+            className={cn(
+              "grid grid-cols-1 gap-4",
+              mesSelecionado ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3"
+            )}
+          >
             {CARDS.map((card) => (
               <Card key={card.label}>
                 <CardHeader className={cn("rounded-t-lg pb-2", card.className)}>
