@@ -79,12 +79,29 @@ export function WeekColumn({
         className="flex flex-1 flex-col gap-2 p-2"
         onDragOver={(event) => {
           event.preventDefault();
-          onDragOverIndex(tasks.length);
+          // Posição de soltura a partir do ponteiro: funciona em qualquer
+          // ponto do dia (acima, entre os cards ou no espaço vazio).
+          const cards = Array.from(
+            event.currentTarget.querySelectorAll<HTMLElement>(
+              "[data-task-card]"
+            )
+          );
+          let index = cards.length;
+          for (let position = 0; position < cards.length; position += 1) {
+            const rect = cards[position].getBoundingClientRect();
+            if (event.clientY < rect.top + rect.height / 2) {
+              index = position;
+              break;
+            }
+          }
+          onDragOverIndex(index);
         }}
         onDragLeave={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget as Node)) {
-            onDragLeaveColumn();
-          }
+          const next = event.relatedTarget as Node | null;
+          // Alguns navegadores enviam relatedTarget nulo durante o arraste:
+          // nesse caso mantém o indicador para não perder a soltura.
+          if (!next || event.currentTarget.contains(next)) return;
+          onDragLeaveColumn();
         }}
         onDrop={(event) => {
           event.preventDefault();
@@ -102,10 +119,6 @@ export function WeekColumn({
               onDelete={() => onDelete(task.id)}
               onDragStart={() => onDragStart(task.id)}
               onDragEnd={onDragEnd}
-              onDragOver={(position) =>
-                onDragOverIndex(position === "before" ? index : index + 1)
-              }
-              onDrop={onDrop}
             />
           </Fragment>
         ))}

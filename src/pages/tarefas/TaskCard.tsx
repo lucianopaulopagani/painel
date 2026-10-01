@@ -22,8 +22,6 @@ interface TaskCardProps {
   onDelete: () => void;
   onDragStart: () => void;
   onDragEnd: () => void;
-  onDragOver: (position: "before" | "after") => void;
-  onDrop: () => void;
 }
 
 /** Card de tarefa com seletor rápido de status, edição e exclusão. */
@@ -35,14 +33,13 @@ export function TaskCard({
   onDelete,
   onDragStart,
   onDragEnd,
-  onDragOver,
-  onDrop,
 }: TaskCardProps) {
   const meta = TASK_STATUS_META[task.status];
   const concluida = task.status === "concluida";
 
   return (
     <div
+      data-task-card={task.id}
       draggable
       onDragStart={(event) => {
         event.dataTransfer.effectAllowed = "move";
@@ -50,18 +47,6 @@ export function TaskCard({
         onDragStart();
       }}
       onDragEnd={onDragEnd}
-      onDragOver={(event) => {
-        event.preventDefault();
-        const rect = event.currentTarget.getBoundingClientRect();
-        onDragOver(
-          event.clientY - rect.top < rect.height / 2 ? "before" : "after"
-        );
-      }}
-      onDrop={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        onDrop();
-      }}
       className={cn(
         "group cursor-grab rounded-lg border border-border/60 p-2 shadow-sm transition-all active:cursor-grabbing",
         meta.card,
