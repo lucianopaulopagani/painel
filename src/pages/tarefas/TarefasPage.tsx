@@ -4,8 +4,10 @@ import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
+  Columns3,
   Eraser,
   LayoutGrid,
+  List,
   ListChecks,
   Loader2,
   Plus,
@@ -34,6 +36,7 @@ import { useAuth } from "@/context/auth";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { cn } from "@/lib/utils";
 import { MonthView } from "./MonthView";
+import { ListaView, type ListSection } from "./ListaView";
 import { TaskDialog } from "./TaskDialog";
 import { WeekColumn } from "./WeekColumn";
 import {
@@ -45,9 +48,13 @@ import {
   formatMonthYear,
   formatWeekRange,
   formatWeekdayDate,
+  formatWeekdayName,
   isSameDay,
+  loadLayout,
   loadTasks,
   moveTask,
+  monthMatrix,
+  saveLayout,
   saveTasks,
   startOfWeek,
   taskDate,
@@ -56,6 +63,7 @@ import {
   WEEKDAYS,
   type Task,
   type TaskInput,
+  type TaskLayout,
   type TaskStatus,
 } from "./tarefas-data";
 
@@ -72,6 +80,11 @@ const VIEW_OPTIONS: { key: ViewMode; label: string; icon: typeof Square }[] = [
   { key: "month", label: "Mês", icon: LayoutGrid },
 ];
 
+const LAYOUT_OPTIONS: { key: TaskLayout; label: string; icon: typeof List }[] = [
+  { key: "kanban", label: "Kanban", icon: Columns3 },
+  { key: "lista", label: "Lista", icon: List },
+];
+
 /** Controle de Tarefas Semanal — visões por dia, semana e mês. */
 export default function TarefasPage() {
   useDocumentTitle("Tarefas P4");
@@ -80,6 +93,7 @@ export default function TarefasPage() {
   const ownerId = profile?.id ?? null;
 
   const [view, setView] = useState<ViewMode>("week");
+  const [layout, setLayout] = useState<TaskLayout>("kanban");
   const [reference, setReference] = useState(() => new Date());
   const [tasks, setTasks] = useState<Task[]>([]);
   const [ownerLoaded, setOwnerLoaded] = useState<string | null>(null);
@@ -103,10 +117,11 @@ export default function TarefasPage() {
     isSameDay(date, reference)
   );
 
-  // Carrega as tarefas do usuário (cada usuário tem o seu próprio quadro).
+  // Carrega as tarefas e o formato do usuário (cada usuário tem o seu quadro).
   useEffect(() => {
     if (!ownerId) return;
     setTasks(loadTasks(ownerId));
+    setLayout(loadLayout(ownerId));
     setOwnerLoaded(ownerId);
   }, [ownerId]);
 
@@ -115,6 +130,12 @@ export default function TarefasPage() {
     if (!ownerId || ownerLoaded !== ownerId) return;
     saveTasks(ownerId, tasks);
   }, [tasks, ownerId, ownerLoaded]);
+
+  // Persistência local do formato escolhido (Kanban ou Lista).
+  useEffect(() => {
+    if (!ownerId || ownerLoaded !== ownerId) return;
+    saveLayout(ownerId, layout);
+  }, [layout, ownerId, ownerLoaded]);
 
   const tasksByDate = useMemo(() => {
     const map = new Map<string, Task[]>();
@@ -250,6 +271,53 @@ export default function TarefasPage() {
     setView("day");
   };
 
+  const editTaskById = (taskId: string) => {
+    const task = tasks.find((item) => item.id === taskId);
+    if (task) openEdit(task);
+  };
+
+  const askDeleteTaskById = (taskId: string) => {
+    const task = tasks.find((item) => item.id === taskId);
+    if (task) setPendingDelete(task);
+  };
+
+  /** Blocos da visão em lista (um por dia do período exibido). */
+  const listSections: ListSection[] =
+    view === "day"
+      ? referenceDayIndex >= 0
+        ? [
+            {
+              key: dateKey(reference),
+              label: formatWeekdayName(reference),
+              date: reference,
+              tasks: dayTasks,
+            },
+          ]
+        : []
+      : view === "week"
+        ? WEEKDAYS.map((weekday) => ({
+            key: String(weekday.key),
+            label: weekday.label,
+            date: dates[weekday.key],
+            tasks: tasksOfDay(weekday.key),
+          }))
+        : monthMatrix(reference)
+            .filter((date) => date.getMonth() === reference.getMonth())
+            .map((date) => ({
+              key: dateKey(date),
+              label: formatWeekdayName(date),
+              date,
+              tasks: tasksByDate.get(dateKey(date)) ?? [],
+            }))
+            .filter((section) => section.tasks.length > 0);
+
+  const emptyMessage =
+    view === "day"
+      ? "Nenhuma tarefa neste dia."
+      : view === "week"
+        ? "Nenhuma tarefa nesta semana."
+        : "Nenhuma tarefa neste mês.";
+
   const dragOverHandler = (day: number) => (index: number) =>
     setDropTarget({ day, index });
 
@@ -304,6 +372,33 @@ export default function TarefasPage() {
                       view === option.key && "font-semibold"
                     )}
                     onClick={() => setView(option.key)}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {option.label}
+                  </Button>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center rounded-md border p-0.5">
+              {LAYOUT_OPTIONS.map((option) => {
+                const Icon = option.icon;
+                return (
+                  <Button
+                    key={option.key}
+                    type="button"
+                    variant={layout === option.key ? "secondary" : "ghost"}
+                    size="sm"
+                    className={cn(
+                      "h-7 gap-1.5 px-2.5 text-xs",
+                      layout === option.key && "font-semibold"
+                    )}
+                    title={
+                      option.key === "kanban"
+                        ? "Ver as tarefas em colunas (Kanban)"
+                        : "Ver as tarefas em lista"
+                    }
+                    onClick={() => setLayout(option.key)}
                   >
                     <Icon className="h-3.5 w-3.5" />
                     {option.label}
@@ -402,7 +497,17 @@ export default function TarefasPage() {
           <Badge variant="secondary">{periodLabel}</Badge>
         </div>
 
-        {view === "month" ? (
+        {layout === "lista" ? (
+          <ListaView
+            sections={listSections}
+            today={today}
+            emptyMessage={emptyMessage}
+            onStatusChange={changeStatus}
+            onEdit={editTaskById}
+            onDelete={askDeleteTaskById}
+            onAddTask={openDialogForDate}
+          />
+        ) : view === "month" ? (
           <MonthView
             reference={reference}
             today={today}
@@ -454,9 +559,9 @@ export default function TarefasPage() {
         )}
 
         <p className="mt-4 text-xs text-muted-foreground">
-          Arraste as tarefas entre os dias para reorganizar a semana. Cada
-          usuário tem o seu próprio quadro e as tarefas ficam salvas neste
-          navegador, semana por semana.
+          {layout === "kanban"
+            ? "Arraste as tarefas entre os dias para reorganizar a semana. Cada usuário tem o seu próprio quadro e as tarefas ficam salvas neste navegador, semana por semana."
+            : "No formato lista o dia de uma tarefa é alterado pelo lápis de edição. Cada usuário tem o seu próprio quadro e as tarefas ficam salvas neste navegador, semana por semana."}
         </p>
       </main>
 

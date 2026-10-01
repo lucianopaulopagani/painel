@@ -151,9 +151,13 @@ export function formatMonthYear(date: Date): string {
 
 /** Ex.: "Segunda, 30/09/2026". */
 export function formatWeekdayDate(date: Date): string {
+  return `${formatWeekdayName(date)}, ${formatFullDate(date)}`;
+}
+
+/** Ex.: "Segunda". */
+export function formatWeekdayName(date: Date): string {
   const weekday = date.toLocaleDateString("pt-BR", { weekday: "long" });
-  const label = weekday.charAt(0).toUpperCase() + weekday.slice(1);
-  return `${label}, ${formatFullDate(date)}`;
+  return weekday.charAt(0).toUpperCase() + weekday.slice(1);
 }
 
 export function formatFullDate(date: Date): string {
@@ -243,6 +247,32 @@ function toTask(value: unknown): Task | null {
 /** Chave do LocalStorage das tarefas de um usuário. */
 export function tasksStorageKey(ownerId: string): string {
   return `${TASK_STORAGE_KEY_PREFIX}:${ownerId}`;
+}
+
+/** Formato de exibição das tarefas. */
+export type TaskLayout = "kanban" | "lista";
+
+const LAYOUT_STORAGE_KEY_PREFIX = "p4:tarefas-formato";
+
+/** Formato escolhido pelo usuário (padrão: Kanban). */
+export function loadLayout(ownerId: string): TaskLayout {
+  try {
+    const value = localStorage.getItem(
+      `${LAYOUT_STORAGE_KEY_PREFIX}:${ownerId}`
+    );
+    return value === "lista" ? "lista" : "kanban";
+  } catch {
+    return "kanban";
+  }
+}
+
+/** Guarda o formato escolhido pelo usuário. */
+export function saveLayout(ownerId: string, layout: TaskLayout): void {
+  try {
+    localStorage.setItem(`${LAYOUT_STORAGE_KEY_PREFIX}:${ownerId}`, layout);
+  } catch {
+    // ignora armazenamento indisponível
+  }
 }
 
 function parseTasks(raw: string): Task[] {
