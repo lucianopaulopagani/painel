@@ -86,6 +86,8 @@ export default function TarefasPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogDay, setDialogDay] = useState(0);
   const [dialogWeek, setDialogWeek] = useState(() => weekKey());
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Task | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<DropTarget | null>(null);
   const [clearOpen, setClearOpen] = useState(false);
@@ -167,8 +169,16 @@ export default function TarefasPage() {
   ).length;
 
   const openDialog = (day: number, week: string) => {
+    setEditingId(null);
     setDialogDay(day);
     setDialogWeek(week);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (task: Task) => {
+    setEditingId(task.id);
+    setDialogDay(task.day);
+    setDialogWeek(task.week);
     setDialogOpen(true);
   };
 
@@ -177,7 +187,16 @@ export default function TarefasPage() {
     openDialog((date.getDay() + 6) % 7, weekKey(date));
   };
 
-  const addTask = (input: TaskInput) => {
+  const submitTask = (input: TaskInput) => {
+    if (editingId) {
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id === editingId ? { ...task, ...input } : task
+        )
+      );
+      setEditingId(null);
+      return;
+    }
     setTasks((prev) => [...prev, createTask(input)]);
   };
 
@@ -187,8 +206,10 @@ export default function TarefasPage() {
     );
   };
 
-  const deleteTask = (taskId: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== taskId));
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    setTasks((prev) => prev.filter((task) => task.id !== pendingDelete.id));
+    setPendingDelete(null);
   };
 
   const handleDrop = () => {
@@ -240,7 +261,14 @@ export default function TarefasPage() {
   const columnBindings = {
     draggingId,
     onStatusChange: changeStatus,
-    onDelete: deleteTask,
+    onEdit: (taskId: string) => {
+      const task = tasks.find((item) => item.id === taskId);
+      if (task) openEdit(task);
+    },
+    onDelete: (taskId: string) => {
+      const task = tasks.find((item) => item.id === taskId);
+      if (task) setPendingDelete(task);
+    },
     onDragStart: setDraggingId,
     onDragEnd: endDrag,
     onDragLeaveColumn: () => setDropTarget(null),
@@ -437,8 +465,30 @@ export default function TarefasPage() {
         onOpenChange={setDialogOpen}
         defaultDay={dialogDay}
         week={dialogWeek}
-        onSubmit={addTask}
+        task={editingId ? tasks.find((task) => task.id === editingId) ?? null : null}
+        onSubmit={submitTask}
       />
+
+      <AlertDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir a tarefa?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A tarefa “{pendingDelete?.title}” será excluída. Esta ação não
+              pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={clearOpen} onOpenChange={setClearOpen}>
         <AlertDialogContent>

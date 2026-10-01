@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { WEEKDAYS, type TaskInput } from "./tarefas-data";
+import { WEEKDAYS, type Task, type TaskInput } from "./tarefas-data";
 
 interface TaskDialogProps {
   open: boolean;
@@ -26,15 +26,18 @@ interface TaskDialogProps {
   defaultDay: number;
   /** Semana exibida no quadro (segunda-feira, AAAA-MM-DD). */
   week: string;
+  /** Tarefa em edição (null ou ausente = nova tarefa). */
+  task?: Task | null;
   onSubmit: (input: TaskInput) => void;
 }
 
-/** Formulário rápido de nova tarefa (título, descrição e dia inicial). */
+/** Formulário de tarefa: título, descrição e dia (criar ou editar). */
 export function TaskDialog({
   open,
   onOpenChange,
   defaultDay,
   week,
+  task = null,
   onSubmit,
 }: TaskDialogProps) {
   const [title, setTitle] = useState("");
@@ -43,15 +46,20 @@ export function TaskDialog({
 
   useEffect(() => {
     if (!open) return;
-    setTitle("");
-    setDescription("");
-    setDay(String(defaultDay));
-  }, [open, defaultDay]);
+    setTitle(task?.title ?? "");
+    setDescription(task?.description ?? "");
+    setDay(String(task?.day ?? defaultDay));
+  }, [open, task, defaultDay]);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (title.trim() === "") return;
-    onSubmit({ title, description, day: Number(day), week });
+    onSubmit({
+      title,
+      description,
+      day: Number(day),
+      week: task?.week ?? week,
+    });
     onOpenChange(false);
   };
 
@@ -59,9 +67,13 @@ export function TaskDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Nova tarefa</DialogTitle>
+          <DialogTitle>
+            {task ? "Editar tarefa" : "Nova tarefa"}
+          </DialogTitle>
           <DialogDescription>
-            A tarefa entra como Cadastrada e pode ser arrastada para outro dia.
+            {task
+              ? "Altere o título, a descrição ou o dia da tarefa."
+              : "A tarefa entra como Cadastrada e pode ser arrastada para outro dia."}
           </DialogDescription>
         </DialogHeader>
 
@@ -114,7 +126,7 @@ export function TaskDialog({
               Cancelar
             </Button>
             <Button type="submit" disabled={title.trim() === ""}>
-              Adicionar tarefa
+              {task ? "Salvar alterações" : "Adicionar tarefa"}
             </Button>
           </DialogFooter>
         </form>

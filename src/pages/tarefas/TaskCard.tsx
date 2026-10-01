@@ -1,4 +1,4 @@
-import { GripVertical, Trash2 } from "lucide-react";
+import { GripVertical, Pencil, Trash2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -18,6 +18,7 @@ interface TaskCardProps {
   task: Task;
   dragging: boolean;
   onStatusChange: (status: TaskStatus) => void;
+  onEdit: () => void;
   onDelete: () => void;
   onDragStart: () => void;
   onDragEnd: () => void;
@@ -25,11 +26,12 @@ interface TaskCardProps {
   onDrop: () => void;
 }
 
-/** Card de tarefa com seletor rápido de status e exclusão. */
+/** Card de tarefa com seletor rápido de status, edição e exclusão. */
 export function TaskCard({
   task,
   dragging,
   onStatusChange,
+  onEdit,
   onDelete,
   onDragStart,
   onDragEnd,
@@ -78,9 +80,17 @@ export function TaskCard({
         </p>
         <button
           type="button"
+          onClick={onEdit}
+          title="Editar tarefa"
+          className="shrink-0 rounded p-0.5 opacity-60 transition-opacity hover:bg-background/60 hover:opacity-100"
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </button>
+        <button
+          type="button"
           onClick={onDelete}
           title="Excluir tarefa"
-          className="shrink-0 rounded p-0.5 opacity-0 transition-opacity hover:bg-background/60 group-hover:opacity-70"
+          className="shrink-0 rounded p-0.5 opacity-60 transition-opacity hover:bg-background/60 hover:opacity-100"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>

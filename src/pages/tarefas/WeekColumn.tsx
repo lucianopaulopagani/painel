@@ -16,6 +16,7 @@ interface WeekColumnProps {
   dropIndex: number | null;
   onAddTask: () => void;
   onStatusChange: (taskId: string, status: TaskStatus) => void;
+  onEdit: (taskId: string) => void;
   onDelete: (taskId: string) => void;
   onDragStart: (taskId: string) => void;
   onDragEnd: () => void;
@@ -36,6 +37,7 @@ export function WeekColumn({
   dropIndex,
   onAddTask,
   onStatusChange,
+  onEdit,
   onDelete,
   onDragStart,
   onDragEnd,
@@ -96,6 +98,7 @@ export function WeekColumn({
               task={task}
               dragging={draggingId === task.id}
               onStatusChange={(status) => onStatusChange(task.id, status)}
+              onEdit={() => onEdit(task.id)}
               onDelete={() => onDelete(task.id)}
               onDragStart={() => onDragStart(task.id)}
               onDragEnd={onDragEnd}
