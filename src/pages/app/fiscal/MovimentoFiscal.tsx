@@ -14,7 +14,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
   Select,
@@ -116,6 +115,7 @@ export function MovimentoFiscal() {
   );
   const [responsavelFiltro, setResponsavelFiltro] = useState<string>("todos");
   const [tributacaoFiltro, setTributacaoFiltro] = useState<string>("todos");
+  const [confirmGenerate, setConfirmGenerate] = useState(false);
 
   // O "mês atual" (referência de trabalho) é sempre o mês anterior ao mês em
   // curso; o mês em curso é gerado/liberado pelo administrador.
@@ -383,45 +383,52 @@ export function MovimentoFiscal() {
             </Button>
           )}
           {isAdmin && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={!!nextMonthExists}
-                >
-                  <FilePlus2 className="h-4 w-4" />
-                  {nextMonthExists
-                    ? `Próximo mês liberado (${formatMonthLabel(mesSeguinte)})`
-                    : `Gerar e liberar próximo mês (${formatMonthLabel(mesSeguinte)})`}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Gerar e liberar {formatMonthLabel(mesSeguinte)}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Serão criados os registros do próximo mês para todas as
-                    empresas do departamento {FISCAL_DEPARTMENT_NAME}, com as
-                    marcações em branco e as observações copiadas do mês mais
-                    recente.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleGenerate}
-                    disabled={generateMutation.isPending}
-                  >
-                    Gerar
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="gap-2"
+              disabled={!!nextMonthExists}
+              onClick={() => setConfirmGenerate(true)}
+            >
+              <FilePlus2 className="h-4 w-4" />
+              {nextMonthExists
+                ? `Próximo mês liberado (${formatMonthLabel(mesSeguinte)})`
+                : `Gerar e liberar próximo mês (${formatMonthLabel(mesSeguinte)})`}
+            </Button>
           )}
         </div>
+
+        <AlertDialog open={confirmGenerate} onOpenChange={setConfirmGenerate}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Gerar e liberar {formatMonthLabel(mesSeguinte)}?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Serão criados os registros de {formatMonthLabel(mesSeguinte)}{" "}
+                para {fiscalCompanies.length} empresa
+                {fiscalCompanies.length === 1 ? "" : "s"} do departamento{" "}
+                {FISCAL_DEPARTMENT_NAME}, com as marcações em branco e as
+                observações copiadas do mês mais recente. Depois de liberado,
+                os usuários poderão editar o mês. Confirmar a geração?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(event) => {
+                  event.preventDefault();
+                  setConfirmGenerate(false);
+                  void handleGenerate();
+                }}
+                disabled={generateMutation.isPending}
+              >
+                Gerar e liberar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <p className="text-xs text-muted-foreground">
           O mês atual é sempre a referência anterior ao mês em curso.
