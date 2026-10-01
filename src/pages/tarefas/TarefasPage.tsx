@@ -5,9 +5,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Eraser,
+  LayoutGrid,
   ListChecks,
   Loader2,
   Plus,
+  Square,
+  Rows3,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -29,18 +32,25 @@ import {
 } from "@/components/ui/popover";
 import { useAuth } from "@/context/auth";
 import { useDocumentTitle } from "@/hooks/use-document-title";
+import { cn } from "@/lib/utils";
+import { MonthView } from "./MonthView";
 import { TaskDialog } from "./TaskDialog";
 import { WeekColumn } from "./WeekColumn";
 import {
   addDays,
+  addMonths,
   createTask,
+  dateKey,
   formatFullDate,
+  formatMonthYear,
   formatWeekRange,
+  formatWeekdayDate,
   isSameDay,
   loadTasks,
   moveTask,
   saveTasks,
   startOfWeek,
+  taskDate,
   weekDates,
   weekKey,
   WEEKDAYS,
@@ -54,18 +64,28 @@ interface DropTarget {
   index: number;
 }
 
-/** Controle de Tarefas Semanal — quadro Kanban de segunda a domingo. */
+type ViewMode = "day" | "week" | "month";
+
+const VIEW_OPTIONS: { key: ViewMode; label: string; icon: typeof Square }[] = [
+  { key: "day", label: "Dia", icon: Square },
+  { key: "week", label: "Semana", icon: Rows3 },
+  { key: "month", label: "Mês", icon: LayoutGrid },
+];
+
+/** Controle de Tarefas Semanal — visões por dia, semana e mês. */
 export default function TarefasPage() {
   useDocumentTitle("Tarefas P4");
 
   const { profile, loading } = useAuth();
   const ownerId = profile?.id ?? null;
 
+  const [view, setView] = useState<ViewMode>("week");
   const [reference, setReference] = useState(() => new Date());
   const [tasks, setTasks] = useState<Task[]>([]);
   const [ownerLoaded, setOwnerLoaded] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogDay, setDialogDay] = useState(0);
+  const [dialogWeek, setDialogWeek] = useState(() => weekKey());
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<DropTarget | null>(null);
   const [clearOpen, setClearOpen] = useState(false);
@@ -75,6 +95,11 @@ export default function TarefasPage() {
   const dates = useMemo(() => weekDates(new Date(anchor)), [anchor]);
   const currentWeek = weekKey(new Date(anchor));
   const today = new Date();
+
+  // Índice do dia de referência dentro da semana exibida (0 = segunda).
+  const referenceDayIndex = dates.findIndex((date) =>
+    isSameDay(date, reference)
+  );
 
   // Carrega as tarefas do usuário (cada usuário tem o seu próprio quadro).
   useEffect(() => {
@@ -88,6 +113,17 @@ export default function TarefasPage() {
     if (!ownerId || ownerLoaded !== ownerId) return;
     saveTasks(ownerId, tasks);
   }, [tasks, ownerId, ownerLoaded]);
+
+  const tasksByDate = useMemo(() => {
+    const map = new Map<string, Task[]>();
+    for (const task of tasks) {
+      const key = dateKey(taskDate(task));
+      const list = map.get(key);
+      if (list) list.push(task);
+      else map.set(key, [task]);
+    }
+    return map;
+  }, [tasks]);
 
   if (loading) {
     return (
@@ -118,6 +154,10 @@ export default function TarefasPage() {
   }
 
   const weekTasks = tasks.filter((task) => task.week === currentWeek);
+  const dayTasks =
+    referenceDayIndex >= 0
+      ? weekTasks.filter((task) => task.day === referenceDayIndex)
+      : [];
 
   const tasksOfDay = (day: number): Task[] =>
     weekTasks.filter((task) => task.day === day);
@@ -126,9 +166,15 @@ export default function TarefasPage() {
     (task) => task.status === "concluida"
   ).length;
 
-  const openDialog = (day: number) => {
+  const openDialog = (day: number, week: string) => {
     setDialogDay(day);
+    setDialogWeek(week);
     setDialogOpen(true);
+  };
+
+  const openDialogForDate = (date: Date) => {
+    // 0 = segunda-feira … 6 = domingo.
+    openDialog((date.getDay() + 6) % 7, weekKey(date));
   };
 
   const addTask = (input: TaskInput) => {
@@ -158,9 +204,47 @@ export default function TarefasPage() {
     setDropTarget(null);
   };
 
+  const step = (direction: 1 | -1) => {
+    setReference((prev) => {
+      if (view === "day") return addDays(prev, direction);
+      if (view === "week") return addDays(prev, direction * 7);
+      return addMonths(prev, direction);
+    });
+  };
+
+  const periodLabel =
+    view === "day"
+      ? formatWeekdayDate(reference)
+      : view === "week"
+        ? formatWeekRange(dates)
+        : formatMonthYear(reference);
+
   const selectDate = (date: Date) => {
     setReference(date);
     setCalendarOpen(false);
+  };
+
+  const goToDay = (date: Date) => {
+    setReference(date);
+    setView("day");
+  };
+
+  const dragOverHandler = (day: number) => (index: number) =>
+    setDropTarget({ day, index });
+
+  const endDrag = () => {
+    setDraggingId(null);
+    setDropTarget(null);
+  };
+
+  const columnBindings = {
+    draggingId,
+    onStatusChange: changeStatus,
+    onDelete: deleteTask,
+    onDragStart: setDraggingId,
+    onDragEnd: endDrag,
+    onDragLeaveColumn: () => setDropTarget(null),
+    onDrop: handleDrop,
   };
 
   return (
@@ -170,22 +254,44 @@ export default function TarefasPage() {
           <div className="flex min-w-0 items-center gap-2">
             <ListChecks className="h-5 w-5 shrink-0 text-primary" />
             <span className="truncate text-sm font-semibold">
-              Controle de Tarefas Semanal
+              Controle de Tarefas
             </span>
             <Badge variant="secondary" className="hidden lg:inline-flex">
-              {formatWeekRange(dates)}
+              {periodLabel}
             </Badge>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center rounded-md border p-0.5">
+              {VIEW_OPTIONS.map((option) => {
+                const Icon = option.icon;
+                return (
+                  <Button
+                    key={option.key}
+                    type="button"
+                    variant={view === option.key ? "secondary" : "ghost"}
+                    size="sm"
+                    className={cn(
+                      "h-7 gap-1.5 px-2.5 text-xs",
+                      view === option.key && "font-semibold"
+                    )}
+                    onClick={() => setView(option.key)}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {option.label}
+                  </Button>
+                );
+              })}
+            </div>
+
             <div className="flex items-center rounded-md border">
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 className="rounded-r-none px-2"
-                title="Semana anterior"
-                onClick={() => setReference((prev) => addDays(prev, -7))}
+                title="Anterior"
+                onClick={() => step(-1)}
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -203,8 +309,8 @@ export default function TarefasPage() {
                 variant="ghost"
                 size="sm"
                 className="rounded-l-none px-2"
-                title="Próxima semana"
-                onClick={() => setReference((prev) => addDays(prev, 7))}
+                title="Próximo"
+                onClick={() => step(1)}
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -217,7 +323,7 @@ export default function TarefasPage() {
                   variant="outline"
                   size="sm"
                   className="gap-2"
-                  title="Escolher a semana pelo calendário"
+                  title="Escolher a data pelo calendário"
                 >
                   <CalendarDays className="h-4 w-4" />
                   {formatFullDate(reference)}
@@ -233,7 +339,7 @@ export default function TarefasPage() {
               </PopoverContent>
             </Popover>
 
-            <span className="hidden text-xs text-muted-foreground xl:inline">
+            <span className="hidden text-xs text-muted-foreground 2xl:inline">
               {weekTasks.length} tarefa{weekTasks.length === 1 ? "" : "s"} ·{" "}
               {concluidas} concluída{concluidas === 1 ? "" : "s"}
             </span>
@@ -254,7 +360,7 @@ export default function TarefasPage() {
               type="button"
               size="sm"
               className="gap-2"
-              onClick={() => openDialog(0)}
+              onClick={() => openDialog(0, currentWeek)}
             >
               <Plus className="h-4 w-4" />
               Nova tarefa
@@ -265,37 +371,59 @@ export default function TarefasPage() {
 
       <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-4 sm:px-6">
         <div className="mb-3 flex items-center gap-2 lg:hidden">
-          <Badge variant="secondary">{formatWeekRange(dates)}</Badge>
+          <Badge variant="secondary">{periodLabel}</Badge>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-7">
-          {WEEKDAYS.map((weekday) => (
+        {view === "month" ? (
+          <MonthView
+            reference={reference}
+            today={today}
+            tasksByDate={tasksByDate}
+            onSelectDay={goToDay}
+            onAddTask={openDialogForDate}
+          />
+        ) : view === "week" ? (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-7">
+            {WEEKDAYS.map((weekday) => (
+              <WeekColumn
+                key={weekday.key}
+                label={weekday.label}
+                date={dates[weekday.key]}
+                isToday={isSameDay(dates[weekday.key], today)}
+                tasks={tasksOfDay(weekday.key)}
+                dropIndex={
+                  dropTarget?.day === weekday.key ? dropTarget.index : null
+                }
+                onAddTask={() => openDialog(weekday.key, currentWeek)}
+                {...columnBindings}
+                onDragOverIndex={dragOverHandler(weekday.key)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="max-w-2xl">
             <WeekColumn
-              key={weekday.key}
-              label={weekday.label}
-              date={dates[weekday.key]}
-              isToday={isSameDay(dates[weekday.key], today)}
-              tasks={tasksOfDay(weekday.key)}
-              draggingId={draggingId}
+              wide
+              label={formatWeekdayDate(reference)}
+              date={reference}
+              isToday={isSameDay(reference, today)}
+              tasks={dayTasks}
               dropIndex={
-                dropTarget?.day === weekday.key ? dropTarget.index : null
+                dropTarget?.day === referenceDayIndex ? dropTarget.index : null
               }
-              onAddTask={() => openDialog(weekday.key)}
-              onStatusChange={changeStatus}
-              onDelete={deleteTask}
-              onDragStart={setDraggingId}
-              onDragEnd={() => {
-                setDraggingId(null);
-                setDropTarget(null);
-              }}
-              onDragOverIndex={(index) =>
-                setDropTarget({ day: weekday.key, index })
+              onAddTask={() =>
+                openDialog(
+                  referenceDayIndex < 0 ? 0 : referenceDayIndex,
+                  currentWeek
+                )
               }
-              onDragLeaveColumn={() => setDropTarget(null)}
-              onDrop={handleDrop}
+              {...columnBindings}
+              onDragOverIndex={dragOverHandler(
+                referenceDayIndex < 0 ? 0 : referenceDayIndex
+              )}
             />
-          ))}
-        </div>
+          </div>
+        )}
 
         <p className="mt-4 text-xs text-muted-foreground">
           Arraste as tarefas entre os dias para reorganizar a semana. Cada
@@ -308,16 +436,14 @@ export default function TarefasPage() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         defaultDay={dialogDay}
-        week={currentWeek}
+        week={dialogWeek}
         onSubmit={addTask}
       />
 
       <AlertDialog open={clearOpen} onOpenChange={setClearOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Limpar as tarefas desta semana?
-            </AlertDialogTitle>
+            <AlertDialogTitle>Limpar as tarefas desta semana?</AlertDialogTitle>
             <AlertDialogDescription>
               Serão excluídas apenas as tarefas de {formatWeekRange(dates)}. As
               demais semanas continuam intactas. Esta ação não pode ser

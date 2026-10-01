@@ -114,6 +114,48 @@ export function addDays(date: Date, days: number): Date {
   return result;
 }
 
+/** Soma (ou subtrai) meses a uma data (mantendo o primeiro dia do mês). */
+export function addMonths(date: Date, months: number): Date {
+  const result = new Date(date);
+  result.setMonth(result.getMonth() + months, 1);
+  return result;
+}
+
+/** Identificador de um dia (AAAA-MM-DD). */
+export function dateKey(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+/** Data em que a tarefa foi agendada (segunda da semana + dia da semana). */
+export function taskDate(task: Task): Date {
+  const [year, month, day] = task.week.split("-").map(Number);
+  return addDays(new Date(year, (month ?? 1) - 1, day ?? 1), task.day);
+}
+
+/** As 6 semanas (42 dias) exibidas no mês da data informada. */
+export function monthMatrix(date: Date): Date[] {
+  const first = new Date(date.getFullYear(), date.getMonth(), 1);
+  const start = startOfWeek(first);
+  return Array.from({ length: 42 }, (_, index) => addDays(start, index));
+}
+
+export function formatMonthYear(date: Date): string {
+  const label = date.toLocaleDateString("pt-BR", {
+    month: "long",
+    year: "numeric",
+  });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+/** Ex.: "Segunda, 30/09/2026". */
+export function formatWeekdayDate(date: Date): string {
+  const weekday = date.toLocaleDateString("pt-BR", { weekday: "long" });
+  const label = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+  return `${label}, ${formatFullDate(date)}`;
+}
+
 export function formatFullDate(date: Date): string {
   return date.toLocaleDateString("pt-BR", {
     day: "2-digit",

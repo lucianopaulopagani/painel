@@ -22,9 +22,11 @@ interface WeekColumnProps {
   onDragOverIndex: (index: number) => void;
   onDragLeaveColumn: () => void;
   onDrop: () => void;
+  /** Coluna larga (visão por dia). */
+  wide?: boolean;
 }
 
-/** Coluna de um dia da semana (estilo Kanban). */
+/** Coluna de um dia (estilo Kanban) — usada nas visões por semana e por dia. */
 export function WeekColumn({
   label,
   date,
@@ -40,11 +42,13 @@ export function WeekColumn({
   onDragOverIndex,
   onDragLeaveColumn,
   onDrop,
+  wide = false,
 }: WeekColumnProps) {
   return (
     <section
       className={cn(
-        "flex min-h-[280px] flex-col rounded-xl border bg-card/70 shadow-sm transition-colors",
+        "flex flex-col rounded-xl border bg-card/70 shadow-sm transition-colors",
+        wide ? "min-h-[420px]" : "min-h-[280px]",
         isToday && "border-primary/50",
         dropIndex !== null && "bg-accent/40"
       )}
