@@ -1,6 +1,17 @@
 /** Opções da coluna SITUAÇÃO (vazio = Em branco). */
 export const SITUACAO_OPTIONS = ["OK", "OK-ENT", "OK-SM", "FAZENDO"] as const;
 
+/** Cores das opções de Situação (padrão dos departamentos). */
+export const SITUACAO_TONE: Record<string, string> = {
+  OK: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+  "OK-SM":
+    "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+  "OK-ENT":
+    "bg-status-warning text-status-warning-foreground hover:bg-status-warning/90",
+  FAZENDO:
+    "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
+};
+
 /** Opções dos campos de menu suspenso (vazio = sem marcação). */
 export const OK_SM_OPTIONS = ["OK", "OK-SM"] as const;
 

@@ -31,6 +31,7 @@ import {
   isCompanyInactiveInMonth,
   isPeriodBeforeStart,
 } from "@/lib/companies";
+import { SITUACAO_OPTIONS, SITUACAO_TONE } from "@/lib/fiscal";
 import {
   LUCRO_DESABILITADO,
   LUCRO_FIELDS,
@@ -58,7 +59,9 @@ interface LucroRealPresumidoTableProps {
  * Tabela de Lucro Real / Lucro Presumido do Movimento Fiscal.
  *
  * N, Empresa e UF vêm do cadastro de empresas com a tributação selecionada. As
- * colunas de obrigação são listas suspensas (com a opção "Desabilitado", pintada
+ * coluna Situação usa os mesmos campos do Simples Nacional (OK, OK-ENT, OK-SM,
+ * FAZENDO) e alimenta o dashboard com os mesmos parâmetros; as demais colunas de
+ * obrigação são listas suspensas (com a opção "Desabilitado", pintada
  * com a cor da tabela, que segue para os próximos meses até ser alterada) e OBS
  * é texto livre, também levado para os meses seguintes. Todas as células de
  * ISSQN até OBS aceitam comentário (botão direito), que também é levado para os
@@ -74,6 +77,7 @@ export function LucroRealPresumidoTable({
       numero: "",
       uf: "",
       empresa: "",
+      situacao: "",
       observacoes: "",
     };
     for (const field of LUCRO_FIELDS) initial[field.key] = "";
@@ -204,6 +208,10 @@ export function LucroRealPresumidoTable({
       match(company.numero, busca.numero) &&
       selectOrBlank(company.uf, busca.uf) &&
       match(company.name, busca.empresa) &&
+      selectOrBlank(
+        recordByCompany.get(company.id)?.situacao,
+        busca.situacao
+      ) &&
       LUCRO_FIELDS.every((field) =>
         selectOrBlank(effectiveValue(company.id, field.key), busca[field.key])
       ) &&
@@ -269,6 +277,51 @@ export function LucroRealPresumidoTable({
       </Select>
     </TableHead>
   );
+
+  /**
+   * Célula de Situação — mesmos campos do Simples Nacional (OK, OK-ENT, OK-SM,
+   * FAZENDO). Os valores alimentam o dashboard com os mesmos parâmetros.
+   */
+  const renderSituacaoCell = (company: (typeof rows)[number]) => {
+    const value = recordByCompany.get(company.id)?.situacao ?? "";
+    const blocked = startBlockedIds.has(company.id);
+    if (!canEdit) {
+      return (
+        <span
+          className={cn(
+            "inline-block w-full truncate rounded px-1 py-0.5 text-center",
+            SITUACAO_TONE[value]
+          )}
+        >
+          {value || "—"}
+        </span>
+      );
+    }
+    return (
+      <Select
+        value={value === "" ? "none" : value}
+        disabled={blocked}
+        onValueChange={(next) => {
+          if (blocked) return;
+          save(company.id, { situacao: next === "none" ? null : next });
+        }}
+      >
+        <SelectTrigger
+          className={cn("h-7 w-full min-w-0 px-1 text-[11px]", SITUACAO_TONE[value])}
+        >
+          <SelectValue placeholder="—" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">—</SelectItem>
+          {SITUACAO_OPTIONS.map((option) => (
+            <SelectItem key={option} value={option}>
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  };
 
   /** Célula de uma coluna de obrigação (comentário + lista suspensa). */
   const renderFieldCell = (
@@ -350,12 +403,34 @@ export function LucroRealPresumidoTable({
       </p>
 
       <div className="overflow-x-auto rounded-lg border">
-        <Table className="table-fixed min-w-[1424px]">
+        <Table className="table-fixed min-w-[1520px]">
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
               {renderFilterInput("numero", "N", "w-10")}
               {renderFilterInput("empresa", "Empresas", "w-56")}
               {renderFilterSelect("uf", "UF", "w-12")}
+              <TableHead className={`${HEAD} w-24 align-bottom`}>
+                <span className="mb-1 block whitespace-nowrap">Situação</span>
+                <Select
+                  value={busca.situacao === "" ? "todos" : busca.situacao}
+                  onValueChange={(value) =>
+                    setBuscaField("situacao", value === "todos" ? "" : value)
+                  }
+                >
+                  <SelectTrigger className="h-6 w-full min-w-0 px-1 text-xs">
+                    <SelectValue placeholder="Todos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="branco">Em branco</SelectItem>
+                    {SITUACAO_OPTIONS.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </TableHead>
               {LUCRO_FIELDS.map((field) =>
                 renderFilterSelect(
                   field.key,
@@ -389,6 +464,9 @@ export function LucroRealPresumidoTable({
                   </TableCell>
                   <TableCell className={`${CELL} w-12 whitespace-nowrap`}>
                     {company.uf || "—"}
+                  </TableCell>
+                  <TableCell className={`${CELL} w-24`}>
+                    {renderSituacaoCell(company)}
                   </TableCell>
                   {LUCRO_FIELDS.map((field) => (
                     <TableCell
@@ -438,7 +516,7 @@ export function LucroRealPresumidoTable({
             {filteredRows.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={14}
+                  colSpan={15}
                   className={`${CELL} py-8 text-center text-muted-foreground`}
                 >
                   {Object.values(busca).some(Boolean) && rows.length > 0
