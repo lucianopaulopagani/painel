@@ -98,6 +98,26 @@ const SECTIONS: ManualSection[] = [
           "Selecionando 'Simples Nacional' no filtro de Tributação, é exibida a subtabela específica dessa tributação (Nº, UF, Empresa, CNPJ, Inscrição Estadual, Situação, DAS, Antecipação, ST, DIF ALIQ, DIF ALIQ C/ST, Guia, DESTDA, Envio/SN, Envio/ICMS e Observações), com filtro de UF em menu suspenso e colunas compactas.",
       },
       {
+        label: "Lucro Real e Lucro Presumido",
+        detail:
+          "Selecionando 'Lucro Real' ou 'Lucro Presumido' no filtro de Tributação, é exibida a tabela do modelo das empresas normais: N, Empresas e UF (do cadastro de empresas com essa tributação), as obrigações ISSQN, DIME/GIA PR, DAPI, GIA RS, DRCST, SPED FISCAL, SPED CONTR, REINF, DIRBI, MIT e OBS.",
+      },
+      {
+        label: "Opções e cor de desabilitado",
+        detail:
+          "Cada coluna de obrigação é uma lista suspensa com as opções OK (verde), SM (azul), X (âmbar), Dispensada (neutro), Pendências (vermelho) e Desabilitado — esta última pinta o campo com a cor da tabela e segue para os próximos meses até ser alterada. OBS é texto livre, também levado para os meses seguintes.",
+      },
+      {
+        label: "Comentários nas células",
+        detail:
+          "Clique com o botão direito em qualquer célula de ISSQN até OBS para Adicionar Comentário (igual ao Balancete/Balanço do Contábil). A célula ganha um marcador no canto superior direito com o comentário no tooltip.",
+      },
+      {
+        label: "Data de Início",
+        detail:
+          "Meses anteriores à Data de Início da empresa ficam com os campos desabilitados também nesta tabela.",
+      },
+      {
         label: "Demais tributações",
         detail:
           "As outras tributações seguem usando a tabela padrão do Movimento Fiscal e ganharão subtabelas específicas no futuro.",

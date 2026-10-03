@@ -4321,17 +4321,27 @@ export type Database = {
           antecipacao: string | null
           company_id: string
           created_at: string
+          dapi: string | null
           das: string | null
           destda: string | null
           dif_aliq: string | null
           dif_aliq_st: string | null
+          dime_gia_pr: string | null
+          dirbi: string | null
+          drcst: string | null
           envio_icms: string | null
           envio_sn: string | null
+          gia_rs: string | null
           guia: string | null
           id: string
+          issqn: string | null
           mes_referencia: string
+          mit: string | null
           observacoes: string | null
+          reinf: string | null
           situacao: string | null
+          sped_contr: string | null
+          sped_fiscal: string | null
           st: string | null
           updated_at: string
         }
@@ -4339,17 +4349,27 @@ export type Database = {
           antecipacao?: string | null
           company_id: string
           created_at?: string
+          dapi?: string | null
           das?: string | null
           destda?: string | null
           dif_aliq?: string | null
           dif_aliq_st?: string | null
+          dime_gia_pr?: string | null
+          dirbi?: string | null
+          drcst?: string | null
           envio_icms?: string | null
           envio_sn?: string | null
+          gia_rs?: string | null
           guia?: string | null
           id?: string
+          issqn?: string | null
           mes_referencia: string
+          mit?: string | null
           observacoes?: string | null
+          reinf?: string | null
           situacao?: string | null
+          sped_contr?: string | null
+          sped_fiscal?: string | null
           st?: string | null
           updated_at?: string
         }
@@ -4357,17 +4377,27 @@ export type Database = {
           antecipacao?: string | null
           company_id?: string
           created_at?: string
+          dapi?: string | null
           das?: string | null
           destda?: string | null
           dif_aliq?: string | null
           dif_aliq_st?: string | null
+          dime_gia_pr?: string | null
+          dirbi?: string | null
+          drcst?: string | null
           envio_icms?: string | null
           envio_sn?: string | null
+          gia_rs?: string | null
           guia?: string | null
           id?: string
+          issqn?: string | null
           mes_referencia?: string
+          mit?: string | null
           observacoes?: string | null
+          reinf?: string | null
           situacao?: string | null
+          sped_contr?: string | null
+          sped_fiscal?: string | null
           st?: string | null
           updated_at?: string
         }
@@ -4426,6 +4456,43 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "movimento_fiscal_carne_leao_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      movimento_fiscal_comentarios: {
+        Row: {
+          campo: string
+          comentario: string
+          company_id: string
+          created_at: string
+          id: string
+          mes_referencia: string
+          updated_at: string
+        }
+        Insert: {
+          campo: string
+          comentario: string
+          company_id: string
+          created_at?: string
+          id?: string
+          mes_referencia: string
+          updated_at?: string
+        }
+        Update: {
+          campo?: string
+          comentario?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          mes_referencia?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimento_fiscal_comentarios_company_id_fkey"
             columns: ["company_id"]
             referencedRelation: "companies"
             referencedColumns: ["id"]

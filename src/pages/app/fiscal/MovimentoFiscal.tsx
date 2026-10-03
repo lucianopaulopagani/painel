@@ -54,6 +54,8 @@ import {
   SIMPLES_NACIONAL_TRIBUTACAO,
   SimplesNacionalTable,
 } from "./SimplesNacional";
+import { isLucroTributacao } from "@/lib/fiscal-lucro-real";
+import { LucroRealPresumidoTable } from "./LucroRealPresumido";
 import {
   MOVIMENTO_FISCAL_FIELDS,
   SITUACAO_OPTIONS,
@@ -518,8 +520,19 @@ export function MovimentoFiscal() {
 
       {!isLoading &&
         !isError &&
+        isLucroTributacao(tributacaoFiltro) && (
+          <LucroRealPresumidoTable
+            mes={mes}
+            tributacao={tributacaoFiltro}
+            canEdit={canEdit}
+          />
+        )}
+
+      {!isLoading &&
+        !isError &&
         tributacaoFiltro !== CARNE_LEAO_TRIBUTACAO &&
-        tributacaoFiltro !== SIMPLES_NACIONAL_TRIBUTACAO && (
+        tributacaoFiltro !== SIMPLES_NACIONAL_TRIBUTACAO &&
+        !isLucroTributacao(tributacaoFiltro) && (
         <div className="rounded-lg border">
           <Table className="table-fixed">
             <TableHeader>

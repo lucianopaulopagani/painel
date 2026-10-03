@@ -1,0 +1,38 @@
+alter table public.movimento_fiscal
+  add column if not exists issqn text,
+  add column if not exists dime_gia_pr text,
+  add column if not exists dapi text,
+  add column if not exists gia_rs text,
+  add column if not exists drcst text,
+  add column if not exists sped_fiscal text,
+  add column if not exists sped_contr text,
+  add column if not exists reinf text,
+  add column if not exists dirbi text,
+  add column if not exists mit text;
+
+create table if not exists public.movimento_fiscal_comentarios (
+  id uuid primary key default gen_random_uuid(),
+  company_id uuid not null references public.companies(id) on delete cascade,
+  mes_referencia text not null,
+  campo text not null,
+  comentario text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (company_id, mes_referencia, campo)
+);
+
+alter table public.movimento_fiscal_comentarios enable row level security;
+
+create policy "movimento_fiscal_comentarios_admin_all" on public.movimento_fiscal_comentarios
+  for all using (public.is_admin()) with check (public.is_admin());
+
+create policy "movimento_fiscal_comentarios_member_all" on public.movimento_fiscal_comentarios
+  for all
+  using (exists (
+    select 1 from public.company_departments cd
+    join public.profile_departments pd on pd.department_id = cd.department_id
+    where cd.company_id = movimento_fiscal_comentarios.company_id and pd.profile_id = auth.uid()))
+  with check (exists (
+    select 1 from public.company_departments cd
+    join public.profile_departments pd on pd.department_id = cd.department_id
+    where cd.company_id = movimento_fiscal_comentarios.company_id and pd.profile_id = auth.uid()));

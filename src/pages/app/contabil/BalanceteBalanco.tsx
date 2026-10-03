@@ -27,7 +27,7 @@ import {
   useRemoveBalanceteComentario,
   useSaveBalanceteComentario,
 } from "@/hooks/use-balancete-comentarios";
-import { CommentableCell } from "./CommentableCell";
+import { CommentableCell } from "@/components/commentable-cell";
 import { useCompanies } from "@/hooks/use-companies";
 import { useContabilUsuarios } from "@/hooks/use-contabil-usuarios";
 import { useDepartments } from "@/hooks/use-departments";

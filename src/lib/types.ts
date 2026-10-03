@@ -124,6 +124,17 @@ export interface MovementFiscalRecord {
   envio_sn: string | null;
   envio_icms: string | null;
   observacoes: string | null;
+  /** Colunas da tabela de Lucro Real / Lucro Presumido. */
+  issqn: string | null;
+  dime_gia_pr: string | null;
+  dapi: string | null;
+  gia_rs: string | null;
+  drcst: string | null;
+  sped_fiscal: string | null;
+  sped_contr: string | null;
+  reinf: string | null;
+  dirbi: string | null;
+  mit: string | null;
   created_at: string;
   updated_at: string;
 }
