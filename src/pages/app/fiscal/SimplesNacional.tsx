@@ -21,7 +21,11 @@ import {
   useSaveMovimentoFiscal,
 } from "@/hooks/use-movimento-fiscal";
 import { useCompanies } from "@/hooks/use-companies";
-import { isCompanyInactiveInMonth } from "@/lib/companies";
+import {
+  DATA_INICIO_BLOCK_TITLE,
+  isCompanyInactiveInMonth,
+  isPeriodBeforeStart,
+} from "@/lib/companies";
 import {
   MOVIMENTO_FISCAL_FIELDS,
   SITUACAO_OPTIONS,
@@ -114,6 +118,13 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
     )
   ).sort();
 
+  /** Empresas bloqueadas no mês exibido (anterior à Data de Início). */
+  const startBlockedIds = new Set(
+    rows
+      .filter((company) => isPeriodBeforeStart(company, mes))
+      .map((company) => company.id)
+  );
+
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
     const match = (value: string | null | undefined, query: string): boolean =>
@@ -173,12 +184,17 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
     value: string,
     options: readonly string[],
     patchKey: string
-  ) => (
+  ) => {
+    // Períodos anteriores à Data de Início da empresa ficam bloqueados.
+    const blocked = startBlockedIds.has(companyId);
+    return (
     <Select
       value={value === "" ? "none" : value}
-      onValueChange={(next) =>
-        save(companyId, { [patchKey]: next === "none" ? null : next })
-      }
+      disabled={blocked}
+      onValueChange={(next) => {
+        if (blocked) return;
+        save(companyId, { [patchKey]: next === "none" ? null : next });
+      }}
     >
       <SelectTrigger
         className={cn(
@@ -197,7 +213,8 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
         ))}
       </SelectContent>
     </Select>
-  );
+    );
+  };
 
   const renderFilterInput = (key: string, label: string, widthClass = "") => (
     <TableHead className={`${HEAD} ${widthClass} align-bottom`}>
@@ -283,8 +300,12 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
           <TableBody>
             {filteredRows.map((company) => {
               const record = recordByCompany.get(company.id);
+              const blocked = startBlockedIds.has(company.id);
               return (
-                <TableRow key={company.id}>
+                <TableRow
+                  key={company.id}
+                  title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
+                >
                   <TableCell
                     className={`${CELL} whitespace-nowrap text-center font-medium`}
                   >
@@ -336,11 +357,13 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
                       {field.type === "checkbox" ? (
                         <Checkbox
                           checked={record?.[field.key] === true}
-                          onCheckedChange={(checked) =>
+                          disabled={blocked}
+                          onCheckedChange={(checked) => {
+                            if (blocked) return;
                             save(company.id, {
                               [field.key]: checked === true,
-                            })
-                          }
+                            });
+                          }}
                         />
                       ) : field.type === "input" ? (
                         <Input
@@ -348,6 +371,7 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
                           defaultValue={
                             (record?.[field.key] as string) ?? ""
                           }
+                          disabled={blocked}
                           onBlur={(event) =>
                             save(company.id, {
                               [field.key]: event.target.value.trim() || null,
@@ -369,7 +393,12 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
                     <Input
                       key={`${company.id}:${mes}:obs`}
                       defaultValue={effectiveObservacoes(company.id) ?? ""}
-                      title={effectiveObservacoes(company.id) ?? ""}
+                      disabled={blocked}
+                      title={
+                        blocked
+                          ? DATA_INICIO_BLOCK_TITLE
+                          : (effectiveObservacoes(company.id) ?? "")
+                      }
                       onBlur={(event) =>
                         save(company.id, {
                           observacoes: event.target.value.trim() || null,

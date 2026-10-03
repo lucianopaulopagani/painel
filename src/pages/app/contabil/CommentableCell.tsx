@@ -30,6 +30,8 @@ interface CommentableCellProps {
   children: ReactNode;
   onSave: (value: string) => void;
   onRemove: () => void;
+  /** Bloqueado pela Data de Início da empresa: sem menu de comentário. */
+  disabled?: boolean;
 }
 
 /**
@@ -43,9 +45,34 @@ export function CommentableCell({
   children,
   onSave,
   onRemove,
+  disabled = false,
 }: CommentableCellProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [text, setText] = useState("");
+
+  const marker = comment ? (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span
+          aria-label="Comentário"
+          className="absolute right-0 top-0 h-0 w-0 cursor-help border-l-[7px] border-t-[7px] border-l-transparent border-t-destructive"
+        />
+      </TooltipTrigger>
+      <TooltipContent className="max-w-64 whitespace-pre-wrap">
+        {comment}
+      </TooltipContent>
+    </Tooltip>
+  ) : null;
+
+  // Período bloqueado (anterior à Data de Início): sem edição de comentário.
+  if (disabled) {
+    return (
+      <div className="relative h-full w-full">
+        {children}
+        {marker}
+      </div>
+    );
+  }
 
   return (
     <>
@@ -53,19 +80,7 @@ export function CommentableCell({
         <ContextMenuTrigger asChild>
           <div className="relative h-full w-full">
             {children}
-            {comment && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span
-                    aria-label="Comentário"
-                    className="absolute right-0 top-0 h-0 w-0 cursor-help border-l-[7px] border-t-[7px] border-l-transparent border-t-destructive"
-                  />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-64 whitespace-pre-wrap">
-                  {comment}
-                </TooltipContent>
-              </Tooltip>
-            )}
+            {marker}
           </div>
         </ContextMenuTrigger>
         <ContextMenuContent>

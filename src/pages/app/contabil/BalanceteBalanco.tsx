@@ -34,6 +34,11 @@ import { useDepartments } from "@/hooks/use-departments";
 import { CONTABIL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import { companyUsesSubmenu } from "@/lib/department-submenus";
 import {
+  DATA_INICIO_BLOCK_TITLE,
+  isPeriodBeforeStart,
+  isYearBeforeStart,
+} from "@/lib/companies";
+import {
   BALANCETE_MESES,
   BALANCETE_MES_OPTIONS,
   BALANCETE_FECHAMENTO_OPTIONS,
@@ -194,13 +199,16 @@ export default function BalanceteBalanco() {
 
   const renderMonthCell = (
     companyId: string,
-    mesKey: (typeof BALANCETE_MESES)[number]["key"]
+    mesKey: (typeof BALANCETE_MESES)[number]["key"],
+    blocked = false
   ) => (
     <Select
       value={(recordByCompany.get(companyId)?.[mesKey] ?? "") === "" ? "none" : (recordByCompany.get(companyId)?.[mesKey] ?? "")}
-      onValueChange={(next) =>
-        save(companyId, { [mesKey]: next === "none" ? null : next })
-      }
+      disabled={blocked}
+      onValueChange={(next) => {
+        if (blocked) return;
+        save(companyId, { [mesKey]: next === "none" ? null : next });
+      }}
     >
       <SelectTrigger
         className={cn(
@@ -270,14 +278,16 @@ export default function BalanceteBalanco() {
     </TableHead>
   );
 
-  const renderFechamentoCell = (companyId: string) => {
+  const renderFechamentoCell = (companyId: string, blocked = false) => {
     const value = recordByCompany.get(companyId)?.fechamento ?? "";
     return (
       <Select
         value={value === "" ? "none" : value}
-        onValueChange={(next) =>
-          save(companyId, { fechamento: next === "none" ? null : next })
-        }
+        disabled={blocked}
+        onValueChange={(next) => {
+          if (blocked) return;
+          save(companyId, { fechamento: next === "none" ? null : next });
+        }}
       >
         <SelectTrigger
           className={cn(
@@ -422,8 +432,22 @@ export default function BalanceteBalanco() {
             <TableBody>
               {filteredRows.map((company) => {
                 const record = recordByCompany.get(company.id);
+                // Períodos anteriores à Data de Início ficam bloqueados
+                // (o ano do fechamento só é bloqueado em exercícios anteriores).
+                const fechamentoBlocked = isYearBeforeStart(company, ano);
+                const monthBlocked = (index: number): boolean =>
+                  isPeriodBeforeStart(
+                    company,
+                    `${ano}-${String(index + 1).padStart(2, "0")}`
+                  );
+                const anyBlocked =
+                  fechamentoBlocked ||
+                  BALANCETE_MESES.some((_, index) => monthBlocked(index));
                 return (
-                  <TableRow key={company.id}>
+                  <TableRow
+                    key={company.id}
+                    title={anyBlocked ? DATA_INICIO_BLOCK_TITLE : undefined}
+                  >
                     <TableCell
                       className={`${CELL} w-10 whitespace-nowrap text-center font-medium ${N_LEFT} ${STICKY_CELL}`}
                     >
@@ -444,9 +468,10 @@ export default function BalanceteBalanco() {
                         {company.name}
                       </span>
                     </TableCell>
-                    {BALANCETE_MESES.map((mes) => (
+                    {BALANCETE_MESES.map((mes, index) => (
                       <TableCell key={mes.key} className={`${CELL} w-24`}>
                         <CommentableCell
+                          disabled={monthBlocked(index)}
                           comment={commentOf(company.id, mes.key)}
                           label={`${mes.label} ${ano} — ${company.name}`}
                           onSave={(value) =>
@@ -463,12 +488,13 @@ export default function BalanceteBalanco() {
                             })
                           }
                         >
-                          {renderMonthCell(company.id, mes.key)}
+                          {renderMonthCell(company.id, mes.key, monthBlocked(index))}
                         </CommentableCell>
                       </TableCell>
                     ))}
                     <TableCell className={`${CELL} w-24`}>
                       <CommentableCell
+                        disabled={fechamentoBlocked}
                         comment={commentOf(company.id, "fechamento")}
                         label={`Fechamento ${ano} — ${company.name}`}
                         onSave={(value) =>
@@ -485,14 +511,19 @@ export default function BalanceteBalanco() {
                           })
                         }
                       >
-                        {renderFechamentoCell(company.id)}
+                        {renderFechamentoCell(company.id, fechamentoBlocked)}
                       </CommentableCell>
                     </TableCell>
                     <TableCell className={`${CELL} w-20`}>
                       <Input
                         key={`${company.id}:${ano}:obs`}
                         defaultValue={record?.observacoes ?? ""}
-                        title={record?.observacoes ?? ""}
+                        disabled={fechamentoBlocked}
+                        title={
+                          fechamentoBlocked
+                            ? DATA_INICIO_BLOCK_TITLE
+                            : (record?.observacoes ?? "")
+                        }
                         onBlur={(event) =>
                           save(company.id, {
                             observacoes: event.target.value.trim() || null,

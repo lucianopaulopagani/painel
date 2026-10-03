@@ -34,7 +34,12 @@ const SECTIONS: ManualSection[] = [
         label: "Empresas",
         detail:
           "Somente as empresas marcadas com o departamento Societário no cadastro de empresas aparecem aqui.",
+      },      {
+        label: "Data de Início (bloqueio de retroatividade)",
+        detail:
+          "A Data de Início cadastrada na empresa vale para todos os departamentos: exercícios anteriores a ela ficam bloqueados (campos desabilitados), e datas de vencimento/agendamento não podem ser anteriores à Data de Início.",
       },
+
     ],
   },
   {

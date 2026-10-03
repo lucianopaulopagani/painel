@@ -16,6 +16,8 @@ export interface CompanyImportRow {
   responsaveis: string[];
   socioResponsavel: string;
   socioCpf: string;
+  /** Data de Início (YYYY-MM-DD) ou vazia. */
+  dataInicio: string;
 }
 
 export interface CompanyImportValidation {
@@ -37,7 +39,46 @@ const HEADERS = [
   "Responsáveis",
   "Sócio Responsável",
   "CPF do Sócio",
+  "Data de Início",
 ];
+
+/** Converte um valor de célula em data ISO (AAAA-MM-DD) ou null. */
+export function parseImportDate(value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return toIsoDate(value.getFullYear(), value.getMonth() + 1, value.getDate());
+  }
+  if (typeof value === "number" && Number.isFinite(value)) {
+    // Data serial do Excel (dias desde 30/12/1899).
+    const utc = new Date(Date.UTC(1899, 11, 30) + value * 86400000);
+    return toIsoDate(utc.getUTCFullYear(), utc.getUTCMonth() + 1, utc.getUTCDate());
+  }
+  const text = String(value).trim();
+  if (!text) return null;
+  const br = text.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})$/);
+  if (br) {
+    const year = Number(br[3].length === 2 ? `20${br[3]}` : br[3]);
+    return toIsoDate(year, Number(br[2]), Number(br[1]));
+  }
+  const iso = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (iso) return toIsoDate(Number(iso[1]), Number(iso[2]), Number(iso[3]));
+  return null;
+}
+
+function toIsoDate(year: number, month: number, day: number): string | null {
+  if (!year || month < 1 || month > 12 || day < 1 || day > 31) return null;
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return null;
+  }
+  return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(
+    day
+  ).padStart(2, "0")}`;
+}
 
 /** Gera e baixa o modelo (planilha Excel) para importação. */
 export function buildCompanyImportTemplate(
@@ -57,6 +98,7 @@ export function buildCompanyImportTemplate(
       "Elizandra;Jannaina",
       "ELIZANDRA PEREIRA",
       "000.000.000-00",
+      "01/01/2026",
     ],
   ]);
   ws["!cols"] = [
@@ -70,6 +112,7 @@ export function buildCompanyImportTemplate(
     { wch: 40 },
     { wch: 28 },
     { wch: 20 },
+    { wch: 16 },
   ];
 
   const helpRows: string[][] = [
@@ -87,6 +130,10 @@ export function buildCompanyImportTemplate(
     [
       "Sócio:",
       "Sócio responsável (nome) e CPF do sócio são opcionais.",
+    ],
+    [
+      "Data de Início:",
+      "Opcional, no formato dd/mm/aaaa (ex.: 01/01/2026) ou aaaa-mm-dd. Períodos anteriores ficam bloqueados nos departamentos.",
     ],
     ["Dica:", "Não altere a linha de cabeçalho."],
     [],
@@ -141,6 +188,8 @@ export function parseCompanyImportFile(
           .filter(Boolean),
         socioResponsavel: get(8),
         socioCpf: get(9),
+        // Célula pode vir como data do Excel, número serial ou texto.
+        dataInicio: parseImportDate(row[10] as unknown) ?? get(10),
       };
     });
 }
@@ -179,6 +228,9 @@ export function validateCompanyImportRows(
       row.socioCpf.replace(/\D/g, "").length !== 11
     ) {
       errors.push("CPF do sócio inválido (11 dígitos)");
+    }
+    if (row.dataInicio && !parseImportDate(row.dataInicio)) {
+      errors.push("Data de Início inválida (use dd/mm/aaaa)");
     }
 
     const department_ids = row.departamentos

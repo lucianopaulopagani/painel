@@ -32,7 +32,11 @@ import {
   COMPLEMENTO_INSS_ENVIO_OPTIONS,
 } from "@/lib/complemento-inss";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
-import { isCompanyInactiveInMonth } from "@/lib/companies";
+import {
+  DATA_INICIO_BLOCK_TITLE,
+  isCompanyInactiveInMonth,
+  isPeriodBeforeStart,
+} from "@/lib/companies";
 import { cn } from "@/lib/utils";
 import type { ComplementoInssInput } from "@/lib/types";
 
@@ -174,13 +178,16 @@ export default function ComplementoInss() {
     value: string,
     options: readonly string[],
     patchKey: string,
-    toneClass: Record<string, string> = {}
+    toneClass: Record<string, string> = {},
+    blocked = false
   ) => (
     <Select
       value={value === "" ? "none" : value}
-      onValueChange={(next) =>
-        save(companyId, { [patchKey]: next === "none" ? null : next })
-      }
+      disabled={blocked}
+      onValueChange={(next) => {
+        if (blocked) return;
+        save(companyId, { [patchKey]: next === "none" ? null : next });
+      }}
     >
       <SelectTrigger
         className={cn(
@@ -241,8 +248,13 @@ export default function ComplementoInss() {
   const renderRow = (company: (typeof rows)[number]) => {
     const record = recordByCompany.get(company.id);
     const envio = effectiveEnvio(company.id) ?? "";
+    // Períodos anteriores à Data de Início da empresa ficam bloqueados.
+    const blocked = isPeriodBeforeStart(company, mes);
     return (
-      <TableRow key={company.id}>
+      <TableRow
+        key={company.id}
+        title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
+      >
         <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
           {company.numero || "—"}
         </TableCell>
@@ -256,7 +268,9 @@ export default function ComplementoInss() {
             company.id,
             record?.darf ?? "",
             COMPLEMENTO_INSS_DARF_OPTIONS,
-            "darf"
+            "darf",
+            {},
+            blocked
           )}
         </TableCell>
         <TableCell className={`${CELL} w-28`}>
@@ -265,7 +279,8 @@ export default function ComplementoInss() {
             envio,
             COMPLEMENTO_INSS_ENVIO_OPTIONS,
             "envio",
-            ENVIO_TONE
+            ENVIO_TONE,
+            blocked
           )}
         </TableCell>
       </TableRow>

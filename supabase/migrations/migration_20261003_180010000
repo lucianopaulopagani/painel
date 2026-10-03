@@ -1,0 +1,2 @@
+alter table public.companies add column if not exists data_inicio date;
+comment on column public.companies.data_inicio is 'Data de início: períodos anteriores a esta data ficam bloqueados para edição nos departamentos vinculados.';

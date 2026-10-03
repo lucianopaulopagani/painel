@@ -33,7 +33,11 @@ import {
   EMPRESAS_FISCAL_STATUS_OPTIONS,
 } from "@/lib/empresas-fiscal";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
-import { isCompanyInactiveInMonth } from "@/lib/companies";
+import {
+  DATA_INICIO_BLOCK_TITLE,
+  isCompanyInactiveInMonth,
+  isPeriodBeforeStart,
+} from "@/lib/companies";
 import { formatCpfCnpj } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { EmpresasFiscalInput, EmpresasFiscalRecord } from "@/lib/types";
@@ -221,11 +225,17 @@ export default function EmpresasFiscal() {
     const status = statusEff ?? "";
     const dctfweb = dctfwebEff ?? "";
     const envio = envioEff ?? "";
+    // Períodos anteriores à Data de Início da empresa ficam bloqueados.
+    const blocked = isPeriodBeforeStart(company, mes);
     return (
-      <TableRow key={company.id}>
+      <TableRow
+        key={company.id}
+        title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
+      >
         <TableCell className={`${CELL} w-20`}>
           <Select
             value={status === "" ? "none" : status}
+            disabled={blocked}
             onValueChange={(value) =>
               save(company.id, { status: value === "none" ? null : value })
             }
@@ -268,7 +278,8 @@ export default function EmpresasFiscal() {
           <Input
             key={`${company.id}:${mes}`}
             defaultValue={infoEff ?? ""}
-            title={infoEff ?? ""}
+            disabled={blocked}
+            title={blocked ? DATA_INICIO_BLOCK_TITLE : (infoEff ?? "")}
             onBlur={(event) =>
               save(company.id, {
                 informacoes: event.target.value.trim() || null,
@@ -280,6 +291,7 @@ export default function EmpresasFiscal() {
         <TableCell className={`${CELL} w-20`}>
           <Select
             value={dctfweb === "" ? "none" : dctfweb}
+            disabled={blocked}
             onValueChange={(value) =>
               save(company.id, { dctfweb: value === "none" ? null : value })
             }
@@ -306,6 +318,7 @@ export default function EmpresasFiscal() {
         <TableCell className={`${CELL} w-24`}>
           <Select
             value={envio === "" ? "none" : envio}
+            disabled={blocked}
             onValueChange={(value) =>
               save(company.id, { envio: value === "none" ? null : value })
             }

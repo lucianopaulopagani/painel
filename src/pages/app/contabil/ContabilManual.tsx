@@ -23,6 +23,11 @@ const SECTIONS: ManualSection[] = [
     description: "Marcações mensais do ano para cada empresa do Contábil.",
     items: [
       {
+        label: "Data de Início (bloqueio de retroatividade)",
+        detail:
+          "A Data de Início cadastrada na empresa vale para todos os departamentos: meses anteriores a ela ficam bloqueados (campos desabilitados) para edição e inserção. O mês da própria data já é editável. O Fechamento e as Observações ficam bloqueados em exercícios anteriores ao da Data de Início.",
+      },
+      {
         label: "Filtro por ano",
         detail:
           "O seletor de ano define o exercício exibido (ex.: 2024 a 2030). Os dados são por empresa × ano.",

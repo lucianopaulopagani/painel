@@ -76,6 +76,11 @@ const SECTIONS: ManualSection[] = [
           "A observação é sempre copiada do mês atual (referência) e replicada para os demais meses. Ao editar a obs em qualquer mês, a alteração vale para todos.",
       },
       {
+        label: "Data de Início (bloqueio de retroatividade)",
+        detail:
+          "A Data de Início cadastrada na empresa vale para todos os departamentos: meses anteriores a ela ficam bloqueados (campos desabilitados) para edição e inserção. O mês da própria data já é editável — ex.: 15/03/2026 bloqueia até 02/2026.",
+      },
+      {
         label: "Filtros",
         detail:
           "Filtro por Responsável (administrador), por Tributação (apenas os tipos existentes na lista) e filtros por coluna no cabeçalho da tabela.",

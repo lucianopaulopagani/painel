@@ -49,7 +49,11 @@ import {
   EMPRESAS_FUNC_STATUS_OPTIONS,
 } from "@/lib/empresas-funcionarios";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
-import { isCompanyInactiveInMonth } from "@/lib/companies";
+import {
+  DATA_INICIO_BLOCK_TITLE,
+  isCompanyInactiveInMonth,
+  isPeriodBeforeStart,
+} from "@/lib/companies";
 import { formatCpfCnpj } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { EmpresasFuncionariosInput } from "@/lib/types";
@@ -292,6 +296,13 @@ export default function EmpresasFuncionarios() {
     return prior[0]?.[field] ?? null;
   };
 
+  /** Empresas bloqueadas no mês exibido (anterior à Data de Início). */
+  const startBlockedIds = new Set(
+    rows
+      .filter((company) => isPeriodBeforeStart(company, mes))
+      .map((company) => company.id)
+  );
+
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
     const match = (
@@ -391,40 +402,52 @@ export default function EmpresasFuncionarios() {
     options: readonly string[],
     patchKey: string,
     toneClass: Record<string, string> = {}
-  ) => (
-    <Select
-      value={value === "" ? "none" : value}
-      onValueChange={(next) =>
-        save(companyId, { [patchKey]: next === "none" ? null : next })
-      }
-    >
-      <SelectTrigger
-        className={cn(
-          "h-7 w-full min-w-0 px-1 text-xs font-semibold",
-          toneClass[value]
-        )}
+  ) => {
+    // Períodos anteriores à Data de Início da empresa ficam bloqueados.
+    const blocked = startBlockedIds.has(companyId);
+    return (
+      <Select
+        value={value === "" ? "none" : value}
+        disabled={blocked}
+        onValueChange={(next) => {
+          if (blocked) return;
+          save(companyId, { [patchKey]: next === "none" ? null : next });
+        }}
       >
-        <SelectValue placeholder="—" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="none">—</SelectItem>
-        {options.map((option) => (
-          <SelectItem key={option} value={option}>
-            {option}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
+        <SelectTrigger
+          className={cn(
+            "h-7 w-full min-w-0 px-1 text-xs font-semibold",
+            toneClass[value]
+          )}
+        >
+          <SelectValue placeholder="—" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">—</SelectItem>
+          {options.map((option) => (
+            <SelectItem key={option} value={option}>
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  };
 
   const renderActionsCell = (company: (typeof rows)[number]) => {
+    const blocked = startBlockedIds.has(company.id);
     return (
       <TableCell className={`${CELL} w-20 text-center`}>
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          title="Editar notas (obs. fechamento, sindicato)"
+          disabled={blocked}
+          title={
+            blocked
+              ? DATA_INICIO_BLOCK_TITLE
+              : "Editar notas (obs. fechamento, sindicato)"
+          }
           onClick={() =>
             setNoteDialog({
               companyId: company.id,
@@ -507,8 +530,12 @@ export default function EmpresasFuncionarios() {
 
   const renderRow = (company: (typeof rows)[number]) => {
     const record = recordByCompany.get(company.id);
+    const blocked = startBlockedIds.has(company.id);
     return (
-      <TableRow key={company.id}>
+      <TableRow
+        key={company.id}
+        title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
+      >
         <TableCell className={`${CELL} w-32 left-0 ${STICKY_CELL}`}>
           {renderSelectCell(
             company.id,

@@ -24,7 +24,11 @@ import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import { companyUsesSubmenu } from "@/lib/department-submenus";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
-import { isCompanyInactiveInMonth } from "@/lib/companies";
+import {
+  DATA_INICIO_BLOCK_TITLE,
+  isCompanyInactiveInMonth,
+  isPeriodBeforeStart,
+} from "@/lib/companies";
 import { PONTO_ENVIO_OPTIONS } from "@/lib/ponto";
 import { cn } from "@/lib/utils";
 import type { PontoInput } from "@/lib/types";
@@ -151,8 +155,13 @@ export default function Ponto() {
 
   const renderRow = (company: (typeof rows)[number]) => {
     const envio = effectiveEnvio(company.id) ?? "";
+    // Períodos anteriores à Data de Início da empresa ficam bloqueados.
+    const blocked = isPeriodBeforeStart(company, mes);
     return (
-      <TableRow key={company.id}>
+      <TableRow
+        key={company.id}
+        title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
+      >
         <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
           {company.numero || "—"}
         </TableCell>
@@ -167,6 +176,7 @@ export default function Ponto() {
         <TableCell className={CELL}>
           <Select
             value={envio === "" ? "none" : envio}
+            disabled={blocked}
             onValueChange={(value) =>
               save(company.id, value === "none" ? null : value)
             }

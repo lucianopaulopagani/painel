@@ -48,6 +48,7 @@ export interface CompanyInput {
   ativa: boolean;
   motivo_inativacao: string | null;
   data_inativacao: string | null;
+  data_inicio: string | null;
   department_links: CompanyDepartmentLink[];
 }
 
@@ -96,6 +97,7 @@ export function useCreateCompany() {
           ativa: input.ativa,
           motivo_inativacao: input.motivo_inativacao || null,
           data_inativacao: input.data_inativacao || null,
+          data_inicio: input.data_inicio || null,
         })
         .select("id")
         .single();
@@ -127,6 +129,7 @@ export function useUpdateCompany() {
           ativa: input.ativa,
           motivo_inativacao: input.motivo_inativacao || null,
           data_inativacao: input.data_inativacao || null,
+          data_inicio: input.data_inicio || null,
         })
         .eq("id", id);
       if (error) throw error;
@@ -240,6 +243,7 @@ export interface ImportCompanyItem {
   tributacao: string | null;
   socio_responsavel: string | null;
   socio_cpf: string | null;
+  data_inicio: string | null;
   department_ids: string[];
   responsible_ids: string[];
 }
@@ -264,6 +268,7 @@ export function useImportCompanies() {
               tributacao: item.tributacao ?? null,
               socio_responsavel: item.socio_responsavel || null,
               socio_cpf: item.socio_cpf || null,
+              data_inicio: item.data_inicio || null,
             })
             .select("id")
             .single();

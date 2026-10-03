@@ -12,6 +12,11 @@ const SECTIONS: ManualSection[] = [
           "Dashboard, Empresas com funcionários, Empresas Fiscal, Domésticas, Ponto e Complemento INSS — acessíveis no menu suspenso do departamento.",
       },
       {
+        label: "Data de Início (bloqueio de retroatividade)",
+        detail:
+          "A Data de Início cadastrada na empresa vale para todos os departamentos: meses anteriores a ela ficam bloqueados (campos desabilitados) para edição e inserção. O mês da própria data já é editável — ex.: 15/03/2026 bloqueia até 02/2026.",
+      },
+      {
         label: "Mês de referência",
         detail:
           "Cada submenu tem o seletor de mês de referência (o mês anterior ao mês em curso), com a escolha lembrada no navegador.",

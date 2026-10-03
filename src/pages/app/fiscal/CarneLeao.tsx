@@ -17,7 +17,11 @@ import {
 } from "@/components/ui/table";
 import { useCarneLeao, useCarneLeaoAll, useSaveCarneLeao } from "@/hooks/use-carne-leao";
 import { useCompanies } from "@/hooks/use-companies";
-import { isCompanyInactiveInMonth } from "@/lib/companies";
+import {
+  DATA_INICIO_BLOCK_TITLE,
+  isCompanyInactiveInMonth,
+  isPeriodBeforeStart,
+} from "@/lib/companies";
 import {
   CARNE_LEAO_CARNE_OPTIONS,
   CARNE_LEAO_ENVIO_OPTIONS,
@@ -111,6 +115,13 @@ export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
     return prior.find((record) => record.observacoes)?.observacoes ?? null;
   };
 
+  /** Empresas bloqueadas no mês exibido (anterior à Data de Início). */
+  const startBlockedIds = new Set(
+    rows
+      .filter((company) => isPeriodBeforeStart(company, mes))
+      .map((company) => company.id)
+  );
+
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
     const match = (value: string | null | undefined, query: string): boolean =>
@@ -164,12 +175,17 @@ export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
     value: string,
     options: readonly string[],
     patchKey: string
-  ) => (
+  ) => {
+    // Períodos anteriores à Data de Início da empresa ficam bloqueados.
+    const blocked = startBlockedIds.has(companyId);
+    return (
     <Select
       value={value === "" ? "none" : value}
-      onValueChange={(next) =>
-        save(companyId, { [patchKey]: next === "none" ? null : next })
-      }
+      disabled={blocked}
+      onValueChange={(next) => {
+        if (blocked) return;
+        save(companyId, { [patchKey]: next === "none" ? null : next });
+      }}
     >
       <SelectTrigger
         className={cn(
@@ -188,7 +204,8 @@ export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
         ))}
       </SelectContent>
     </Select>
-  );
+    );
+  };
 
   const renderFilterInput = (
     key: keyof typeof busca,
@@ -277,8 +294,12 @@ export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
           <TableBody>
             {filteredRows.map((company) => {
               const record = recordByCompany.get(company.id);
+              const blocked = startBlockedIds.has(company.id);
               return (
-                <TableRow key={company.id}>
+                <TableRow
+                  key={company.id}
+                  title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
+                >
                   <TableCell className={`${CELL} whitespace-nowrap text-center font-medium`}>
                     {company.numero || "—"}
                   </TableCell>
@@ -348,7 +369,12 @@ export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
                     <Input
                       key={`${company.id}:${mes}:obs`}
                       defaultValue={effectiveObservacoes(company.id) ?? ""}
-                      title={effectiveObservacoes(company.id) ?? ""}
+                      disabled={blocked}
+                      title={
+                        blocked
+                          ? DATA_INICIO_BLOCK_TITLE
+                          : (effectiveObservacoes(company.id) ?? "")
+                      }
                       onBlur={(event) =>
                         save(company.id, {
                           observacoes: event.target.value.trim() || null,

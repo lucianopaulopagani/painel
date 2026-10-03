@@ -62,6 +62,7 @@ export interface RawCompanyRow {
   ativa: boolean;
   motivo_inativacao: string | null;
   data_inativacao: string | null;
+  data_inicio: string | null;
   created_at: string;
   company_departments?:
     | {
@@ -90,6 +91,7 @@ export function toCompanyWithDepartments(
     ativa: row.ativa ?? true,
     motivo_inativacao: row.motivo_inativacao ?? null,
     data_inativacao: row.data_inativacao ?? null,
+    data_inicio: row.data_inicio ?? null,
     created_at: row.created_at,
     department_links: (row.company_departments ?? []).map((link) => ({
       department_id: link.department_id,

@@ -43,7 +43,11 @@ import { useUsers } from "@/hooks/use-users";
 import { useAuth } from "@/context/auth";
 import { FISCAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import { companyUsesSubmenu } from "@/lib/department-submenus";
-import { isCompanyInactiveInMonth } from "@/lib/companies";
+import {
+  DATA_INICIO_BLOCK_TITLE,
+  isCompanyInactiveInMonth,
+  isPeriodBeforeStart,
+} from "@/lib/companies";
 import { CARNE_LEAO_TRIBUTACAO } from "@/lib/carne-leao";
 import { CarneLeaoTable } from "./CarneLeao";
 import {
@@ -665,8 +669,14 @@ export function MovimentoFiscal() {
                 filteredRows.map((company) => {
                   const record = recordByCompany.get(company.id);
                   const situacao = record?.situacao ?? "";
+                  // Períodos anteriores à Data de Início ficam somente leitura.
+                  const blocked = isPeriodBeforeStart(company, mes);
+                  const rowEditable = canEdit && !blocked;
                   return (
-                    <TableRow key={company.id}>
+                    <TableRow
+                      key={company.id}
+                      title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
+                    >
                       <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
                         {company.numero || "—"}
                       </TableCell>
@@ -682,7 +692,7 @@ export function MovimentoFiscal() {
                         </span>
                       </TableCell>
                       <TableCell className={`${CELL} whitespace-nowrap`}>
-                        {!canEdit ? (
+                        {!rowEditable ? (
                           <span
                             className={cn(
                               "inline-block rounded px-1.5 py-0.5",
@@ -721,7 +731,7 @@ export function MovimentoFiscal() {
                       </TableCell>
                       {MOVIMENTO_FISCAL_FIELDS.map((field) => (
                         <TableCell key={field.key} className={CELL}>
-                          {!canEdit ? (
+                          {!rowEditable ? (
                             field.type === "checkbox" ? (
                               record?.[field.key] === true ? (
                                 <Check className="h-4 w-4 text-status-success" />
@@ -798,7 +808,7 @@ export function MovimentoFiscal() {
                         </TableCell>
                       ))}
                       <TableCell className={CELL}>
-                        {!canEdit ? (
+                        {!rowEditable ? (
                           <span className="block truncate">
                             {effectiveObservacoes(company.id) || "—"}
                           </span>

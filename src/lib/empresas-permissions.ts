@@ -11,6 +11,7 @@ export const EMPRESA_PERMISSION_FIELDS = [
   { key: "tributacao", label: "Tributação" },
   { key: "socio_responsavel", label: "Sócio responsável" },
   { key: "socio_cpf", label: "CPF do sócio" },
+  { key: "data_inicio", label: "Data de Início" },
   { key: "departments", label: "Departamentos" },
   { key: "responsaveis", label: "Responsáveis" },
 ] as const;

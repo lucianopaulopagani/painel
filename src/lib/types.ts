@@ -66,6 +66,8 @@ export interface Company {
   motivo_inativacao: string | null;
   /** Último dia ativo (YYYY-MM-DD). */
   data_inativacao: string | null;
+  /** Data de início (YYYY-MM-DD): períodos anteriores ficam bloqueados. */
+  data_inicio: string | null;
   created_at: string;
 }
 

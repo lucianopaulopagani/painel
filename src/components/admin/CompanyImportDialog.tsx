@@ -25,6 +25,7 @@ import { useImportCompanies } from "@/hooks/use-companies";
 import {
   buildCompanyImportTemplate,
   parseCompanyImportFile,
+  parseImportDate,
   validateCompanyImportRows,
   type CompanyImportValidation,
 } from "@/lib/company-import";
@@ -94,6 +95,7 @@ export default function CompanyImportDialog({
           tributacao: v.row.tributacao || null,
           socio_responsavel: v.row.socioResponsavel || null,
           socio_cpf: v.row.socioCpf.replace(/\D/g, "") || null,
+          data_inicio: parseImportDate(v.row.dataInicio),
           department_ids: v.department_ids,
           responsible_ids: v.responsible_ids,
         }))
@@ -115,7 +117,9 @@ export default function CompanyImportDialog({
           <DialogTitle>Importar empresas</DialogTitle>
           <DialogDescription>
             Baixe o modelo em Excel, preencha com as empresas e importe aqui.
-            Colunas obrigatórias: Nome, CPF/CNPJ e UF.
+            Colunas obrigatórias: Nome, CPF/CNPJ e UF. A coluna Data de Início
+            (dd/mm/aaaa) é opcional e bloqueia os períodos anteriores nos
+            departamentos.
           </DialogDescription>
         </DialogHeader>
 

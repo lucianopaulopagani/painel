@@ -84,6 +84,7 @@ export default function CompanyFormDialog({
   const [ativa, setAtiva] = useState(true);
   const [motivoInativacao, setMotivoInativacao] = useState("");
   const [dataInativacao, setDataInativacao] = useState("");
+  const [dataInicio, setDataInicio] = useState("");
   const [assignments, setAssignments] = useState<
     Record<string, DepartmentAssignment>
   >({});
@@ -106,6 +107,7 @@ export default function CompanyFormDialog({
     setAtiva(company?.ativa ?? true);
     setMotivoInativacao(company?.motivo_inativacao ?? "");
     setDataInativacao(company?.data_inativacao ?? "");
+    setDataInicio(company?.data_inicio ?? "");
 
     const initial: Record<string, DepartmentAssignment> = {};
     for (const department of departments ?? []) {
@@ -188,6 +190,7 @@ export default function CompanyFormDialog({
       ativa,
       motivo_inativacao: ativa ? null : motivoInativacao || null,
       data_inativacao: ativa ? null : dataInativacao || null,
+      data_inicio: dataInicio || null,
       department_links,
     };
 
@@ -376,6 +379,24 @@ export default function CompanyFormDialog({
                 inputMode="numeric"
                 disabled={!canEdit("socio_cpf")}
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="company-data-inicio">Data de Início</Label>
+              <Input
+                id="company-data-inicio"
+                type="date"
+                value={dataInicio}
+                onChange={(e) => setDataInicio(e.target.value)}
+                disabled={!canEdit("data_inicio")}
+              />
+              <p className="text-xs text-muted-foreground">
+                Períodos anteriores a esta data ficam bloqueados para edição em
+                todos os departamentos e subdepartamentos (o mês da própria data
+                já é editável).
+              </p>
             </div>
           </div>
 

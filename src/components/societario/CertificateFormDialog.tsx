@@ -23,7 +23,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { MultiSelectDropdown } from "@/components/ui/multi-select-dropdown";
 import { useUpsertCertificate } from "@/hooks/use-certificates";
 import { CERTIFICATE_PRODUCTS } from "@/lib/certificate-products";
-import { joinDateTimeLocal, splitDateTimeLocal } from "@/lib/utils";
+import {
+  formatDateOnlyBr,
+  joinDateTimeLocal,
+  splitDateTimeLocal,
+} from "@/lib/utils";
+import { isDateBeforeStart } from "@/lib/companies";
 import type { CertificateRow } from "@/lib/types";
 
 interface CertificateFormDialogProps {
@@ -89,6 +94,18 @@ export default function CertificateFormDialog({
     const isExistingOverdue = existingDue !== null && existingDue <= todayStr;
     const isNewFuture = vencimento !== "" && vencimento > todayStr;
     const shouldClear = renovado || (isExistingOverdue && isNewFuture);
+
+    // Períodos anteriores à Data de Início da empresa ficam bloqueados.
+    if (
+      isDateBeforeStart(row.company, vencimento || null) ||
+      isDateBeforeStart(row.company, agendamentoDate || null)
+    ) {
+      toast.error(
+        "Data anterior à Data de Início da empresa — escolha uma data a partir de " +
+          formatDateOnlyBr(row.company.data_inicio)
+      );
+      return;
+    }
 
     try {
       await upsert.mutateAsync({
@@ -156,6 +173,7 @@ export default function CertificateFormDialog({
                 id="cert-vencimento"
                 type="date"
                 value={vencimento}
+                min={row?.company.data_inicio ?? undefined}
                 onChange={(e) => setVencimento(e.target.value)}
               />
             </div>
@@ -209,6 +227,7 @@ export default function CertificateFormDialog({
                 id="cert-agendamento-date"
                 type="date"
                 value={agendamentoDate}
+                min={row?.company.data_inicio ?? undefined}
                 onChange={(e) => setAgendamentoDate(e.target.value)}
               />
             </div>

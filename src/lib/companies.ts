@@ -47,3 +47,41 @@ export function isCompanyInactiveToday(company: {
   const mesAtual = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   return mesAtual > company.data_inativacao.slice(0, 7);
 }
+
+/** Texto exibido nos campos bloqueados pela Data de Início. */
+export const DATA_INICIO_BLOCK_TITLE =
+  "Período anterior à Data de Início da empresa — edição bloqueada.";
+
+/**
+ * Período anterior à Data de Início da empresa.
+ *
+ * A Data de Início vale para todos os departamentos e subdepartamentos: meses
+ * anteriores ao mês da data ficam bloqueados para edição/inserção (o mês da
+ * própria data já é editável). Ex.: Data de Início 15/03/2026 bloqueia até
+ * 02/2026.
+ */
+export function isPeriodBeforeStart(
+  company: { data_inicio: string | null },
+  period: string | null | undefined
+): boolean {
+  if (!company.data_inicio || !period) return false;
+  return period.slice(0, 7) < company.data_inicio.slice(0, 7);
+}
+
+/** Ano anterior ao ano da Data de Início. */
+export function isYearBeforeStart(
+  company: { data_inicio: string | null },
+  ano: string | null | undefined
+): boolean {
+  if (!company.data_inicio || !ano) return false;
+  return ano.slice(0, 4) < company.data_inicio.slice(0, 4);
+}
+
+/** Data (YYYY-MM-DD) anterior à Data de Início da empresa. */
+export function isDateBeforeStart(
+  company: { data_inicio: string | null },
+  date: string | null | undefined
+): boolean {
+  if (!company.data_inicio || !date) return false;
+  return date < company.data_inicio;
+}
