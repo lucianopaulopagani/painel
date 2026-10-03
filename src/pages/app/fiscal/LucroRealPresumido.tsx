@@ -22,8 +22,7 @@ import {
   useSaveMovimentoFiscal,
 } from "@/hooks/use-movimento-fiscal";
 import {
-  useMovimentoFiscalComentarios,
-  useRemoveMovimentoFiscalComentario,
+  useAllMovimentoFiscalComentarios,
   useSaveMovimentoFiscalComentario,
 } from "@/hooks/use-movimento-fiscal-comentarios";
 import { useCompanies } from "@/hooks/use-companies";
@@ -62,7 +61,8 @@ interface LucroRealPresumidoTableProps {
  * colunas de obrigação são listas suspensas (com a opção "Desabilitado", pintada
  * com a cor da tabela, que segue para os próximos meses até ser alterada) e OBS
  * é texto livre, também levado para os meses seguintes. Todas as células de
- * ISSQN até OBS aceitam comentário (botão direito).
+ * ISSQN até OBS aceitam comentário (botão direito), que também é levado para os
+ * meses seguintes até ser alterado ou removido.
  */
 export function LucroRealPresumidoTable({
   mes,
@@ -88,9 +88,8 @@ export function LucroRealPresumidoTable({
   const { data: records } = useMovimentoFiscal(mes);
   const { data: allRecords } = useAllMovimentoFiscal();
   const saveMutation = useSaveMovimentoFiscal(mes);
-  const { data: comentarios } = useMovimentoFiscalComentarios(mes);
+  const { data: comentarios } = useAllMovimentoFiscalComentarios();
   const saveComentario = useSaveMovimentoFiscalComentario(mes);
-  const removeComentario = useRemoveMovimentoFiscalComentario();
 
   // Empresas do cadastro com a tributação da tabela.
   const rows = (companies ?? [])
@@ -150,15 +149,36 @@ export function LucroRealPresumidoTable({
     );
   };
 
-  /** Comentários por empresa × campo. */
-  const commentByKey = new Map(
-    (comentarios ?? []).map((item) => [
-      `${item.company_id}:${item.campo}`,
-      item.comentario,
-    ])
-  );
-  const commentOf = (companyId: string, campo: string): string | null =>
-    commentByKey.get(`${companyId}:${campo}`) ?? null;
+  /**
+   * Comentário efetivo de uma célula: usa o mês exibido; se não houver, herda do
+   * mês anterior mais recente que tenha comentário (o comentário segue para os
+   * meses seguintes até ser alterado). Um comentário em branco no mês exibido
+   * encerra a herança (foi removido naquele mês).
+   */
+  const commentOf = (companyId: string, campo: string): string | null => {
+    const latest = (comentarios ?? [])
+      .filter(
+        (item) =>
+          item.company_id === companyId &&
+          item.campo === campo &&
+          item.mes_referencia <= mes
+      )
+      .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia))[0];
+    if (!latest) return null;
+    return latest.comentario === "" ? null : latest.comentario;
+  };
+
+  /**
+   * Remove o comentário a partir do mês exibido: grava um comentário em branco
+   * naquele mês, interrompendo a herança para os meses seguintes.
+   */
+  const clearComentario = (companyId: string, campo: string) => {
+    saveComentario.mutate({
+      company_id: companyId,
+      campo,
+      comentario: "",
+    });
+  };
 
   /** Empresas bloqueadas no mês exibido (anterior à Data de Início). */
   const startBlockedIds = new Set(
@@ -269,13 +289,7 @@ export function LucroRealPresumidoTable({
             comentario: text,
           })
         }
-        onRemove={() =>
-          removeComentario.mutate({
-            companyId: company.id,
-            campo: field.key,
-            mes,
-          })
-        }
+        onRemove={() => clearComentario(company.id, field.key)}
       >
         {!canEdit ? (
           <span
@@ -398,13 +412,7 @@ export function LucroRealPresumidoTable({
                           comentario: text,
                         })
                       }
-                      onRemove={() =>
-                        removeComentario.mutate({
-                          companyId: company.id,
-                          campo: "observacoes",
-                          mes,
-                        })
-                      }
+                      onRemove={() => clearComentario(company.id, "observacoes")}
                     >
                       <Input
                         key={`${company.id}:${mes}:obs`}

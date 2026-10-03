@@ -29,6 +29,23 @@ export function useMovimentoFiscalComentarios(mes: string) {
   });
 }
 
+/**
+ * Todos os comentários do Movimento Fiscal — usado para levar o comentário
+ * para os meses seguintes até ser alterado ou removido.
+ */
+export function useAllMovimentoFiscalComentarios() {
+  return useQuery({
+    queryKey: ["movimento-fiscal-comentarios", "all"] as const,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("movimento_fiscal_comentarios")
+        .select("*");
+      if (error) throw error;
+      return (data ?? []) as MovimentoFiscalComentarioRow[];
+    },
+  });
+}
+
 export function useSaveMovimentoFiscalComentario(mes: string) {
   const queryClient = useQueryClient();
   return useMutation({

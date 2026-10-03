@@ -105,12 +105,12 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Opções e cor de desabilitado",
         detail:
-          "Cada coluna de obrigação é uma lista suspensa com as opções OK (verde), SM (azul), X (âmbar), Dispensada (neutro), Pendências (vermelho) e Desabilitado — esta última pinta o campo com a cor da tabela e segue para os próximos meses até ser alterada. OBS é texto livre, também levado para os meses seguintes.",
+          "Cada coluna de obrigação é uma lista suspensa com as opções OK (verde), SM (azul), X (âmbar), Dispensada (neutro), Pendências (vermelho) e Desabilitado — esta última destaca o campo com a cor roxa de desabilitado e segue para os próximos meses até ser alterada. OBS é texto livre, também levado para os meses seguintes.",
       },
       {
         label: "Comentários nas células",
         detail:
-          "Clique com o botão direito em qualquer célula de ISSQN até OBS para Adicionar Comentário (igual ao Balancete/Balanço do Contábil). A célula ganha um marcador no canto superior direito com o comentário no tooltip.",
+          "Clique com o botão direito em qualquer célula de ISSQN até OBS para Adicionar Comentário (igual ao Balancete/Balanço do Contábil). A célula ganha um marcador no canto superior direito com o comentário no tooltip, e o comentário é levado para os meses seguintes até ser alterado ou removido (remover no mês exibido encerra a herança a partir dele).",
       },
       {
         label: "Data de Início",

@@ -72,7 +72,8 @@ export const LUCRO_TONE: Record<string, string> = {
     "bg-status-neutral text-status-neutral-foreground hover:bg-status-neutral/80",
   "Pendências":
     "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
-  [LUCRO_DESABILITADO]: "bg-muted text-muted-foreground hover:bg-muted/80",
+  [LUCRO_DESABILITADO]:
+    "bg-status-disabled font-semibold text-status-disabled-foreground ring-1 ring-inset ring-white/40 hover:bg-status-disabled/90",
 };
 
 /** Indica o valor "Desabilitado" (segue para os próximos meses até ser alterado). */

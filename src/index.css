@@ -28,6 +28,8 @@
     --status-neutral-foreground: 215 25% 32%;
     --status-info: 205 90% 89%;
     --status-info-foreground: 210 90% 27%;
+    --status-disabled: 268 62% 58%;
+    --status-disabled-foreground: 0 0% 100%;
 
     /* Cor mais escura usada nos gráficos (pendentes) */
     --chart-warning: 32 90% 42%;
@@ -116,6 +118,8 @@
     --status-neutral-foreground: 210 30% 82%;
     --status-info: 212 45% 24%;
     --status-info-foreground: 205 85% 80%;
+    --status-disabled: 268 60% 62%;
+    --status-disabled-foreground: 270 60% 12%;
 
     --chart-warning: 35 90% 58%;
     --chart-success: 130 55% 55%;

@@ -50,6 +50,10 @@ export default {
 					info: {
 						DEFAULT: 'hsl(var(--status-info))',
 						foreground: 'hsl(var(--status-info-foreground))'
+					},
+					disabled: {
+						DEFAULT: 'hsl(var(--status-disabled))',
+						foreground: 'hsl(var(--status-disabled-foreground))'
 					}
 				},
 				background: 'hsl(var(--background))',
