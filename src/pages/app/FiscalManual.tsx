@@ -83,7 +83,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Filtros",
         detail:
-          "Filtro por Responsável (administrador), por Tributação (apenas os tipos existentes na lista) e filtros por coluna no cabeçalho da tabela.",
+          "Filtro por Responsável (administrador) e por Tributação — este lista apenas os tipos realmente existentes nas empresas da lista (sem a opção 'Todas as tributação': a primeira tributação existente já vem selecionada) — além dos filtros por coluna no cabeçalho da tabela.",
       },
     ],
   },

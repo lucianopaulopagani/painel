@@ -110,7 +110,7 @@ export function MovimentoFiscal() {
     () => readStoredMonth() || addMonths(currentMonth(), -1)
   );
   const [responsavelFiltro, setResponsavelFiltro] = useState<string>("todos");
-  const [tributacaoFiltro, setTributacaoFiltro] = useState<string>("todos");
+  const [tributacaoFiltro, setTributacaoFiltro] = useState<string>("");
   const [confirmGenerate, setConfirmGenerate] = useState(false);
 
   // O "mês atual" (referência de trabalho) é sempre o mês anterior ao mês em
@@ -186,14 +186,17 @@ export function MovimentoFiscal() {
     )
   ).sort();
 
+  // Sem a opção "Todas": mantém sempre selecionada uma tributação existente
+  // (a primeira da lista) quando a escolhida não existe para o responsável.
+  const tributacaoSelecionada = tributacaoOptions.includes(tributacaoFiltro)
+    ? tributacaoFiltro
+    : (tributacaoOptions[0] ?? "");
+
   const rows = responsavelFiltered
-    .filter((company) => {
+    .filter(
       // Filtro por tributação, aplicado a todos os usuários.
-      return (
-        tributacaoFiltro === "todos" ||
-        company.tributacao === tributacaoFiltro
-      );
-    })
+      (company) => company.tributacao === tributacaoSelecionada
+    )
     .sort((a, b) => {
       if (!a.numero && !b.numero) {
         return a.name.localeCompare(b.name, "pt-BR");
@@ -467,14 +470,13 @@ export function MovimentoFiscal() {
         <div className="w-60">
           <Label htmlFor="filtro-tributacao">Tributação</Label>
           <Select
-            value={tributacaoFiltro}
+            value={tributacaoSelecionada}
             onValueChange={setTributacaoFiltro}
           >
             <SelectTrigger id="filtro-tributacao" className="mt-1.5">
-              <SelectValue />
+              <SelectValue placeholder="Sem tributação" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="todos">Todas as tributação</SelectItem>
               {tributacaoOptions.map((option) => (
                 <SelectItem key={option} value={option}>
                   {option}
@@ -498,22 +500,24 @@ export function MovimentoFiscal() {
         </p>
       )}
 
-      {!isLoading && !isError && tributacaoFiltro === CARNE_LEAO_TRIBUTACAO && (
-        <CarneLeaoTable mes={mes} companies={responsavelFiltered} />
-      )}
+      {!isLoading &&
+        !isError &&
+        tributacaoSelecionada === CARNE_LEAO_TRIBUTACAO && (
+          <CarneLeaoTable mes={mes} companies={responsavelFiltered} />
+        )}
 
       {!isLoading &&
         !isError &&
-        tributacaoFiltro === SIMPLES_NACIONAL_TRIBUTACAO && (
+        tributacaoSelecionada === SIMPLES_NACIONAL_TRIBUTACAO && (
           <SimplesNacionalTable mes={mes} companies={responsavelFiltered} />
         )}
 
       {!isLoading &&
         !isError &&
-        isLucroTributacao(tributacaoFiltro) && (
+        isLucroTributacao(tributacaoSelecionada) && (
           <LucroRealPresumidoTable
             mes={mes}
-            tributacao={tributacaoFiltro}
+            tributacao={tributacaoSelecionada}
             canEdit={canEdit}
             companies={responsavelFiltered}
           />
@@ -521,9 +525,9 @@ export function MovimentoFiscal() {
 
       {!isLoading &&
         !isError &&
-        tributacaoFiltro !== CARNE_LEAO_TRIBUTACAO &&
-        tributacaoFiltro !== SIMPLES_NACIONAL_TRIBUTACAO &&
-        !isLucroTributacao(tributacaoFiltro) && (
+        tributacaoSelecionada !== CARNE_LEAO_TRIBUTACAO &&
+        tributacaoSelecionada !== SIMPLES_NACIONAL_TRIBUTACAO &&
+        !isLucroTributacao(tributacaoSelecionada) && (
         <div className="rounded-lg border">
           <Table className="table-fixed">
             <TableHeader>
