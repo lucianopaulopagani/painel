@@ -56,6 +56,7 @@ import {
 } from "./SimplesNacional";
 import { isLucroTributacao } from "@/lib/fiscal-lucro-real";
 import { LucroRealPresumidoTable } from "./LucroRealPresumido";
+import { MEI_TRIBUTACAO, MeiTable } from "./Mei";
 import {
   MOVIMENTO_FISCAL_FIELDS,
   SITUACAO_OPTIONS,
@@ -525,8 +526,15 @@ export function MovimentoFiscal() {
 
       {!isLoading &&
         !isError &&
+        tributacaoSelecionada === MEI_TRIBUTACAO && (
+          <MeiTable mes={mes} companies={responsavelFiltered} />
+        )}
+
+      {!isLoading &&
+        !isError &&
         tributacaoSelecionada !== CARNE_LEAO_TRIBUTACAO &&
         tributacaoSelecionada !== SIMPLES_NACIONAL_TRIBUTACAO &&
+        tributacaoSelecionada !== MEI_TRIBUTACAO &&
         !isLucroTributacao(tributacaoSelecionada) && (
         <div className="rounded-lg border">
           <Table className="table-fixed">

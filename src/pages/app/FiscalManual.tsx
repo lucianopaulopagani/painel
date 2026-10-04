@@ -103,6 +103,11 @@ const SECTIONS: ManualSection[] = [
           "Selecionando 'Simples Nacional' no filtro de Tributação, é exibida a subtabela específica dessa tributação (Nº, UF, Empresa, CNPJ, Inscrição Estadual, Situação, DAS, Antecipação, ST, DIF ALIQ, DIF ALIQ C/ST, Guia, DESTDA, Envio/SN, Envio/ICMS e Observações), com filtro de UF em menu suspenso e colunas compactas.",
       },
       {
+        label: "MEI",
+        detail:
+          "Selecionando 'MEI' no filtro de Tributação, é exibida a subtabela enxuta dessa tributação, apenas com N, UF, Empresa, Situação e Observação (as demais colunas do Movimento Fiscal não se aplicam ao MEI). A Situação tem somente OK (finalizada) e FAZENDO (pendente) e alimenta os dashboards do Movimento Fiscal com esses mesmos parâmetros: OK conta como finalizada e FAZENDO como pendente.",
+      },
+      {
         label: "Lucro Real e Lucro Presumido",
         detail:
           "Selecionando 'Lucro Real' ou 'Lucro Presumido' no filtro de Tributação, é exibida a tabela do modelo das empresas normais: N, Empresas e UF (do cadastro de empresas com essa tributação), a Situação (mesmos campos do Simples Nacional: OK, OK-ENT, OK-SM e FAZENDO), as obrigações ISSQN, DIME/GIA PR, DAPI, GIA RS, DRCST, SPED FISCAL, SPED CONTR, REINF, DIRBI, MIT e OBS — com filtro de UF em menu suspenso listando apenas as UFs das empresas exibidas.",
