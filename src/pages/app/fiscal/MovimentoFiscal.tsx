@@ -443,25 +443,6 @@ export function MovimentoFiscal() {
             className="mt-1.5"
           />
         </div>
-        <div className="w-60">
-          <Label htmlFor="filtro-tributacao">Tributação</Label>
-          <Select
-            value={tributacaoFiltro}
-            onValueChange={setTributacaoFiltro}
-          >
-            <SelectTrigger id="filtro-tributacao" className="mt-1.5">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">Todas as tributação</SelectItem>
-              {tributacaoOptions.map((option) => (
-                <SelectItem key={option} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
         {isAdmin && (
           <div className="w-60">
             <Label>Responsável</Label>
@@ -483,6 +464,25 @@ export function MovimentoFiscal() {
             </Select>
           </div>
         )}
+        <div className="w-60">
+          <Label htmlFor="filtro-tributacao">Tributação</Label>
+          <Select
+            value={tributacaoFiltro}
+            onValueChange={setTributacaoFiltro}
+          >
+            <SelectTrigger id="filtro-tributacao" className="mt-1.5">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todas as tributação</SelectItem>
+              {tributacaoOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       </div>
 
