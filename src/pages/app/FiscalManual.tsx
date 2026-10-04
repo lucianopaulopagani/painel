@@ -14,7 +14,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Empresas e responsáveis",
         detail:
-          "Somente as empresas marcadas com o departamento Fiscal aparecem. Usuários comuns veem e editam apenas as empresas em que são responsáveis; o administrador vê todas.",
+          "Somente as empresas marcadas com o subdepartamento do módulo aparecem. No cadastro de empresas, cada subdepartamento marcado tem o seu próprio seletor de responsáveis, e cada módulo (Movimento Fiscal, Controle de Parcelamentos) usa os responsáveis do seu subdepartamento. Usuários comuns veem e editam apenas as empresas em que são responsáveis no subdepartamento; o administrador vê todas.",
       },
     ],
   },
@@ -26,7 +26,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Filtros",
         detail:
-          "Mês de referência e Responsável, lado a lado. Ao escolher um responsável, os resultados passam a considerar apenas as empresas dele.",
+          "Mês de referência e Responsável, lado a lado. O Responsável considera os usuários responsáveis pelo subdepartamento Movimento Fiscal no cadastro de empresas; ao escolher um deles, os resultados passam a considerar apenas as empresas dele.",
       },
       {
         label: "Cartões",

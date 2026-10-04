@@ -10,6 +10,20 @@ export const companiesKeys = {
   all: ["companies"] as const,
 };
 
+/**
+ * Mantém apenas os subdepartamentos em uso no mapa de responsáveis e descarta
+ * listas vazias (o registro fica limpo no banco).
+ */
+function sanitizeResponsibles(
+  responsibles: Record<string, string[]> | undefined,
+  subdepartments: string[]
+): Record<string, string[]> {
+  const entries = Object.entries(responsibles ?? {})
+    .filter(([submenu, ids]) => subdepartments.includes(submenu) && ids.length)
+    .map(([submenu, ids]) => [submenu, ids] as const);
+  return Object.fromEntries(entries);
+}
+
 export function useCompanies() {
   return useQuery({
     queryKey: companiesKeys.all,
@@ -17,7 +31,7 @@ export function useCompanies() {
       const { data, error } = await supabase
         .from("companies")
         .select(
-          "*, company_departments(department_id, responsible_profile_ids, subdepartments)"
+          "*, company_departments(department_id, responsible_profile_ids, subdepartments, subdepartment_responsibles)"
         )
         .order("numero");
       if (error) throw error;
@@ -57,6 +71,19 @@ async function replaceCompanyDepartments(
   companyId: string,
   links: CompanyDepartmentLink[]
 ) {
+  // Preserva os responsáveis antigos do departamento (histórico) ao regravar.
+  const { data: existing, error: readError } = await supabase
+    .from("company_departments")
+    .select("department_id, responsible_profile_ids")
+    .eq("company_id", companyId);
+  if (readError) throw readError;
+  const legacyByDepartment = new Map(
+    (existing ?? []).map((row) => [
+      row.department_id,
+      row.responsible_profile_ids ?? [],
+    ])
+  );
+
   const { error: deleteError } = await supabase
     .from("company_departments")
     .delete()
@@ -71,8 +98,13 @@ async function replaceCompanyDepartments(
       links.map((link) => ({
         company_id: companyId,
         department_id: link.department_id,
-        responsible_profile_ids: link.profile_ids,
+        responsible_profile_ids:
+          legacyByDepartment.get(link.department_id) ?? [],
         subdepartments: link.subdepartments ?? [],
+        subdepartment_responsibles: sanitizeResponsibles(
+          link.subdepartment_responsibles,
+          link.subdepartments ?? []
+        ),
       }))
     );
   if (insertError) throw insertError;
@@ -168,8 +200,9 @@ export function useBulkUpdateCompanies() {
       deptActions?: {
         department_id: string;
         action: "remove" | "set";
-        responsible_ids: string[];
         subdepartments: string[];
+        /** Responsáveis por subdepartamento (nome do subdepartamento → ids). */
+        subdepartment_responsibles?: Record<string, string[]>;
       }[];
     }) => {
       if (Object.keys(patch).length > 0) {
@@ -187,7 +220,9 @@ export function useBulkUpdateCompanies() {
             // Remove apenas os subdepartamentos selecionados, mantendo o vínculo.
             const { data: links, error: readError } = await supabase
               .from("company_departments")
-              .select("company_id, subdepartments")
+              .select(
+                "company_id, subdepartments, subdepartment_responsibles"
+              )
               .in("company_id", ids)
               .eq("department_id", dept.department_id);
             if (readError) throw readError;
@@ -197,7 +232,13 @@ export function useBulkUpdateCompanies() {
               );
               const { error } = await supabase
                 .from("company_departments")
-                .update({ subdepartments: remaining })
+                .update({
+                  subdepartments: remaining,
+                  subdepartment_responsibles: sanitizeResponsibles(
+                    link.subdepartment_responsibles ?? {},
+                    remaining
+                  ),
+                })
                 .eq("company_id", link.company_id)
                 .eq("department_id", dept.department_id);
               if (error) throw error;
@@ -212,15 +253,39 @@ export function useBulkUpdateCompanies() {
             if (error) throw error;
           }
         } else {
+          const subdepartments = dept.subdepartments ?? [];
+          // Mantém os responsáveis já definidos nos subdepartamentos mantidos.
+          const { data: links, error: readError } = await supabase
+            .from("company_departments")
+            .select("company_id, subdepartment_responsibles")
+            .in("company_id", ids)
+            .eq("department_id", dept.department_id);
+          if (readError) throw readError;
+          const currentByCompany = new Map(
+            (links ?? []).map((link) => [
+              link.company_id,
+              link.subdepartment_responsibles ?? {},
+            ])
+          );
           for (const companyId of ids) {
+            const merged = {
+              ...sanitizeResponsibles(
+                currentByCompany.get(companyId) ?? {},
+                subdepartments
+              ),
+              ...(dept.subdepartment_responsibles ?? {}),
+            };
             const { error } = await supabase
               .from("company_departments")
               .upsert(
                 {
                   company_id: companyId,
                   department_id: dept.department_id,
-                  responsible_profile_ids: dept.responsible_ids,
-                  subdepartments: dept.subdepartments ?? [],
+                  subdepartments,
+                  subdepartment_responsibles: sanitizeResponsibles(
+                    merged,
+                    subdepartments
+                  ),
                 },
                 { onConflict: "company_id,department_id" }
               );
@@ -244,7 +309,9 @@ export interface ImportCompanyItem {
   socio_responsavel: string | null;
   socio_cpf: string | null;
   data_inicio: string | null;
-  department_ids: string[];
+  /** Departamentos com os subdepartamentos marcados. */
+  departments: { department_id: string; subdepartments: string[] }[];
+  /** Responsáveis aplicados a cada subdepartamento informado. */
   responsible_ids: string[];
 }
 
@@ -276,10 +343,17 @@ export function useImportCompanies() {
 
           await replaceCompanyDepartments(
             data.id,
-            item.department_ids.map((department_id) => ({
-              department_id,
-              profile_ids: item.responsible_ids,
-              subdepartments: [],
+            item.departments.map((dept) => ({
+              department_id: dept.department_id,
+              profile_ids: [],
+              subdepartments: dept.subdepartments,
+              // Os responsáveis informados valem para cada subdepartamento.
+              subdepartment_responsibles: Object.fromEntries(
+                dept.subdepartments.map((submenu) => [
+                  submenu,
+                  item.responsible_ids,
+                ])
+              ),
             }))
           );
           imported += 1;

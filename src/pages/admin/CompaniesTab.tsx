@@ -327,13 +327,33 @@ export default function CompaniesTab() {
                                 const deptName =
                                   departmentNameById.get(link.department_id) ??
                                   "—";
-                                const names = link.profile_ids
-                                  .map((id) => userNameById.get(id))
-                                  .filter(
-                                    (name): name is string => !!name
-                                  );
-                                return names.length > 0
-                                  ? `- ${deptName}: ${names.join(", ")}`
+                                const namesFor = (ids: string[]) =>
+                                  ids
+                                    .map((id) => userNameById.get(id))
+                                    .filter(
+                                      (name): name is string => !!name
+                                    );
+                                const submenus = Object.entries(
+                                  link.subdepartment_responsibles ?? {}
+                                )
+                                  .filter(([, ids]) => ids.length > 0)
+                                  .map(([submenu, ids]) => {
+                                    const names = namesFor(ids);
+                                    return names.length > 0
+                                      ? `${submenu}: ${names.join(", ")}`
+                                      : submenu;
+                                  });
+                                const legacyNames = namesFor(
+                                  link.profile_ids
+                                );
+                                const details = [
+                                  ...submenus,
+                                  ...(legacyNames.length > 0
+                                    ? [`(departamento): ${legacyNames.join(", ")}`]
+                                    : []),
+                                ];
+                                return details.length > 0
+                                  ? `- ${deptName}: ${details.join(" | ")}`
                                   : `- ${deptName}`;
                               })
                               .join("\n")

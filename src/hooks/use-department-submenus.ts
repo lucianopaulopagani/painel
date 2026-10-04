@@ -1,13 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import type { DepartmentSubmenu } from "@/lib/types";
 
-export interface DepartmentSubmenu {
-  id: string;
-  department_id: string;
-  name: string;
-  position: number;
-  created_at: string;
-}
+export type { DepartmentSubmenu };
 
 export const departmentSubmenusKeys = {
   all: ["department-submenus"] as const,

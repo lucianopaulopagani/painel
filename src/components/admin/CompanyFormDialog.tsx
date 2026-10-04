@@ -44,8 +44,9 @@ interface CompanyFormDialogProps {
 
 interface DepartmentAssignment {
   selected: boolean;
-  profileIds: string[];
   subdepartments: string[];
+  /** Responsáveis por subdepartamento (nome do subdepartamento → ids). */
+  responsibles: Record<string, string[]>;
 }
 
 export default function CompanyFormDialog({
@@ -116,8 +117,8 @@ export default function CompanyFormDialog({
       );
       initial[department.id] = {
         selected: !!link,
-        profileIds: link?.profile_ids ?? [],
         subdepartments: link?.subdepartments ?? [],
+        responsibles: link?.subdepartment_responsibles ?? {},
       };
     }
     setAssignments(initial);
@@ -133,13 +134,49 @@ export default function CompanyFormDialog({
       [departmentId]: {
         ...(prev[departmentId] ?? {
           selected: false,
-          profileIds: [],
           subdepartments: [],
+          responsibles: {},
         }),
         ...patch,
       },
     }));
   };
+
+  /** Define os responsáveis de um subdepartamento do departamento. */
+  const setSubdepartmentResponsibles = (
+    departmentId: string,
+    submenu: string,
+    ids: string[]
+  ) => {
+    setAssignments((prev) => {
+      const current = prev[departmentId] ?? {
+        selected: false,
+        subdepartments: [],
+        responsibles: {},
+      };
+      return {
+        ...prev,
+        [departmentId]: {
+          ...current,
+          responsibles: { ...current.responsibles, [submenu]: ids },
+        },
+      };
+    });
+  };
+
+  /**
+   * Mantém os responsáveis apenas dos subdepartamentos ainda marcados e
+   * limpa os que foram desmarcados.
+   */
+  const keepMarkedResponsibles = (
+    responsibles: Record<string, string[]>,
+    subdepartments: string[]
+  ): Record<string, string[]> =>
+    Object.fromEntries(
+      Object.entries(responsibles).filter(
+        ([submenu, ids]) => subdepartments.includes(submenu) && ids.length > 0
+      )
+    );
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -171,11 +208,19 @@ export default function CompanyFormDialog({
 
     const department_links = (departments ?? [])
       .filter((department) => assignments[department.id]?.selected)
-      .map((department) => ({
-        department_id: department.id,
-        profile_ids: assignments[department.id]?.profileIds ?? [],
-        subdepartments: assignments[department.id]?.subdepartments ?? [],
-      }));
+      .map((department) => {
+        const assignment = assignments[department.id];
+        const subdepartments = assignment?.subdepartments ?? [];
+        return {
+          department_id: department.id,
+          profile_ids: [],
+          subdepartments,
+          subdepartment_responsibles: keepMarkedResponsibles(
+            assignment?.responsibles ?? {},
+            subdepartments
+          ),
+        };
+      });
 
     const payload = {
       numero: numero.trim(),
@@ -468,75 +513,103 @@ export default function CompanyFormDialog({
                 {(departments ?? []).map((department) => {
                   const assignment = assignments[department.id] ?? {
                     selected: false,
-                    profileIds: [],
                     subdepartments: [],
+                    responsibles: {},
                   };
                   const editableDepartment =
                     isAdmin || myDepartmentIds.has(department.id);
                   const deptSubmenus = (allSubmenus ?? [])
                     .filter((submenu) => submenu.department_id === department.id)
                     .map((submenu) => submenu.name);
+                  const deptUsers = (usersWithDepartments ?? []).filter((user) =>
+                    user.department_ids.includes(department.id)
+                  );
                   return (
                     <div
                       key={department.id}
-                      className="grid grid-cols-1 gap-2 rounded-md border p-2 sm:grid-cols-3 sm:items-center sm:gap-3"
+                      className="flex flex-col gap-2 rounded-md border p-2"
                     >
-                      <label className="flex cursor-pointer items-center gap-2 text-sm">
-                        <Checkbox
-                          checked={assignment.selected}
-                          disabled={
-                            !canEdit("departments") || !editableDepartment
-                          }
-                          onCheckedChange={(checked) =>
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:items-center sm:gap-3">
+                        <label className="flex cursor-pointer items-center gap-2 text-sm">
+                          <Checkbox
+                            checked={assignment.selected}
+                            disabled={
+                              !canEdit("departments") || !editableDepartment
+                            }
+                            onCheckedChange={(checked) =>
+                              updateAssignment(department.id, {
+                                selected: checked === true,
+                              })
+                            }
+                          />
+                          <span>{department.name}</span>
+                        </label>
+                        <MultiSelectDropdown
+                          options={deptSubmenus.map((submenu) => ({
+                            value: submenu,
+                            label: submenu,
+                          }))}
+                          value={assignment.subdepartments}
+                          onChange={(values) =>
                             updateAssignment(department.id, {
-                              selected: checked === true,
+                              subdepartments: values,
+                              responsibles: keepMarkedResponsibles(
+                                assignment.responsibles,
+                                values
+                              ),
                             })
                           }
+                          placeholder="Subdepartamentos (opcional)"
+                          disabled={
+                            !assignment.selected ||
+                            !canEdit("departments") ||
+                            !editableDepartment ||
+                            deptSubmenus.length === 0
+                          }
+                          className="w-full"
                         />
-                        <span>{department.name}</span>
-                      </label>
-                      <MultiSelectDropdown
-                        options={deptSubmenus.map((submenu) => ({
-                          value: submenu,
-                          label: submenu,
-                        }))}
-                        value={assignment.subdepartments}
-                        onChange={(values) =>
-                          updateAssignment(department.id, {
-                            subdepartments: values,
-                          })
-                        }
-                        placeholder="Subdepartamentos (opcional)"
-                        disabled={
-                          !assignment.selected ||
-                          !canEdit("departments") ||
-                          !editableDepartment ||
-                          deptSubmenus.length === 0
-                        }
-                        className="w-full"
-                      />
-                      <UserMultiSelect
-                        value={assignment.profileIds}
-                        onChange={(ids) =>
-                          updateAssignment(department.id, { profileIds: ids })
-                        }
-                        disabled={
-                          !assignment.selected ||
-                          !canEdit("responsaveis") ||
-                          !editableDepartment
-                        }
-                        users={(usersWithDepartments ?? []).filter((user) =>
-                          user.department_ids.includes(department.id)
-                        )}
-                        className="w-full justify-between font-normal"
-                      />
+                      </div>
+
+                      {assignment.subdepartments.map((submenu) => (
+                        <div
+                          key={submenu}
+                          className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:items-center sm:gap-3 sm:pl-6"
+                        >
+                          <span
+                            className="truncate text-xs text-muted-foreground"
+                            title={submenu}
+                          >
+                            Responsáveis — {submenu}
+                          </span>
+                          <UserMultiSelect
+                            value={assignment.responsibles[submenu] ?? []}
+                            onChange={(ids) =>
+                              setSubdepartmentResponsibles(
+                                department.id,
+                                submenu,
+                                ids
+                              )
+                            }
+                            disabled={
+                              !assignment.selected ||
+                              !canEdit("responsaveis") ||
+                              !editableDepartment
+                            }
+                            users={deptUsers}
+                            className="w-full justify-between font-normal"
+                          />
+                        </div>
+                      ))}
                     </div>
                   );
                 })}
               </div>
             )}
             <p className="text-xs text-muted-foreground">
-              O usuário responsável é opcional.
+              Os responsáveis são definidos por subdepartamento: cada módulo
+              (ex.: Movimento Fiscal, Controle de Parcelamentos) usa os usuários
+              responsáveis do seu próprio subdepartamento. O usuário responsável
+              é opcional.
             </p>
           </div>
 

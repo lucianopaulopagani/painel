@@ -41,3 +41,19 @@ export function companyUsesSubmenu(
   );
   return Boolean(link && (link.subdepartments ?? []).includes(submenuLabel));
 }
+
+/**
+ * Usuários responsáveis por um subdepartamento do vínculo empresa × departamento.
+ * Cada módulo usa os responsáveis do seu próprio subdepartamento.
+ */
+export function subdepartmentResponsibleIds(
+  company: CompanyWithDepartments,
+  departmentId: string | undefined,
+  submenuLabel: string
+): string[] {
+  if (!departmentId) return [];
+  const link = company.department_links.find(
+    (item) => item.department_id === departmentId
+  );
+  return link?.subdepartment_responsibles?.[submenuLabel] ?? [];
+}

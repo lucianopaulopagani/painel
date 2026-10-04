@@ -69,8 +69,23 @@ export interface RawCompanyRow {
         department_id: string;
         responsible_profile_ids: string[] | null;
         subdepartments: string[] | null;
+        subdepartment_responsibles: Record<string, string[]> | null;
       }[]
     | null;
+}
+
+/** Normaliza o jsonb de responsáveis por subdepartamento. */
+export function toSubdepartmentResponsibles(
+  value: Record<string, string[]> | null | undefined
+): Record<string, string[]> {
+  if (!value || typeof value !== "object") return {};
+  const entries = Object.entries(value)
+    .map(
+      ([submenu, ids]) =>
+        [submenu, Array.isArray(ids) ? ids.filter(Boolean) : []] as const
+    )
+    .filter(([, ids]) => ids.length > 0);
+  return Object.fromEntries(entries);
 }
 
 /** Converte o retorno aninhado em `department_links`. */
@@ -97,6 +112,9 @@ export function toCompanyWithDepartments(
       department_id: link.department_id,
       profile_ids: link.responsible_profile_ids ?? [],
       subdepartments: link.subdepartments ?? [],
+      subdepartment_responsibles: toSubdepartmentResponsibles(
+        link.subdepartment_responsibles
+      ),
     })),
   };
 }

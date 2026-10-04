@@ -37,7 +37,7 @@ import {
 } from "@/lib/fiscal-month";
 import { FISCAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import { isCompanyInactiveInMonth } from "@/lib/companies";
-import { companyUsesSubmenu } from "@/lib/department-submenus";
+import { companyUsesSubmenu, subdepartmentResponsibleIds } from "@/lib/department-submenus";
 import {
   PARCELAMENTO_ENVIO_ENVIADO,
   PARCELAMENTO_ENVIO_GERADO,
@@ -87,8 +87,7 @@ export default function ParcelamentosDashboard() {
   );
 
   const responsaveisOf = (company: CompanyWithDepartments): string[] =>
-    company.department_links.find((link) => link.department_id === fiscal?.id)
-      ?.profile_ids ?? [];
+    subdepartmentResponsibleIds(company, fiscal?.id, SUBMENU);
 
   const responsavelOptions = Array.from(
     new Set(all.flatMap((company) => responsaveisOf(company)))

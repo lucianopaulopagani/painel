@@ -71,12 +71,27 @@ export interface Company {
   created_at: string;
 }
 
+/** Subdepartamento (submenu) de um departamento. */
+export interface DepartmentSubmenu {
+  id: string;
+  department_id: string;
+  name: string;
+  position: number;
+  created_at: string;
+}
+
 /** Vínculo empresa × departamento, com os usuários responsáveis (opcional). */
 export interface CompanyDepartmentLink {
   department_id: string;
+  /**
+   * Responsáveis no nível do departamento — modelo antigo, preservado apenas
+   * como histórico. As telas usam `subdepartment_responsibles`.
+   */
   profile_ids: string[];
   /** Subdepartamentos (submenus) que a empresa utiliza neste departamento. */
   subdepartments: string[];
+  /** Responsáveis por subdepartamento (nome do subdepartamento → ids). */
+  subdepartment_responsibles: Record<string, string[]>;
 }
 
 /** Empresa já com os departamentos vinculados. */

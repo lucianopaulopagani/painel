@@ -1,6 +1,10 @@
 import * as XLSX from "xlsx";
 import { TRIBUTACOES } from "@/lib/companies";
-import type { Department, ProfileWithDepartments } from "@/lib/types";
+import type {
+  Department,
+  DepartmentSubmenu,
+  ProfileWithDepartments,
+} from "@/lib/types";
 import { isValidCpfCnpj } from "@/lib/utils";
 
 export interface CompanyImportRow {
@@ -18,6 +22,8 @@ export interface CompanyImportRow {
   socioCpf: string;
   /** Data de Início (YYYY-MM-DD) ou vazia. */
   dataInicio: string;
+  /** Nomes de subdepartamentos (separados por ";") — opcional. */
+  subdepartamentos: string[];
 }
 
 export interface CompanyImportValidation {
@@ -25,6 +31,8 @@ export interface CompanyImportValidation {
   row: CompanyImportRow;
   errors: string[];
   department_ids: string[];
+  /** Subdepartamentos marcados em cada departamento (department_id → nomes). */
+  subdepartments_by_department: Record<string, string[]>;
   responsible_ids: string[];
 }
 
@@ -40,6 +48,7 @@ const HEADERS = [
   "Sócio Responsável",
   "CPF do Sócio",
   "Data de Início",
+  "Subdepartamentos",
 ];
 
 /** Converte um valor de célula em data ISO (AAAA-MM-DD) ou null. */
@@ -83,7 +92,8 @@ function toIsoDate(year: number, month: number, day: number): string | null {
 /** Gera e baixa o modelo (planilha Excel) para importação. */
 export function buildCompanyImportTemplate(
   departments: Department[],
-  users: ProfileWithDepartments[]
+  users: ProfileWithDepartments[],
+  submenus: DepartmentSubmenu[] = []
 ): void {
   const ws = XLSX.utils.aoa_to_sheet([
     HEADERS,
@@ -99,6 +109,7 @@ export function buildCompanyImportTemplate(
       "ELIZANDRA PEREIRA",
       "000.000.000-00",
       "01/01/2026",
+      "Movimento Fiscal",
     ],
   ]);
   ws["!cols"] = [
@@ -113,6 +124,7 @@ export function buildCompanyImportTemplate(
     { wch: 28 },
     { wch: 20 },
     { wch: 16 },
+    { wch: 32 },
   ];
 
   const helpRows: string[][] = [
@@ -124,8 +136,12 @@ export function buildCompanyImportTemplate(
       "Nomes separados por ponto e vírgula (;) conforme cadastrados no sistema.",
     ],
     [
+      "Subdepartamentos:",
+      "Opcional. Nomes separados por ponto e vírgula (;), marcados no departamento correspondente. As telas de cada módulo só mostram as empresas marcadas com o subdepartamento do módulo.",
+    ],
+    [
       "Responsáveis:",
-      "Nomes separados por ponto e vírgula (;), aplicados aos departamentos informados.",
+      "Nomes separados por ponto e vírgula (;). São gravados como responsáveis de cada subdepartamento informado — os responsáveis são por subdepartamento.",
     ],
     [
       "Sócio:",
@@ -139,6 +155,12 @@ export function buildCompanyImportTemplate(
     [],
     ["Departamentos disponíveis:"],
     ...departments.map((d) => ["", d.name]),
+    [],
+    ["Subdepartamentos disponíveis:"],
+    ...submenus.map((s) => [
+      "",
+      `${departments.find((d) => d.id === s.department_id)?.name ?? "—"} — ${s.name}`,
+    ]),
     [],
     ["Responsáveis disponíveis:"],
     ...users.map((u) => ["", u.full_name]),
@@ -190,6 +212,10 @@ export function parseCompanyImportFile(
         socioCpf: get(9),
         // Célula pode vir como data do Excel, número serial ou texto.
         dataInicio: parseImportDate(row[10] as unknown) ?? get(10),
+        subdepartamentos: get(11)
+          .split(";")
+          .map((name) => name.trim())
+          .filter(Boolean),
       };
     });
 }
@@ -198,7 +224,8 @@ export function parseCompanyImportFile(
 export function validateCompanyImportRows(
   rows: CompanyImportRow[],
   departments: Department[],
-  users: ProfileWithDepartments[]
+  users: ProfileWithDepartments[],
+  submenus: DepartmentSubmenu[] = []
 ): CompanyImportValidation[] {
   const departmentByName = new Map(
     departments.map((d) => [d.name.toLocaleLowerCase("pt-BR"), d.id])
@@ -206,6 +233,13 @@ export function validateCompanyImportRows(
   const userByName = new Map(
     users.map((u) => [u.full_name.toLocaleLowerCase("pt-BR"), u.id])
   );
+  const submenuNameByDepartment = new Map<string, Set<string>>();
+  for (const submenu of submenus) {
+    const current =
+      submenuNameByDepartment.get(submenu.department_id) ?? new Set<string>();
+    current.add(submenu.name.toLocaleLowerCase("pt-BR"));
+    submenuNameByDepartment.set(submenu.department_id, current);
+  }
 
   return rows.map((row, index) => {
     const errors: string[] = [];
@@ -253,11 +287,50 @@ export function validateCompanyImportRows(
       errors.push("Há responsável desconhecido");
     }
 
+    // Subdepartamentos: cada nome é aplicado aos departamentos informados que o
+    // possuem (o responsável do módulo é o do subdepartamento).
+    const subdepartments_by_department: Record<string, string[]> = {};
+    if (row.subdepartamentos.length > 0) {
+      if (department_ids.length === 0) {
+        errors.push("Subdepartamento informado sem departamento");
+      }
+      const unknown = row.subdepartamentos.filter(
+        (name) =>
+          !department_ids.some((departmentId) =>
+            submenuNameByDepartment
+              .get(departmentId)
+              ?.has(name.toLocaleLowerCase("pt-BR"))
+          )
+      );
+      if (unknown.length > 0) {
+        errors.push("Há subdepartamento que não pertence ao departamento");
+      }
+      for (const departmentId of department_ids) {
+        const names = row.subdepartamentos.filter((name) =>
+          submenuNameByDepartment
+            .get(departmentId)
+            ?.has(name.toLocaleLowerCase("pt-BR"))
+        );
+        if (names.length > 0) {
+          subdepartments_by_department[departmentId] = names.map(
+            (name) =>
+              submenus.find(
+                (submenu) =>
+                  submenu.department_id === departmentId &&
+                  submenu.name.toLocaleLowerCase("pt-BR") ===
+                    name.toLocaleLowerCase("pt-BR")
+              )?.name ?? name
+          );
+        }
+      }
+    }
+
     return {
       line: index + 2,
       row,
       errors,
       department_ids,
+      subdepartments_by_department,
       responsible_ids,
     };
   });

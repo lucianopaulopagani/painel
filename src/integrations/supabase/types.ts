@@ -3926,18 +3926,21 @@ export type Database = {
           company_id: string
           department_id: string
           responsible_profile_ids: string[]
+          subdepartment_responsibles: Json
           subdepartments: string[]
         }
         Insert: {
           company_id: string
           department_id: string
           responsible_profile_ids?: string[]
+          subdepartment_responsibles?: Json
           subdepartments?: string[]
         }
         Update: {
           company_id?: string
           department_id?: string
           responsible_profile_ids?: string[]
+          subdepartment_responsibles?: Json
           subdepartments?: string[]
         }
         Relationships: [

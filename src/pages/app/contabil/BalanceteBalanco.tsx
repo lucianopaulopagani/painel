@@ -32,7 +32,7 @@ import { useCompanies } from "@/hooks/use-companies";
 import { useContabilUsuarios } from "@/hooks/use-contabil-usuarios";
 import { useDepartments } from "@/hooks/use-departments";
 import { CONTABIL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
-import { companyUsesSubmenu } from "@/lib/department-submenus";
+import { companyUsesSubmenu, subdepartmentResponsibleIds } from "@/lib/department-submenus";
 import {
   DATA_INICIO_BLOCK_TITLE,
   isPeriodBeforeStart,
@@ -98,10 +98,11 @@ export default function BalanceteBalanco() {
 
   const contabil = findDepartmentByName(departments, CONTABIL_DEPARTMENT_NAME);
 
+  /** Subdepartamento que define as empresas e os responsáveis do módulo. */
+  const SUBMENU = "Balancete/Balanço";
+
   const rows = (companies ?? [])
-    .filter((company) =>
-      companyUsesSubmenu(company, contabil?.id, "Balancete/Balanço")
-    )
+    .filter((company) => companyUsesSubmenu(company, contabil?.id, SUBMENU))
     .sort((a, b) => {
       if (!a.numero && !b.numero) {
         return a.name.localeCompare(b.name, "pt-BR");
@@ -144,10 +145,12 @@ export default function BalanceteBalanco() {
       if (query === "branco") return !value;
       return !query || (value ?? "") === query;
     };
-    const responsaveis =
-      company.department_links.find(
-        (link) => link.department_id === contabil?.id
-      )?.profile_ids ?? [];
+    // Responsáveis do subdepartamento do módulo (Balancete/Balanço).
+    const responsaveis = subdepartmentResponsibleIds(
+      company,
+      contabil?.id,
+      SUBMENU
+    );
     const matchesUsuario =
       busca.usuario === "" ||
       (busca.usuario === "sem-responsavel"

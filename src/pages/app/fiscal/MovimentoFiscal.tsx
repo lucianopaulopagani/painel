@@ -42,7 +42,7 @@ import { useDepartments } from "@/hooks/use-departments";
 import { useUsers } from "@/hooks/use-users";
 import { useAuth } from "@/context/auth";
 import { FISCAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
-import { companyUsesSubmenu } from "@/lib/department-submenus";
+import { companyUsesSubmenu, subdepartmentResponsibleIds } from "@/lib/department-submenus";
 import {
   DATA_INICIO_BLOCK_TITLE,
   isCompanyInactiveInMonth,
@@ -141,23 +141,21 @@ export function MovimentoFiscal() {
 
   const fiscal = findDepartmentByName(departments, FISCAL_DEPARTMENT_NAME);
 
-  const fiscalLinkOf = (company: CompanyWithDepartments) =>
-    fiscal
-      ? company.department_links.find((link) => link.department_id === fiscal.id)
-      : undefined;
+  /** Subdepartamento que define as empresas e os responsáveis do módulo. */
+  const SUBMENU = "Movimento Fiscal";
+
+  /** Responsáveis do subdepartamento "Movimento Fiscal" da empresa. */
+  const responsiblesOf = (company: CompanyWithDepartments): string[] =>
+    subdepartmentResponsibleIds(company, fiscal?.id, SUBMENU);
 
   const fiscalCompanies = (companies ?? []).filter(
     (company) =>
-      companyUsesSubmenu(company, fiscal?.id, "Movimento Fiscal") &&
+      companyUsesSubmenu(company, fiscal?.id, SUBMENU) &&
       !isCompanyInactiveInMonth(company, mes)
   );
 
   const responsibleIds = Array.from(
-    new Set(
-      fiscalCompanies.flatMap(
-        (company) => fiscalLinkOf(company)?.profile_ids ?? []
-      )
-    )
+    new Set(fiscalCompanies.flatMap((company) => responsiblesOf(company)))
   );
   const userNameById = new Map(
     (users ?? []).map((user) => [user.id, user.full_name])
@@ -165,17 +163,16 @@ export function MovimentoFiscal() {
 
   // Empresas após o filtro de responsável (o que o usuário vê).
   const responsavelFiltered = fiscalCompanies.filter((company) => {
-    const link = fiscalLinkOf(company);
-    if (!link) return false;
+    const responsibles = responsiblesOf(company);
     // Admin vê todas (com filtro por responsável); os demais veem apenas as
-    // empresas em que são o responsável.
+    // empresas em que são o responsável do subdepartamento.
     if (isAdmin) {
       return (
         responsavelFiltro === "todos" ||
-        link.profile_ids.includes(responsavelFiltro)
+        responsibles.includes(responsavelFiltro)
       );
     }
-    return profile ? link.profile_ids.includes(profile.id) : false;
+    return profile ? responsibles.includes(profile.id) : false;
   });
 
   // Apenas os tipos de tributação que existem nas empresas da lista.

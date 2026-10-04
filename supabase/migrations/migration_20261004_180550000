@@ -1,0 +1,77 @@
+-- Responsáveis por subdepartamento no vínculo empresa × departamento
+alter table public.company_departments
+  add column if not exists subdepartment_responsibles jsonb not null default '{}'::jsonb;
+
+create index if not exists company_departments_subdepartment_responsibles_idx
+  on public.company_departments using gin (subdepartment_responsibles jsonb_path_ops);
+
+-- Movimento Fiscal: permissão passa a usar o responsável do subdepartamento
+-- "Movimento Fiscal" (antes: responsáveis do departamento).
+alter policy movimento_fiscal_member_read on public.movimento_fiscal
+  using (
+    exists (
+      select 1 from public.company_departments cd
+      join public.profile_departments pd on pd.department_id = cd.department_id
+      where cd.company_id = movimento_fiscal.company_id
+        and pd.profile_id = auth.uid()
+        and coalesce(cd.subdepartment_responsibles -> 'Movimento Fiscal', '[]'::jsonb) ? (auth.uid())::text
+    )
+  );
+
+alter policy movimento_fiscal_member_insert on public.movimento_fiscal
+  with check (
+    exists (
+      select 1 from public.company_departments cd
+      join public.profile_departments pd on pd.department_id = cd.department_id
+      where cd.company_id = movimento_fiscal.company_id
+        and pd.profile_id = auth.uid()
+        and coalesce(cd.subdepartment_responsibles -> 'Movimento Fiscal', '[]'::jsonb) ? (auth.uid())::text
+    )
+    and (
+      mes_referencia <= to_char((current_date - interval '1 mon'), 'YYYY-MM')
+      or (mes_referencia = to_char(current_date, 'YYYY-MM') and month_is_released(mes_referencia))
+    )
+  );
+
+alter policy movimento_fiscal_member_update on public.movimento_fiscal
+  using (
+    exists (
+      select 1 from public.company_departments cd
+      join public.profile_departments pd on pd.department_id = cd.department_id
+      where cd.company_id = movimento_fiscal.company_id
+        and pd.profile_id = auth.uid()
+        and coalesce(cd.subdepartment_responsibles -> 'Movimento Fiscal', '[]'::jsonb) ? (auth.uid())::text
+    )
+    and (
+      mes_referencia <= to_char((current_date - interval '1 mon'), 'YYYY-MM')
+      or (mes_referencia = to_char(current_date, 'YYYY-MM') and month_is_released(mes_referencia))
+    )
+  )
+  with check (
+    exists (
+      select 1 from public.company_departments cd
+      join public.profile_departments pd on pd.department_id = cd.department_id
+      where cd.company_id = movimento_fiscal.company_id
+        and pd.profile_id = auth.uid()
+        and coalesce(cd.subdepartment_responsibles -> 'Movimento Fiscal', '[]'::jsonb) ? (auth.uid())::text
+    )
+    and (
+      mes_referencia <= to_char((current_date - interval '1 mon'), 'YYYY-MM')
+      or (mes_referencia = to_char(current_date, 'YYYY-MM') and month_is_released(mes_referencia))
+    )
+  );
+
+alter policy movimento_fiscal_member_delete on public.movimento_fiscal
+  using (
+    exists (
+      select 1 from public.company_departments cd
+      join public.profile_departments pd on pd.department_id = cd.department_id
+      where cd.company_id = movimento_fiscal.company_id
+        and pd.profile_id = auth.uid()
+        and coalesce(cd.subdepartment_responsibles -> 'Movimento Fiscal', '[]'::jsonb) ? (auth.uid())::text
+    )
+    and (
+      mes_referencia <= to_char((current_date - interval '1 mon'), 'YYYY-MM')
+      or (mes_referencia = to_char(current_date, 'YYYY-MM') and month_is_released(mes_referencia))
+    )
+  );

@@ -32,6 +32,7 @@ import { useDepartments } from "@/hooks/use-departments";
 import { useMovimentoFiscal } from "@/hooks/use-movimento-fiscal";
 import { usePeopleDirectory } from "@/hooks/use-people-directory";
 import { FISCAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
+import { companyUsesSubmenu, subdepartmentResponsibleIds } from "@/lib/department-submenus";
 import { isCompanyInactiveInMonth } from "@/lib/companies";
 import { isSituacaoFinalizada } from "@/lib/fiscal";
 import {
@@ -43,6 +44,9 @@ import { cn } from "@/lib/utils";
 import type { CompanyWithDepartments } from "@/lib/types";
 
 const SEM_RESPONSAVEL = "Sem responsável";
+
+/** Subdepartamento que define as empresas e os responsáveis do módulo. */
+const SUBMENU = "Movimento Fiscal";
 
 /**
  * Dashboard do Movimento Fiscal — mesmo modelo do Societário
@@ -67,14 +71,13 @@ export default function FiscalMovimentoDashboard() {
 
   const all = (companies ?? []).filter(
     (company) =>
-      company.department_links.some(
-        (link) => link.department_id === fiscal?.id
-      ) && !isCompanyInactiveInMonth(company, mes)
+      companyUsesSubmenu(company, fiscal?.id, SUBMENU) &&
+      !isCompanyInactiveInMonth(company, mes)
   );
 
+  /** Responsáveis do subdepartamento do módulo (Movimento Fiscal). */
   const responsaveisOf = (company: CompanyWithDepartments): string[] =>
-    company.department_links.find((link) => link.department_id === fiscal?.id)
-      ?.profile_ids ?? [];
+    subdepartmentResponsibleIds(company, fiscal?.id, SUBMENU);
 
   const responsavelOptions = Array.from(
     new Set(all.flatMap((company) => responsaveisOf(company)))

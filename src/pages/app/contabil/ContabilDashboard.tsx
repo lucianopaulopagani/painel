@@ -29,7 +29,7 @@ import { useCompanies } from "@/hooks/use-companies";
 import { useContabilUsuarios } from "@/hooks/use-contabil-usuarios";
 import { useDepartments } from "@/hooks/use-departments";
 import { CONTABIL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
-import { companyUsesSubmenu } from "@/lib/department-submenus";
+import { companyUsesSubmenu, subdepartmentResponsibleIds } from "@/lib/department-submenus";
 import {
   balanceteAnos,
   BALANCETE_MESES,
@@ -40,6 +40,9 @@ import { cn } from "@/lib/utils";
 import type { BalanceteBalancoRecord, CompanyWithDepartments } from "@/lib/types";
 
 const SEM_RESPONSAVEL = "Sem responsável";
+
+/** Subdepartamento que define as empresas e os responsáveis do módulo. */
+const SUBMENU = "Balancete/Balanço";
 const TODOS_OS_MESES = "todos";
 
 /**
@@ -62,12 +65,12 @@ export default function ContabilDashboard() {
   );
 
   const all = (companies ?? []).filter((company) =>
-    companyUsesSubmenu(company, contabil?.id, "Balancete/Balanço")
+    companyUsesSubmenu(company, contabil?.id, SUBMENU)
   );
 
+  /** Responsáveis do subdepartamento do módulo (Balancete/Balanço). */
   const responsaveisOf = (company: CompanyWithDepartments): string[] =>
-    company.department_links.find((link) => link.department_id === contabil?.id)
-      ?.profile_ids ?? [];
+    subdepartmentResponsibleIds(company, contabil?.id, SUBMENU);
 
   const responsavelOptions = Array.from(
     new Set(all.flatMap((company) => responsaveisOf(company)))

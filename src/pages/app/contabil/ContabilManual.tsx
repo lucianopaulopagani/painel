@@ -35,7 +35,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Filtro por usuário do departamento",
         detail:
-          "Ao lado do ano, filtre pelas empresas em que um usuário do departamento é responsável (ou pelas sem responsável).",
+          "Ao lado do ano, filtre pelas empresas em que um usuário é responsável pelo subdepartamento Balancete/Balanço (ou pelas sem responsável).",
       },
       {
         label: "Colunas",
@@ -67,7 +67,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Filtros",
         detail:
-          "Ano, Mês e Responsável, nessa ordem. O responsável mostra apenas as empresas em que ele está vinculado no departamento.",
+          "Ano, Mês e Responsável, nessa ordem. O responsável considera os usuários definidos no subdepartamento Balancete/Balanço no cadastro de empresas e mostra apenas as empresas em que ele é responsável.",
       },
       {
         label: "Cartões",

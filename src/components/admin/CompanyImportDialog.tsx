@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import { useDepartments } from "@/hooks/use-departments";
 import { useUsers } from "@/hooks/use-users";
+import { useAllDepartmentSubmenus } from "@/hooks/use-department-submenus";
 import { useImportCompanies } from "@/hooks/use-companies";
 import {
   buildCompanyImportTemplate,
@@ -41,6 +42,7 @@ export default function CompanyImportDialog({
 }: CompanyImportDialogProps) {
   const { data: departments } = useDepartments();
   const { data: users } = useUsers();
+  const { data: allSubmenus } = useAllDepartmentSubmenus();
   const importMutation = useImportCompanies();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [validations, setValidations] = useState<
@@ -56,7 +58,11 @@ export default function CompanyImportDialog({
   }, [open]);
 
   const handleDownloadModel = () => {
-    buildCompanyImportTemplate(departments ?? [], users ?? []);
+    buildCompanyImportTemplate(
+      departments ?? [],
+      users ?? [],
+      allSubmenus ?? []
+    );
   };
 
   const handleFile = async (file: File) => {
@@ -65,7 +71,12 @@ export default function CompanyImportDialog({
       const rows = parseCompanyImportFile(buffer);
       setFileName(file.name);
       setValidations(
-        validateCompanyImportRows(rows, departments ?? [], users ?? [])
+        validateCompanyImportRows(
+          rows,
+          departments ?? [],
+          users ?? [],
+          allSubmenus ?? []
+        )
       );
       if (rows.length === 0) {
         toast.error("Nenhuma linha de dados encontrada no arquivo.");
@@ -96,7 +107,11 @@ export default function CompanyImportDialog({
           socio_responsavel: v.row.socioResponsavel || null,
           socio_cpf: v.row.socioCpf.replace(/\D/g, "") || null,
           data_inicio: parseImportDate(v.row.dataInicio),
-          department_ids: v.department_ids,
+          departments: v.department_ids.map((department_id) => ({
+            department_id,
+            subdepartments:
+              v.subdepartments_by_department[department_id] ?? [],
+          })),
           responsible_ids: v.responsible_ids,
         }))
       );
@@ -119,7 +134,9 @@ export default function CompanyImportDialog({
             Baixe o modelo em Excel, preencha com as empresas e importe aqui.
             Colunas obrigatórias: Nome, CPF/CNPJ e UF. A coluna Data de Início
             (dd/mm/aaaa) é opcional e bloqueia os períodos anteriores nos
-            departamentos.
+            departamentos. A coluna Subdepartamentos (opcional) marca os módulos
+            da empresa e recebe os responsáveis informados — os responsáveis são
+            por subdepartamento.
           </DialogDescription>
         </DialogHeader>
 

@@ -43,8 +43,9 @@ type DeptActionValue = "none" | "set" | "remove";
 
 interface DeptAction {
   action: DeptActionValue;
-  responsibleIds: string[];
   subdepartments: string[];
+  /** Responsáveis por subdepartamento (nome do subdepartamento → ids). */
+  responsibles: Record<string, string[]>;
 }
 
 export default function CompanyBulkEditDialog({
@@ -91,13 +92,46 @@ export default function CompanyBulkEditDialog({
       ...prev,
       [departmentId]: {
         action: "none",
-        responsibleIds: [],
         subdepartments: [],
+        responsibles: {},
         ...prev[departmentId],
         ...patch,
       },
     }));
   };
+
+  /** Define os responsáveis de um subdepartamento (ação "definir"). */
+  const setSubdepartmentResponsibles = (
+    departmentId: string,
+    submenu: string,
+    ids: string[]
+  ) => {
+    setDeptActions((prev) => {
+      const current = prev[departmentId] ?? {
+        action: "none" as DeptActionValue,
+        subdepartments: [],
+        responsibles: {},
+      };
+      return {
+        ...prev,
+        [departmentId]: {
+          ...current,
+          responsibles: { ...current.responsibles, [submenu]: ids },
+        },
+      };
+    });
+  };
+
+  /** Mantém os responsáveis apenas dos subdepartamentos ainda marcados. */
+  const keepMarkedResponsibles = (
+    responsibles: Record<string, string[]>,
+    subdepartments: string[]
+  ): Record<string, string[]> =>
+    Object.fromEntries(
+      Object.entries(responsibles).filter(
+        ([submenu, ids]) => subdepartments.includes(submenu) && ids.length > 0
+      )
+    );
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -112,8 +146,11 @@ export default function CompanyBulkEditDialog({
       .map(([department_id, value]) => ({
         department_id,
         action: value.action as "remove" | "set",
-        responsible_ids: value.responsibleIds,
         subdepartments: value.subdepartments,
+        subdepartment_responsibles: keepMarkedResponsibles(
+          value.responsibles,
+          value.subdepartments
+        ),
       }));
 
     if (Object.keys(patch).length === 0 && deptActionsList.length === 0) {
@@ -222,95 +259,112 @@ export default function CompanyBulkEditDialog({
                 {(departments ?? []).map((department) => {
                   const action =
                     deptActions[department.id]?.action ?? "none";
-                  const responsibleIds =
-                    deptActions[department.id]?.responsibleIds ?? [];
+                  const responsibles =
+                    deptActions[department.id]?.responsibles ?? {};
                   const subdepartments =
                     deptActions[department.id]?.subdepartments ?? [];
                   const deptSubmenus = (allSubmenus ?? [])
                     .filter((submenu) => submenu.department_id === department.id)
                     .map((submenu) => submenu.name);
+                  const deptUsers = (usersWithDepartments ?? []).filter((user) =>
+                    user.department_ids.includes(department.id)
+                  );
                   const editableDepartment =
                     isAdmin || myDepartmentIds.has(department.id);
                   return (
                     <div
                       key={department.id}
-                      className="flex flex-col gap-2 rounded-md border p-2 sm:flex-row sm:items-center sm:justify-between"
+                      className="flex flex-col gap-2 rounded-md border p-2"
                     >
-                      <span className="text-sm font-medium">
-                        {department.name}
-                      </span>
-                      <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
-                        <Select
-                          value={action}
-                          onValueChange={(value) =>
-                            updateDept(department.id, {
-                              action: value as DeptActionValue,
-                            })
-                          }
-                          disabled={
-                            !canEdit("departments") || !editableDepartment
-                          }
-                        >
-                          <SelectTrigger className="h-8 w-36">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">Não alterar</SelectItem>
-                            <SelectItem value="set">
-                              Adicionar / definir
-                            </SelectItem>
-                            <SelectItem value="remove">Remover</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {action !== "none" && (
-                          <MultiSelectDropdown
-                            options={deptSubmenus.map((submenu) => ({
-                              value: submenu,
-                              label: submenu,
-                            }))}
-                            value={subdepartments}
-                            onChange={(values) =>
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <span className="text-sm font-medium">
+                          {department.name}
+                        </span>
+                        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+                          <Select
+                            value={action}
+                            onValueChange={(value) =>
                               updateDept(department.id, {
-                                subdepartments: values,
+                                action: value as DeptActionValue,
                               })
                             }
-                            placeholder={
-                              action === "remove"
-                                ? "Subdepartamentos a remover"
-                                : "Subdepartamentos (opcional)"
-                            }
                             disabled={
-                              !canEdit("departments") ||
-                              !editableDepartment ||
-                              deptSubmenus.length === 0
+                              !canEdit("departments") || !editableDepartment
                             }
-                            className="w-full sm:w-56"
-                          />
-                        )}
-                        {action === "set" && (
-                          <MultiSelectDropdown
-                            options={(usersWithDepartments ?? [])
-                              .filter((user) =>
-                                user.department_ids.includes(department.id)
-                              )
-                              .map((user) => ({
+                          >
+                            <SelectTrigger className="h-8 w-36">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Não alterar</SelectItem>
+                              <SelectItem value="set">
+                                Adicionar / definir
+                              </SelectItem>
+                              <SelectItem value="remove">Remover</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {action !== "none" && (
+                            <MultiSelectDropdown
+                              options={deptSubmenus.map((submenu) => ({
+                                value: submenu,
+                                label: submenu,
+                              }))}
+                              value={subdepartments}
+                              onChange={(values) =>
+                                updateDept(department.id, {
+                                  subdepartments: values,
+                                  responsibles: keepMarkedResponsibles(
+                                    responsibles,
+                                    values
+                                  ),
+                                })
+                              }
+                              placeholder={
+                                action === "remove"
+                                  ? "Subdepartamentos a remover"
+                                  : "Subdepartamentos (opcional)"
+                              }
+                              disabled={
+                                !canEdit("departments") ||
+                                !editableDepartment ||
+                                deptSubmenus.length === 0
+                              }
+                              className="w-full sm:w-56"
+                            />
+                          )}
+                        </div>
+                      </div>
+
+                      {action === "set" &&
+                        subdepartments.map((submenu) => (
+                          <div
+                            key={submenu}
+                            className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:pl-6"
+                          >
+                            <span className="truncate text-xs text-muted-foreground">
+                              Responsáveis — {submenu}
+                            </span>
+                            <MultiSelectDropdown
+                              options={deptUsers.map((user) => ({
                                 value: user.id,
                                 label: user.full_name,
                               }))}
-                            value={responsibleIds}
-                            onChange={(values) =>
-                              updateDept(department.id, {
-                                responsibleIds: values,
-                              })
-                            }
-                            placeholder="Responsáveis (opcional)"
-                            disabled={
-                              !canEdit("responsaveis") || !editableDepartment
-                            }
-                            className="w-full sm:w-60"
-                          />
-                        )}
-                      </div>
+                              value={responsibles[submenu] ?? []}
+                              onChange={(values) =>
+                                setSubdepartmentResponsibles(
+                                  department.id,
+                                  submenu,
+                                  values
+                                )
+                              }
+                              placeholder="Responsáveis (opcional)"
+                              disabled={
+                                !canEdit("responsaveis") || !editableDepartment
+                              }
+                              className="w-full sm:w-60"
+                            />
+                          </div>
+                        ))}
                     </div>
                   );
                 })}
@@ -318,9 +372,10 @@ export default function CompanyBulkEditDialog({
             )}
             <p className="text-xs text-muted-foreground">
               "Adicionar / definir" inclui o departamento nas empresas
-              selecionadas (e troca os responsáveis, se informados); "Remover"
-              remove os subdepartamentos selecionados e, se nenhum for
-              escolhido, desvincula o departamento.
+              selecionadas e define os responsáveis de cada subdepartamento
+              marcado; "Remover" remove os subdepartamentos selecionados (com os
+              responsáveis deles) e, se nenhum for escolhido, desvincula o
+              departamento.
             </p>
           </div>
 
