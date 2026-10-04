@@ -93,6 +93,11 @@ const SECTIONS: ManualSection[] = [
       "Ao selecionar uma tributação no filtro do Movimento Fiscal, a tabela padrão é substituída pela subtabela específica daquela tributação.",
     items: [
       {
+        label: "Empresas exibidas",
+        detail:
+          "As subtabelas mostram apenas as empresas do Movimento Fiscal (departamento Fiscal, com o submenu Movimento Fiscal) que estão na lista já filtrada por Responsável: o administrador vê o responsável selecionado (ou todos) e os demais usuários veem apenas as empresas sob sua responsabilidade.",
+      },
+      {
         label: "Simples Nacional",
         detail:
           "Selecionando 'Simples Nacional' no filtro de Tributação, é exibida a subtabela específica dessa tributação (Nº, UF, Empresa, CNPJ, Inscrição Estadual, Situação, DAS, Antecipação, ST, DIF ALIQ, DIF ALIQ C/ST, Guia, DESTDA, Envio/SN, Envio/ICMS e Observações), com filtro de UF em menu suspenso e colunas compactas.",

@@ -499,13 +499,13 @@ export function MovimentoFiscal() {
       )}
 
       {!isLoading && !isError && tributacaoFiltro === CARNE_LEAO_TRIBUTACAO && (
-        <CarneLeaoTable mes={mes} />
+        <CarneLeaoTable mes={mes} companies={responsavelFiltered} />
       )}
 
       {!isLoading &&
         !isError &&
         tributacaoFiltro === SIMPLES_NACIONAL_TRIBUTACAO && (
-          <SimplesNacionalTable mes={mes} />
+          <SimplesNacionalTable mes={mes} companies={responsavelFiltered} />
         )}
 
       {!isLoading &&
@@ -515,6 +515,7 @@ export function MovimentoFiscal() {
             mes={mes}
             tributacao={tributacaoFiltro}
             canEdit={canEdit}
+            companies={responsavelFiltered}
           />
         )}
 

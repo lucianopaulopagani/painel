@@ -16,12 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useCarneLeao, useCarneLeaoAll, useSaveCarneLeao } from "@/hooks/use-carne-leao";
-import { useCompanies } from "@/hooks/use-companies";
-import {
-  DATA_INICIO_BLOCK_TITLE,
-  isCompanyInactiveInMonth,
-  isPeriodBeforeStart,
-} from "@/lib/companies";
+import { DATA_INICIO_BLOCK_TITLE, isPeriodBeforeStart } from "@/lib/companies";
 import {
   CARNE_LEAO_CARNE_OPTIONS,
   CARNE_LEAO_ENVIO_OPTIONS,
@@ -32,7 +27,7 @@ import {
   CARNE_LEAO_TRIBUTACAO,
 } from "@/lib/carne-leao";
 import { cn, formatCpfCnpj } from "@/lib/utils";
-import type { MovimentoCarneLeaoInput } from "@/lib/types";
+import type { CompanyWithDepartments, MovimentoCarneLeaoInput } from "@/lib/types";
 
 const CELL = "px-1 py-1 text-[11px]";
 const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
@@ -52,13 +47,18 @@ const TONE: Record<string, string> = {
 interface CarneLeaoTableProps {
   /** Mês de referência do Movimento Fiscal (mesma referência da tabela principal). */
   mes: string;
+  /**
+   * Empresas já filtradas pelo Movimento Fiscal (departamento Fiscal, filtro de
+   * Responsável e mês). A subtabela apenas separa as de Carne Leão.
+   */
+  companies: CompanyWithDepartments[];
 }
 
 /**
  * Subtabela do Carne Leão — exibida dentro do Movimento Fiscal quando a
  * tributação "Carne Leão" é selecionada no filtro.
  */
-export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
+export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
   const [busca, setBusca] = useState({
     numero: "",
     uf: "",
@@ -77,17 +77,12 @@ export function CarneLeaoTable({ mes }: CarneLeaoTableProps) {
     setBusca((prev) => ({ ...prev, [key]: value }));
   };
 
-  const { data: companies } = useCompanies();
   const { data: records } = useCarneLeao(mes);
   const { data: allRecords } = useCarneLeaoAll();
   const saveMutation = useSaveCarneLeao(mes);
 
-  const rows = (companies ?? [])
-    .filter(
-      (company) =>
-        company.tributacao === CARNE_LEAO_TRIBUTACAO &&
-        !isCompanyInactiveInMonth(company, mes)
-    )
+  const rows = companies
+    .filter((company) => company.tributacao === CARNE_LEAO_TRIBUTACAO)
     .sort((a, b) => {
       if (!a.numero && !b.numero) return a.name.localeCompare(b.name, "pt-BR");
       if (!a.numero) return 1;

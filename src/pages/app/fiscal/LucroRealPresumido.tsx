@@ -25,12 +25,7 @@ import {
   useAllMovimentoFiscalComentarios,
   useSaveMovimentoFiscalComentario,
 } from "@/hooks/use-movimento-fiscal-comentarios";
-import { useCompanies } from "@/hooks/use-companies";
-import {
-  DATA_INICIO_BLOCK_TITLE,
-  isCompanyInactiveInMonth,
-  isPeriodBeforeStart,
-} from "@/lib/companies";
+import { DATA_INICIO_BLOCK_TITLE, isPeriodBeforeStart } from "@/lib/companies";
 import { SITUACAO_OPTIONS, SITUACAO_TONE } from "@/lib/fiscal";
 import {
   LUCRO_DESABILITADO,
@@ -41,7 +36,7 @@ import {
   type LucroFieldKey,
 } from "@/lib/fiscal-lucro-real";
 import { cn } from "@/lib/utils";
-import type { MovementFiscalInput } from "@/lib/types";
+import type { CompanyWithDepartments, MovementFiscalInput } from "@/lib/types";
 
 const CELL = "px-1 py-1 text-[11px]";
 const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
@@ -53,6 +48,11 @@ interface LucroRealPresumidoTableProps {
   tributacao: string;
   /** Usuário pode editar o mês exibido? */
   canEdit: boolean;
+  /**
+   * Empresas já filtradas pelo Movimento Fiscal (departamento Fiscal, filtro de
+   * Responsável e mês). A subtabela apenas separa as da tributação exibida.
+   */
+  companies: CompanyWithDepartments[];
 }
 
 /**
@@ -71,6 +71,7 @@ export function LucroRealPresumidoTable({
   mes,
   tributacao,
   canEdit,
+  companies,
 }: LucroRealPresumidoTableProps) {
   const [busca, setBusca] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {
@@ -88,20 +89,15 @@ export function LucroRealPresumidoTable({
     setBusca((prev) => ({ ...prev, [key]: value }));
   };
 
-  const { data: companies, isLoading, isError } = useCompanies();
   const { data: records } = useMovimentoFiscal(mes);
   const { data: allRecords } = useAllMovimentoFiscal();
   const saveMutation = useSaveMovimentoFiscal(mes);
   const { data: comentarios } = useAllMovimentoFiscalComentarios();
   const saveComentario = useSaveMovimentoFiscalComentario(mes);
 
-  // Empresas do cadastro com a tributação da tabela.
-  const rows = (companies ?? [])
-    .filter(
-      (company) =>
-        company.tributacao === tributacao &&
-        !isCompanyInactiveInMonth(company, mes)
-    )
+  // Empresas do Movimento Fiscal com a tributação da tabela.
+  const rows = companies
+    .filter((company) => company.tributacao === tributacao)
     .sort((a, b) => {
       if (!a.numero && !b.numero) return a.name.localeCompare(b.name, "pt-BR");
       if (!a.numero) return 1;
@@ -385,16 +381,6 @@ export function LucroRealPresumidoTable({
       </CommentableCell>
     );
   };
-
-  if (isLoading) return null;
-
-  if (isError) {
-    return (
-      <p className="py-12 text-center text-sm text-destructive">
-        Não foi possível carregar as empresas.
-      </p>
-    );
-  }
 
   return (
     <div className="space-y-2">

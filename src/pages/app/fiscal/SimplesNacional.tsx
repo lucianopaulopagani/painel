@@ -20,19 +20,18 @@ import {
   useMovimentoFiscal,
   useSaveMovimentoFiscal,
 } from "@/hooks/use-movimento-fiscal";
-import { useCompanies } from "@/hooks/use-companies";
-import {
-  DATA_INICIO_BLOCK_TITLE,
-  isCompanyInactiveInMonth,
-  isPeriodBeforeStart,
-} from "@/lib/companies";
+import { DATA_INICIO_BLOCK_TITLE, isPeriodBeforeStart } from "@/lib/companies";
 import {
   MOVIMENTO_FISCAL_FIELDS,
   SITUACAO_OPTIONS,
   isSituacaoFinalizada,
 } from "@/lib/fiscal";
 import { cn, formatCpfCnpj } from "@/lib/utils";
-import type { MovementFiscalInput, MovementFiscalRecord } from "@/lib/types";
+import type {
+  CompanyWithDepartments,
+  MovementFiscalInput,
+  MovementFiscalRecord,
+} from "@/lib/types";
 
 const CELL = "px-1 py-1 text-[11px]";
 const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
@@ -53,6 +52,11 @@ const TONE: Record<string, string> = {
 interface SimplesNacionalTableProps {
   /** Mês de referência do Movimento Fiscal. */
   mes: string;
+  /**
+   * Empresas já filtradas pelo Movimento Fiscal (departamento Fiscal, filtro de
+   * Responsável e mês). A subtabela apenas separa as de Simples Nacional.
+   */
+  companies: CompanyWithDepartments[];
 }
 
 /**
@@ -60,7 +64,10 @@ interface SimplesNacionalTableProps {
  * tributação "Simples Nacional" é selecionada. As demais tributações seguem na
  * tabela padrão até ganharem suas próprias tabelas.
  */
-export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
+export function SimplesNacionalTable({
+  mes,
+  companies,
+}: SimplesNacionalTableProps) {
   const [busca, setBusca] = useState<Record<string, string>>({
     numero: "",
     empresa: "",
@@ -77,17 +84,12 @@ export function SimplesNacionalTable({ mes }: SimplesNacionalTableProps) {
   const setBuscaField = (key: string, value: string) =>
     setBusca((prev) => ({ ...prev, [key]: value }));
 
-  const { data: companies } = useCompanies();
   const { data: records } = useMovimentoFiscal(mes);
   const { data: allRecords } = useAllMovimentoFiscal();
   const saveMutation = useSaveMovimentoFiscal(mes);
 
-  const rows = (companies ?? [])
-    .filter(
-      (company) =>
-        company.tributacao === SIMPLES_NACIONAL_TRIBUTACAO &&
-        !isCompanyInactiveInMonth(company, mes)
-    )
+  const rows = companies
+    .filter((company) => company.tributacao === SIMPLES_NACIONAL_TRIBUTACAO)
     .sort((a, b) => {
       if (!a.numero && !b.numero) return a.name.localeCompare(b.name, "pt-BR");
       if (!a.numero) return 1;
