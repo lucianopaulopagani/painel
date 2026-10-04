@@ -4499,6 +4499,107 @@ export type Database = {
           },
         ]
       }
+      parcelamentos: {
+        Row: {
+          company_id: string
+          created_at: string
+          envio: string | null
+          estadual: string | null
+          id: string
+          inss_pgfn: string | null
+          inss_rfb: string | null
+          mei_relp_iss: string | null
+          mes_referencia: string
+          municipal: string | null
+          pert: string | null
+          relp_pgfn: string | null
+          simples: string | null
+          sn_pgfn: string | null
+          sn_relp: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          envio?: string | null
+          estadual?: string | null
+          id?: string
+          inss_pgfn?: string | null
+          inss_rfb?: string | null
+          mei_relp_iss?: string | null
+          mes_referencia: string
+          municipal?: string | null
+          pert?: string | null
+          relp_pgfn?: string | null
+          simples?: string | null
+          sn_pgfn?: string | null
+          sn_relp?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          envio?: string | null
+          estadual?: string | null
+          id?: string
+          inss_pgfn?: string | null
+          inss_rfb?: string | null
+          mei_relp_iss?: string | null
+          mes_referencia?: string
+          municipal?: string | null
+          pert?: string | null
+          relp_pgfn?: string | null
+          simples?: string | null
+          sn_pgfn?: string | null
+          sn_relp?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parcelamentos_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parcelamentos_comentarios: {
+        Row: {
+          campo: string
+          comentario: string
+          company_id: string
+          created_at: string
+          id: string
+          mes_referencia: string
+          updated_at: string
+        }
+        Insert: {
+          campo: string
+          comentario: string
+          company_id: string
+          created_at?: string
+          id?: string
+          mes_referencia: string
+          updated_at?: string
+        }
+        Update: {
+          campo?: string
+          comentario?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          mes_referencia?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parcelamentos_comentarios_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ponto: {
         Row: {
           company_id: string

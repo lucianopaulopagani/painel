@@ -239,6 +239,44 @@ export type MovimentoCarneLeaoInput = Omit<
   "id" | "created_at" | "updated_at"
 >;
 
+/** Registro do Controle de Parcelamentos (Fiscal) de uma empresa no mês. */
+export interface ParcelamentoRecord {
+  id: string;
+  company_id: string;
+  /** Mês de referência (YYYY-MM). */
+  mes_referencia: string;
+  simples: string | null;
+  mei_relp_iss: string | null;
+  estadual: string | null;
+  inss_rfb: string | null;
+  inss_pgfn: string | null;
+  sn_pgfn: string | null;
+  pert: string | null;
+  sn_relp: string | null;
+  relp_pgfn: string | null;
+  municipal: string | null;
+  /** ENVIO: GERADO, ENVIADO ou em branco. */
+  envio: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type ParcelamentoInput = Omit<
+  ParcelamentoRecord,
+  "id" | "created_at" | "updated_at"
+>;
+
+/** Comentário (nota estilo Excel) de uma célula do Controle de Parcelamentos. */
+export interface ParcelamentoComentarioRecord {
+  id: string;
+  company_id: string;
+  /** Mês de referência (YYYY-MM). */
+  mes_referencia: string;
+  /** Campo da linha (ex.: "simples", "envio", "empresa"). */
+  campo: string;
+  comentario: string;
+}
+
 /** Registro anual do Alvará localização (Societário). */
 export interface AlvaraLocalizacaoRecord {
   id: string;

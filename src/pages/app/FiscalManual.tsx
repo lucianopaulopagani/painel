@@ -9,7 +9,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Acesso",
         detail:
-          "O painel Fiscal aparece no menu de departamentos do topo para usuários vinculados. Dentro dele há os submenus Dashboard, Movimento Fiscal e Manual.",
+          "O painel Fiscal aparece no menu de departamentos do topo para usuários vinculados. Dentro dele há os submenus Movimento Fiscal, Controle de Parcelamentos e Manual; os dashboards ficam no Dashboard geral.",
       },
       {
         label: "Empresas e responsáveis",
@@ -167,6 +167,53 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Filtros",
         detail: "Filtros por coluna no cabeçalho, no padrão das demais tabelas.",
+      },
+    ],
+  },
+  {
+    title: "Controle de Parcelamentos",
+    description:
+      "Planilha mensal dos parcelamentos das empresas do departamento Fiscal (submenu Controle de Parcelamentos).",
+    items: [
+      {
+        label: "Empresas",
+        detail:
+          "Aparecem apenas as empresas do departamento Fiscal marcadas com o subdepartamento 'Controle de Parcelamentos' no cadastro de empresas. Todos os usuários do Fiscal veem todas essas empresas.",
+      },
+      {
+        label: "Mês de referência",
+        detail:
+          "Mesmo modelo mensal do Movimento Fiscal: escolha o mês no seletor e os valores gravados ficam guardados por mês, alimentando o dashboard e o histórico.",
+      },
+      {
+        label: "Colunas",
+        detail:
+          "N, UF, Empresa e CNPJ vêm do cadastro de empresas. As colunas SIMPLES, MEI/RELP/ISS, ESTADUAL, INSS RFB, INSS PGFN, SN PGFN, PERT, SN RELP, RELP PGFN e MUNICIPAL são listas suspensas com GERADO e DESABILITADO. ENVIO é a lista suspensa com GERADO e ENVIADO (em branco quando nada foi escolhido).",
+      },
+      {
+        label: "Cor de desabilitado",
+        detail:
+          "A opção DESABILITADO destaca o campo com a cor roxa de desabilitado e segue para os próximos meses até ser alterada, igual ao Lucro Real.",
+      },
+      {
+        label: "Comentários nas células",
+        detail:
+          "Todas as colunas aceitam comentário (clique com o botão direito em qualquer célula, de N até ENVIO). A célula ganha um marcador no canto superior direito com o comentário no tooltip, e o comentário é levado para os meses seguintes até ser alterado ou removido.",
+      },
+      {
+        label: "Data de Início",
+        detail:
+          "Meses anteriores à Data de Início da empresa ficam com os campos desabilitados também nesta tabela.",
+      },
+      {
+        label: "Filtros",
+        detail:
+          "Filtros por coluna no cabeçalho, incluindo o filtro de UF (lista apenas as UFs das empresas exibidas) e de ENVIO.",
+      },
+      {
+        label: "Dashboard",
+        detail:
+          "No Dashboard geral, o submenu 'Controle de Parcelamentos' mostra os cartões Finalizadas (ENVIADO), Pendentes (GERADO e em branco) e Total de empresas, com quantidade e porcentagem, além dos gráficos por responsável e por responsável e ENVIO — no mesmo formato do dashboard do Movimento Fiscal.",
       },
     ],
   },
