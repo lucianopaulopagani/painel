@@ -105,7 +105,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Lucro Real e Lucro Presumido",
         detail:
-          "Selecionando 'Lucro Real' ou 'Lucro Presumido' no filtro de Tributação, é exibida a tabela do modelo das empresas normais: N, Empresas e UF (do cadastro de empresas com essa tributação), a Situação (mesmos campos do Simples Nacional: OK, OK-ENT, OK-SM e FAZENDO), as obrigações ISSQN, DIME/GIA PR, DAPI, GIA RS, DRCST, SPED FISCAL, SPED CONTR, REINF, DIRBI, MIT e OBS.",
+          "Selecionando 'Lucro Real' ou 'Lucro Presumido' no filtro de Tributação, é exibida a tabela do modelo das empresas normais: N, Empresas e UF (do cadastro de empresas com essa tributação), a Situação (mesmos campos do Simples Nacional: OK, OK-ENT, OK-SM e FAZENDO), as obrigações ISSQN, DIME/GIA PR, DAPI, GIA RS, DRCST, SPED FISCAL, SPED CONTR, REINF, DIRBI, MIT e OBS — com filtro de UF em menu suspenso listando apenas as UFs das empresas exibidas.",
       },
       {
         label: "Situação e dashboard",

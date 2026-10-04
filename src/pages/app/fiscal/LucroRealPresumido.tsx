@@ -187,6 +187,13 @@ export function LucroRealPresumidoTable({
       .map((company) => company.id)
   );
 
+  /** UFs presentes nas empresas da tabela (o filtro lista apenas essas). */
+  const ufOptions = Array.from(
+    new Set(
+      rows.map((company) => company.uf).filter((uf): uf is string => Boolean(uf))
+    )
+  ).sort();
+
   const filteredRows = rows.filter((company) => {
     const match = (value: string | null | undefined, query: string): boolean =>
       !query ||
@@ -248,7 +255,8 @@ export function LucroRealPresumidoTable({
   const renderFilterSelect = (
     key: string,
     label: string,
-    widthClass: string
+    widthClass: string,
+    options: readonly string[] = LUCRO_OPTIONS
   ) => (
     <TableHead className={`${HEAD} ${widthClass} align-bottom`}>
       <span className="mb-1 block whitespace-nowrap">{label}</span>
@@ -264,7 +272,7 @@ export function LucroRealPresumidoTable({
         <SelectContent>
           <SelectItem value="todos">Todos</SelectItem>
           <SelectItem value="branco">Em branco</SelectItem>
-          {LUCRO_OPTIONS.map((option) => (
+          {options.map((option) => (
             <SelectItem key={option} value={option}>
               {option}
             </SelectItem>
@@ -394,7 +402,7 @@ export function LucroRealPresumidoTable({
             <TableRow className="bg-muted hover:bg-muted">
               {renderFilterInput("numero", "N", "w-10")}
               {renderFilterInput("empresa", "Empresas", "w-56")}
-              {renderFilterSelect("uf", "UF", "w-12")}
+              {renderFilterSelect("uf", "UF", "w-12", ufOptions)}
               <TableHead className={`${HEAD} w-24 align-bottom`}>
                 <span className="mb-1 block whitespace-nowrap">Situação</span>
                 <Select
