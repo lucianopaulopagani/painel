@@ -4858,7 +4858,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_09_28: {
+      messages_2026_10_09: {
         Row: {
           event: string | null
           extension: string
@@ -4891,7 +4891,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_09_29: {
+      messages_2026_10_10: {
         Row: {
           event: string | null
           extension: string
@@ -4924,7 +4924,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_09_30: {
+      messages_2026_10_11: {
         Row: {
           event: string | null
           extension: string
@@ -4957,7 +4957,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_10_01: {
+      messages_2026_10_12: {
         Row: {
           event: string | null
           extension: string
@@ -4990,7 +4990,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_10_02: {
+      messages_2026_10_13: {
         Row: {
           event: string | null
           extension: string
@@ -5023,7 +5023,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_10_03: {
+      messages_2026_10_14: {
         Row: {
           event: string | null
           extension: string
@@ -5056,7 +5056,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_10_04: {
+      messages_2026_10_15: {
         Row: {
           event: string | null
           extension: string

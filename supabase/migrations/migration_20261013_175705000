@@ -1,0 +1,5 @@
+-- Limpa o valor antigo da coluna Folha (valores iguais a 'OK - GABI').
+update public.empresas_funcionarios
+   set folha = null,
+       updated_at = now()
+ where folha = 'OK - GABI';
