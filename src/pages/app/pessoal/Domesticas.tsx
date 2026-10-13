@@ -33,6 +33,11 @@ import {
   DOMESTICAS_STATUS_OPTIONS,
 } from "@/lib/domesticas";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
+import {
+  PESSOAL_ENVIO_TONE,
+  PESSOAL_FLAG_TONE,
+  PESSOAL_STATUS_TONE,
+} from "@/lib/pessoal-tones";
 import { cn } from "@/lib/utils";
 import { formatCpfCnpj } from "@/lib/utils";
 import type {
@@ -240,23 +245,6 @@ export default function Domesticas() {
     />
   );
 
-  const STATUS_TONE = {
-    Concluído:
-      "bg-status-success text-status-success-foreground hover:bg-status-success/90",
-    Pendente:
-      "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
-    "Em Andamento":
-      "bg-status-warning text-status-warning-foreground hover:bg-status-warning/90",
-    "Em Ajuste": "bg-primary/10 text-primary hover:bg-primary/15",
-    Desativado: "bg-muted text-muted-foreground hover:bg-muted/80",
-  };
-  const ENVIO_TONE = {
-    Enviado:
-      "bg-status-success text-status-success-foreground hover:bg-status-success/90",
-    Pendente:
-      "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
-  };
-
   const renderFilterSelect = (
     key: keyof typeof busca,
     label: string,
@@ -308,7 +296,7 @@ export default function Domesticas() {
             record?.status ?? "",
             DOMESTICAS_STATUS_OPTIONS,
             "status",
-            STATUS_TONE
+            PESSOAL_STATUS_TONE
           )}
         </TableCell>
         <TableCell className={`${CELL} w-28`}>
@@ -336,7 +324,8 @@ export default function Domesticas() {
             domestica.id,
             record?.folha ?? "",
             DOMESTICAS_FOLHA_OPTIONS,
-            "folha"
+            "folha",
+            PESSOAL_FLAG_TONE
           )}
         </TableCell>
         <TableCell className={`${CELL} w-16`}>
@@ -344,7 +333,8 @@ export default function Domesticas() {
             domestica.id,
             record?.dae ?? "",
             DOMESTICAS_DAE_OPTIONS,
-            "dae"
+            "dae",
+            PESSOAL_FLAG_TONE
           )}
         </TableCell>
         <TableCell className={`${CELL} w-24`}>
@@ -353,7 +343,7 @@ export default function Domesticas() {
             record?.envio ?? "",
             DOMESTICAS_ENVIO_OPTIONS,
             "envio",
-            ENVIO_TONE
+            PESSOAL_ENVIO_TONE
           )}
         </TableCell>
         <TableCell className={`${CELL} w-20`}>
@@ -361,7 +351,8 @@ export default function Domesticas() {
             domestica.id,
             record?.ponto ?? "",
             DOMESTICAS_PONTO_OPTIONS,
-            "ponto"
+            "ponto",
+            PESSOAL_ENVIO_TONE
           )}
         </TableCell>
       </TableRow>

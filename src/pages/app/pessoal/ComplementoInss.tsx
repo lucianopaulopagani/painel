@@ -37,6 +37,10 @@ import {
   isCompanyInactiveInMonth,
   isPeriodBeforeStart,
 } from "@/lib/companies";
+import {
+  PESSOAL_ENVIO_TONE,
+  PESSOAL_FLAG_TONE,
+} from "@/lib/pessoal-tones";
 import { cn } from "@/lib/utils";
 import type { ComplementoInssInput } from "@/lib/types";
 
@@ -208,14 +212,6 @@ export default function ComplementoInss() {
     </Select>
   );
 
-  const ENVIO_TONE = {
-    Enviado:
-      "bg-status-success text-status-success-foreground hover:bg-status-success/90",
-    Pendente:
-      "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
-    Desativado: "bg-muted text-muted-foreground hover:bg-muted/80",
-  };
-
   const renderFilterSelect = (
     key: keyof typeof busca,
     label: string,
@@ -269,7 +265,7 @@ export default function ComplementoInss() {
             record?.darf ?? "",
             COMPLEMENTO_INSS_DARF_OPTIONS,
             "darf",
-            {},
+            PESSOAL_FLAG_TONE,
             blocked
           )}
         </TableCell>
@@ -279,7 +275,7 @@ export default function ComplementoInss() {
             envio,
             COMPLEMENTO_INSS_ENVIO_OPTIONS,
             "envio",
-            ENVIO_TONE,
+            PESSOAL_ENVIO_TONE,
             blocked
           )}
         </TableCell>

@@ -54,6 +54,11 @@ import {
   isCompanyInactiveInMonth,
   isPeriodBeforeStart,
 } from "@/lib/companies";
+import {
+  PESSOAL_ENVIO_TONE,
+  PESSOAL_FLAG_TONE,
+  PESSOAL_STATUS_TONE,
+} from "@/lib/pessoal-tones";
 import { formatCpfCnpj } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { EmpresasFuncionariosInput } from "@/lib/types";
@@ -75,19 +80,6 @@ const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
 const STATUS_SELECT_OPTIONS = EMPRESAS_FUNC_STATUS_OPTIONS.filter(
   (option) => option !== "Desativado"
 );
-
-/**
- * Cores das opções OK (verde), Não Possui (azul) e Possui (vermelho) — padrão
- * usado nas listas suspensas das colunas de marcação (Folha, Empréstimo, FGTS,
- * Taxa Sindical e DCTFWEB).
- */
-const FLAG_TONE: Record<string, string> = {
-  OK: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
-  "Não Possui":
-    "bg-status-info text-status-info-foreground hover:bg-status-info/90",
-  Possui:
-    "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
-};
 
 /* Colunas fixas até "Empresa": offsets acompanham w-32 (128px) + w-10 (40px). */
 const STICKY_HEAD = "sticky top-0 z-20 bg-muted";
@@ -514,20 +506,6 @@ export default function EmpresasFuncionarios() {
     </TableHead>
   );
 
-  const STATUS_TONE = {
-    Concluído:
-      "bg-status-success text-status-success-foreground hover:bg-status-success/90",
-    Pendente:
-      "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
-    "Em Andamento":
-      "bg-status-warning text-status-warning-foreground hover:bg-status-warning/90",
-    "Em Ajuste": "bg-primary/10 text-primary hover:bg-primary/15",
-  };
-  const ENVIO_TONE = {
-    Enviado: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
-    Pendente: "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
-  };
-
   const renderRow = (company: (typeof rows)[number]) => {
     const record = recordByCompany.get(company.id);
     const blocked = startBlockedIds.has(company.id);
@@ -542,7 +520,7 @@ export default function EmpresasFuncionarios() {
             effectiveStatus(company.id) ?? "",
             STATUS_SELECT_OPTIONS,
             "status",
-            STATUS_TONE
+            PESSOAL_STATUS_TONE
           )}
         </TableCell>
         <TableCell
@@ -584,7 +562,7 @@ export default function EmpresasFuncionarios() {
             record?.folha ?? "",
             EMPRESAS_FUNC_FOLHA_OPTIONS,
             "folha",
-            FLAG_TONE
+            PESSOAL_FLAG_TONE
           )}
         </TableCell>
         <TableCell className={`${CELL} w-24`}>
@@ -593,7 +571,7 @@ export default function EmpresasFuncionarios() {
             effectiveEmprestimo(company.id) ?? "",
             EMPRESAS_FUNC_EMPRESTIMO_OPTIONS,
             "emprestimo",
-            FLAG_TONE
+            PESSOAL_FLAG_TONE
           )}
         </TableCell>
         <TableCell className={`${CELL} w-20`}>
@@ -602,7 +580,7 @@ export default function EmpresasFuncionarios() {
             record?.fgts ?? "",
             EMPRESAS_FUNC_FGTS_OPTIONS,
             "fgts",
-            FLAG_TONE
+            PESSOAL_FLAG_TONE
           )}
         </TableCell>
         <TableCell className={`${CELL} w-24`}>
@@ -611,7 +589,7 @@ export default function EmpresasFuncionarios() {
             record?.taxa_sindical ?? "",
             EMPRESAS_FUNC_FLAG_OPTIONS,
             "taxa_sindical",
-            FLAG_TONE
+            PESSOAL_FLAG_TONE
           )}
         </TableCell>
         <TableCell className={`${CELL} w-20`}>
@@ -620,7 +598,7 @@ export default function EmpresasFuncionarios() {
             record?.dctfweb ?? "",
             EMPRESAS_FUNC_DCTFWEB_OPTIONS,
             "dctfweb",
-            FLAG_TONE
+            PESSOAL_FLAG_TONE
           )}
         </TableCell>
         <TableCell className={`${CELL} w-20`}>
@@ -629,7 +607,7 @@ export default function EmpresasFuncionarios() {
             record?.envio ?? "",
             EMPRESAS_FUNC_ENVIO_OPTIONS,
             "envio",
-            ENVIO_TONE
+            PESSOAL_ENVIO_TONE
           )}
         </TableCell>
         {renderActionsCell(company)}

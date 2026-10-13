@@ -120,6 +120,7 @@ export default function PessoalManual() {
       tips={[
         "Status é individual por mês em Empresas com funcionários; nos demais módulos, use Desativado para tirar a empresa do movimento sem excluir o histórico.",
         "Data Base, Empréstimo e notas herdam do mês anterior — basta ajustar quando mudar.",
+        "As listas suspensas seguem o padrão de cores: OK e Enviado em verde, Não Possui em azul, Possui e Pendente em vermelho, Em Andamento em âmbar e Desativado no tom neutro.",
         "Use os filtros de coluna para localizar empresas por status, envio ou mês.",
       ]}
     />

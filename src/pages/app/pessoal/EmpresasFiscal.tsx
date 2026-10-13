@@ -39,6 +39,11 @@ import {
   isPeriodBeforeStart,
 } from "@/lib/companies";
 import { formatCpfCnpj } from "@/lib/utils";
+import {
+  PESSOAL_ENVIO_TONE,
+  PESSOAL_FLAG_TONE,
+  PESSOAL_STATUS_TONE,
+} from "@/lib/pessoal-tones";
 import { cn } from "@/lib/utils";
 import type { EmpresasFiscalInput, EmpresasFiscalRecord } from "@/lib/types";
 
@@ -243,12 +248,7 @@ export default function EmpresasFiscal() {
             <SelectTrigger
               className={cn(
                 "h-7 w-full min-w-0 px-1 text-xs font-semibold",
-                status === "Concluído" &&
-                  "bg-status-success text-status-success-foreground hover:bg-status-success/90",
-                status === "Pendente" &&
-                  "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
-                status === "Desativado" &&
-                  "bg-muted text-muted-foreground hover:bg-muted/80"
+                PESSOAL_STATUS_TONE[status]
               )}
             >
               <SelectValue placeholder="—" />
@@ -299,8 +299,7 @@ export default function EmpresasFiscal() {
             <SelectTrigger
               className={cn(
                 "h-7 w-full min-w-0 px-1 text-xs font-semibold",
-                dctfweb === "OK" &&
-                  "bg-status-success text-status-success-foreground hover:bg-status-success/90"
+                PESSOAL_FLAG_TONE[dctfweb]
               )}
             >
               <SelectValue placeholder="—" />
@@ -326,12 +325,7 @@ export default function EmpresasFiscal() {
             <SelectTrigger
               className={cn(
                 "h-7 w-full min-w-0 px-1 text-xs font-semibold",
-                envio === "Enviado" &&
-                  "bg-status-success text-status-success-foreground hover:bg-status-success/90",
-                envio === "Pendente" &&
-                  "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
-                envio === "Desativado" &&
-                  "bg-muted text-muted-foreground hover:bg-muted/80"
+                PESSOAL_ENVIO_TONE[envio]
               )}
             >
               <SelectValue placeholder="—" />

@@ -30,6 +30,7 @@ import {
   isPeriodBeforeStart,
 } from "@/lib/companies";
 import { PONTO_ENVIO_OPTIONS } from "@/lib/ponto";
+import { PESSOAL_ENVIO_TONE } from "@/lib/pessoal-tones";
 import { cn } from "@/lib/utils";
 import type { PontoInput } from "@/lib/types";
 
@@ -184,12 +185,7 @@ export default function Ponto() {
             <SelectTrigger
               className={cn(
                 "h-7 w-full min-w-0 px-1 text-xs font-semibold",
-                envio === "Enviado" &&
-                  "bg-status-success text-status-success-foreground hover:bg-status-success/90",
-                envio === "Pendente" &&
-                  "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
-                envio === "Desativado" &&
-                  "bg-muted text-muted-foreground hover:bg-muted/80"
+                PESSOAL_ENVIO_TONE[envio]
               )}
             >
               <SelectValue placeholder="—" />
