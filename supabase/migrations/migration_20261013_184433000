@@ -1,0 +1,6 @@
+-- Permissões de acesso aos aplicativos (Chat, Tarefas e Agenda).
+-- Todos ficam sem permissão (false) até que o administrador libere.
+alter table public.profiles
+  add column if not exists chat_access boolean not null default false,
+  add column if not exists tarefas_access boolean not null default false,
+  add column if not exists agenda_access boolean not null default false;

@@ -23,6 +23,12 @@ export interface Profile {
   empresas_criar: boolean;
   empresas_importar: boolean;
   empresas_bulk: boolean;
+  /** Acesso ao Chat interno. */
+  chat_access: boolean;
+  /** Acesso ao Controle de Tarefas. */
+  tarefas_access: boolean;
+  /** Acesso à Agenda. */
+  agenda_access: boolean;
   /** Gestor de departamento (administrador do chat). */
   chat_admin: boolean;
   avatar_url: string | null;

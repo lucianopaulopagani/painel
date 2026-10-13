@@ -17,6 +17,9 @@ export interface RawProfileRow {
   empresas_criar: boolean;
   empresas_importar: boolean;
   empresas_bulk: boolean;
+  chat_access: boolean;
+  tarefas_access: boolean;
+  agenda_access: boolean;
   chat_admin: boolean;
   avatar_url: string | null;
   created_at: string;
@@ -38,6 +41,9 @@ export function toProfileWithDepartments(
     empresas_criar: row.empresas_criar,
     empresas_importar: row.empresas_importar,
     empresas_bulk: row.empresas_bulk,
+    chat_access: row.chat_access ?? false,
+    tarefas_access: row.tarefas_access ?? false,
+    agenda_access: row.agenda_access ?? false,
     chat_admin: row.chat_admin ?? false,
     avatar_url: row.avatar_url ?? null,
     created_at: row.created_at,

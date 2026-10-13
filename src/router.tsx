@@ -8,6 +8,7 @@ import AgendaPage from "./pages/agenda/AgendaPage";
 import ChatPage from "./pages/chat/ChatPage";
 import TarefasPage from "./pages/tarefas/TarefasPage";
 import ProtectedRoute from "./components/guards/protected-route";
+import AppAccessRoute from "./components/guards/app-access-route";
 import AdminRoute from "./components/guards/admin-route";
 import NotFound from "./pages/NotFound";
 
@@ -53,17 +54,29 @@ export const routers = [
   {
     path: "/chat",
     name: "chat",
-    element: <ChatPage />,
+    element: (
+      <AppAccessRoute app="chat">
+        <ChatPage />
+      </AppAccessRoute>
+    ),
   },
   {
     path: "/agenda",
     name: "agenda",
-    element: <AgendaPage />,
+    element: (
+      <AppAccessRoute app="agenda">
+        <AgendaPage />
+      </AppAccessRoute>
+    ),
   },
   {
     path: "/tarefas",
     name: "tarefas",
-    element: <TarefasPage />,
+    element: (
+      <AppAccessRoute app="tarefas">
+        <TarefasPage />
+      </AppAccessRoute>
+    ),
   },
   /* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */
   {

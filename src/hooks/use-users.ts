@@ -83,6 +83,9 @@ export interface CreateUserInput {
   empresas_criar?: boolean;
   empresas_importar?: boolean;
   empresas_bulk?: boolean;
+  chat_access?: boolean;
+  tarefas_access?: boolean;
+  agenda_access?: boolean;
 }
 
 export function useCreateUser() {
@@ -114,6 +117,9 @@ export interface UpdateUserInput {
   empresas_criar?: boolean;
   empresas_importar?: boolean;
   empresas_bulk?: boolean;
+  chat_access?: boolean;
+  tarefas_access?: boolean;
+  agenda_access?: boolean;
   avatar_url?: string | null;
 }
 

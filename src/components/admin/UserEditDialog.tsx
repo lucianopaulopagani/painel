@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DepartmentMultiSelect } from "@/components/admin/department-multi-select";
+import { AppAccessSection } from "@/components/admin/AppAccessSection";
 import { EmpresasPermissionSection } from "@/components/admin/EmpresasPermissionSection";
 import { useUpdateUser } from "@/hooks/use-users";
 import { fileToDataUrl } from "@/hooks/use-own-profile";
@@ -51,6 +52,11 @@ export default function UserEditDialog({
   const [empresasCriar, setEmpresasCriar] = useState(false);
   const [empresasImportar, setEmpresasImportar] = useState(false);
   const [empresasBulk, setEmpresasBulk] = useState(false);
+  const [apps, setApps] = useState<Record<AppAccessKey, boolean>>({
+    chat: false,
+    tarefas: false,
+    agenda: false,
+  });
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -66,6 +72,11 @@ export default function UserEditDialog({
       setEmpresasCriar(user.empresas_criar);
       setEmpresasImportar(user.empresas_importar);
       setEmpresasBulk(user.empresas_bulk);
+      setApps({
+        chat: user.chat_access,
+        tarefas: user.tarefas_access,
+        agenda: user.agenda_access,
+      });
       setAvatarUrl(user.avatar_url ?? null);
     }
   }, [open, user]);
@@ -105,6 +116,9 @@ export default function UserEditDialog({
         empresas_criar: empresasCriar,
         empresas_importar: empresasImportar,
         empresas_bulk: empresasBulk,
+        chat_access: apps.chat,
+        tarefas_access: apps.tarefas,
+        agenda_access: apps.agenda,
         avatar_url: avatarUrl || null,
       });
       toast.success("Usuário atualizado.");
@@ -237,6 +251,12 @@ export default function UserEditDialog({
             onCriarChange={setEmpresasCriar}
             onImportarChange={setEmpresasImportar}
             onBulkChange={setEmpresasBulk}
+          />
+          <AppAccessSection
+            apps={apps}
+            onChange={(key, value) =>
+              setApps((prev) => ({ ...prev, [key]: value }))
+            }
           />
           <DialogFooter>
             <Button

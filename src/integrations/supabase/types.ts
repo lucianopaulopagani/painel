@@ -4707,7 +4707,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          agenda_access: boolean
           avatar_url: string | null
+          chat_access: boolean
           chat_admin: boolean
           created_at: string
           dashboard_access: boolean
@@ -4720,9 +4722,12 @@ export type Database = {
           full_name: string
           id: string
           role: string
+          tarefas_access: boolean
         }
         Insert: {
+          agenda_access?: boolean
           avatar_url?: string | null
+          chat_access?: boolean
           chat_admin?: boolean
           created_at?: string
           dashboard_access?: boolean
@@ -4735,9 +4740,12 @@ export type Database = {
           full_name: string
           id: string
           role?: string
+          tarefas_access?: boolean
         }
         Update: {
+          agenda_access?: boolean
           avatar_url?: string | null
+          chat_access?: boolean
           chat_admin?: boolean
           created_at?: string
           dashboard_access?: boolean
@@ -4750,6 +4758,7 @@ export type Database = {
           full_name?: string
           id?: string
           role?: string
+          tarefas_access?: boolean
         }
         Relationships: []
       }

@@ -163,6 +163,9 @@ Deno.serve(async (req) => {
           empresas_criar = false,
           empresas_importar = false,
           empresas_bulk = false,
+          chat_access = false,
+          tarefas_access = false,
+          agenda_access = false,
         } = payload;
         if (!email || !password || !full_name) {
           return json({ ok: false, error: "Informe nome, e-mail e senha." });
@@ -193,6 +196,9 @@ Deno.serve(async (req) => {
           empresas_criar: empresas_criar === true,
           empresas_importar: empresas_importar === true,
           empresas_bulk: empresas_bulk === true,
+          chat_access: chat_access === true,
+          tarefas_access: tarefas_access === true,
+          agenda_access: agenda_access === true,
         });
         if (profileError) {
           await admin.auth.admin.deleteUser(created.user.id);
@@ -221,6 +227,9 @@ Deno.serve(async (req) => {
           empresas_criar,
           empresas_importar,
           empresas_bulk,
+          chat_access,
+          tarefas_access,
+          agenda_access,
           avatar_url,
         } = payload;
         if (!id) return json({ ok: false, error: "Usuário não informado." });
@@ -256,6 +265,15 @@ Deno.serve(async (req) => {
         }
         if (empresas_bulk !== undefined) {
           profileUpdate.empresas_bulk = empresas_bulk === true;
+        }
+        if (chat_access !== undefined) {
+          profileUpdate.chat_access = chat_access === true;
+        }
+        if (tarefas_access !== undefined) {
+          profileUpdate.tarefas_access = tarefas_access === true;
+        }
+        if (agenda_access !== undefined) {
+          profileUpdate.agenda_access = agenda_access === true;
         }
         if (avatar_url !== undefined) {
           profileUpdate.avatar_url =

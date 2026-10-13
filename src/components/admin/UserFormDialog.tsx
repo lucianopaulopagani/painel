@@ -20,8 +20,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DepartmentMultiSelect } from "@/components/admin/department-multi-select";
+import { AppAccessSection } from "@/components/admin/AppAccessSection";
 import { EmpresasPermissionSection } from "@/components/admin/EmpresasPermissionSection";
 import { useCreateUser } from "@/hooks/use-users";
+import type { AppAccessKey } from "@/lib/app-access";
 import type { Role } from "@/lib/types";
 
 interface UserFormDialogProps {
@@ -46,6 +48,11 @@ export default function UserFormDialog({
   const [empresasCriar, setEmpresasCriar] = useState(false);
   const [empresasImportar, setEmpresasImportar] = useState(false);
   const [empresasBulk, setEmpresasBulk] = useState(false);
+  const [apps, setApps] = useState<Record<AppAccessKey, boolean>>({
+    chat: false,
+    tarefas: false,
+    agenda: false,
+  });
 
   useEffect(() => {
     if (open) {
@@ -60,6 +67,7 @@ export default function UserFormDialog({
       setEmpresasCriar(false);
       setEmpresasImportar(false);
       setEmpresasBulk(false);
+      setApps({ chat: false, tarefas: false, agenda: false });
     }
   }, [open]);
 
@@ -86,6 +94,9 @@ export default function UserFormDialog({
         empresas_criar: empresasCriar,
         empresas_importar: empresasImportar,
         empresas_bulk: empresasBulk,
+        chat_access: apps.chat,
+        tarefas_access: apps.tarefas,
+        agenda_access: apps.agenda,
       });
       toast.success("Usuário criado com sucesso.");
       onOpenChange(false);
@@ -189,6 +200,12 @@ export default function UserFormDialog({
             onCriarChange={setEmpresasCriar}
             onImportarChange={setEmpresasImportar}
             onBulkChange={setEmpresasBulk}
+          />
+          <AppAccessSection
+            apps={apps}
+            onChange={(key, value) =>
+              setApps((prev) => ({ ...prev, [key]: value }))
+            }
           />
           <DialogFooter>
             <Button
