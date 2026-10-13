@@ -4233,6 +4233,43 @@ export type Database = {
           },
         ]
       }
+      empresas_funcionarios_comentarios: {
+        Row: {
+          campo: string
+          comentario: string
+          company_id: string
+          created_at: string
+          id: string
+          mes_referencia: string
+          updated_at: string
+        }
+        Insert: {
+          campo: string
+          comentario: string
+          company_id: string
+          created_at?: string
+          id?: string
+          mes_referencia: string
+          updated_at?: string
+        }
+        Update: {
+          campo?: string
+          comentario?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          mes_referencia?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empresas_funcionarios_comentarios_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_guests: {
         Row: {
           created_at: string

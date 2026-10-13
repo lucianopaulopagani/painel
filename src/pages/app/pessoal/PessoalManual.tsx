@@ -65,6 +65,11 @@ const SECTIONS: ManualSection[] = [
           "Data Base, Empréstimo e as notas (Obs. Fechamento, Info. Sindicato, Info. Sindicato Patronal) são levados para os próximos meses até serem alterados. Status, Folha e DCTFWEB valem apenas no mês atual.",
       },
       {
+        label: "Anotações nas células",
+        detail:
+          "Clique com o botão direito em qualquer coluna de marcação (Status, Data Base, Folha, Empréstimo, FGTS, Taxa Sindical, DCTFWEB e Envio) para adicionar uma anotação, igual ao Balancete/Balanço e ao Movimento Fiscal. A célula ganha um marcador no canto superior direito com a anotação no tooltip, e a anotação é levada para os meses seguintes até ser alterada ou removida.",
+      },
+      {
         label: "Notas",
         detail:
           "O botão de lápis (Ações) abre um diálogo com Obs. Fechamento, Info. Sindicato e Info. Sindicato Patronal, com os valores herdados do mês anterior.",

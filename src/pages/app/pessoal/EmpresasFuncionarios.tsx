@@ -1,5 +1,6 @@
 import {
   type PointerEvent as ReactPointerEvent,
+  type ReactNode,
   useLayoutEffect,
   useRef,
   useState,
@@ -33,7 +34,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { CommentableCell } from "@/components/commentable-cell";
 import { useEmpresasFuncionarios, useEmpresasFuncionariosAll, useSaveEmpresasFuncionarios } from "@/hooks/use-empresas-funcionarios";
+import {
+  useAllEmpresasFuncionariosComentarios,
+  useSaveEmpresasFuncionariosComentario,
+} from "@/hooks/use-empresas-funcionarios-comentarios";
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
@@ -215,6 +221,50 @@ export default function EmpresasFuncionarios() {
     });
     setNoteDialog(null);
   };
+
+  const { data: comentarios } = useAllEmpresasFuncionariosComentarios();
+  const saveComentario = useSaveEmpresasFuncionariosComentario(mes);
+
+  /**
+   * Anotação efetiva da célula: usa o mês exibido; se não houver, herda do mês
+   * anterior mais recente (a anotação segue para os meses seguintes até ser
+   * alterada). Anotação em branco no mês encerra a herança (foi removida).
+   */
+  const commentOf = (companyId: string, campo: string): string | null => {
+    const latest = (comentarios ?? [])
+      .filter(
+        (item) =>
+          item.company_id === companyId &&
+          item.campo === campo &&
+          item.mes_referencia <= mes
+      )
+      .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia))[0];
+    if (!latest) return null;
+    return latest.comentario === "" ? null : latest.comentario;
+  };
+
+  /** Célula com anotação (clique com o botão direito), como nos demais módulos. */
+  const commentable = (
+    companyId: string,
+    campo: string,
+    label: string,
+    children: ReactNode,
+    blocked = false
+  ) => (
+    <CommentableCell
+      disabled={blocked}
+      comment={commentOf(companyId, campo)}
+      label={label}
+      onSave={(text) =>
+        saveComentario.mutate({ company_id: companyId, campo, comentario: text })
+      }
+      onRemove={() =>
+        saveComentario.mutate({ company_id: companyId, campo, comentario: "" })
+      }
+    >
+      {children}
+    </CommentableCell>
+  );
 
   const pessoal = findDepartmentByName(departments, PESSOAL_DEPARTMENT_NAME);
 
@@ -515,12 +565,18 @@ export default function EmpresasFuncionarios() {
         title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
       >
         <TableCell className={`${CELL} w-32 left-0 ${STICKY_CELL}`}>
-          {renderSelectCell(
+          {commentable(
             company.id,
-            effectiveStatus(company.id) ?? "",
-            STATUS_SELECT_OPTIONS,
             "status",
-            PESSOAL_STATUS_TONE
+            `Status — ${mes} — ${company.name}`,
+            renderSelectCell(
+              company.id,
+              effectiveStatus(company.id) ?? "",
+              STATUS_SELECT_OPTIONS,
+              "status",
+              PESSOAL_STATUS_TONE
+            ),
+            blocked
           )}
         </TableCell>
         <TableCell
@@ -549,65 +605,107 @@ export default function EmpresasFuncionarios() {
           </span>
         </TableCell>
         <TableCell className={`${CELL} w-20`}>
-          {renderSelectCell(
+          {commentable(
             company.id,
-            effectiveDataBase(company.id) ?? "",
-            EMPRESAS_FUNC_MESES_OPTIONS,
-            "data_base"
+            "data_base",
+            `Data Base — ${mes} — ${company.name}`,
+            renderSelectCell(
+              company.id,
+              effectiveDataBase(company.id) ?? "",
+              EMPRESAS_FUNC_MESES_OPTIONS,
+              "data_base"
+            ),
+            blocked
           )}
         </TableCell>
         <TableCell className={`${CELL} w-24`}>
-          {renderSelectCell(
+          {commentable(
             company.id,
-            record?.folha ?? "",
-            EMPRESAS_FUNC_FOLHA_OPTIONS,
             "folha",
-            PESSOAL_FLAG_TONE
+            `Folha — ${mes} — ${company.name}`,
+            renderSelectCell(
+              company.id,
+              record?.folha ?? "",
+              EMPRESAS_FUNC_FOLHA_OPTIONS,
+              "folha",
+              PESSOAL_FLAG_TONE
+            ),
+            blocked
           )}
         </TableCell>
         <TableCell className={`${CELL} w-24`}>
-          {renderSelectCell(
+          {commentable(
             company.id,
-            effectiveEmprestimo(company.id) ?? "",
-            EMPRESAS_FUNC_EMPRESTIMO_OPTIONS,
             "emprestimo",
-            PESSOAL_FLAG_TONE
+            `Empréstimo — ${mes} — ${company.name}`,
+            renderSelectCell(
+              company.id,
+              effectiveEmprestimo(company.id) ?? "",
+              EMPRESAS_FUNC_EMPRESTIMO_OPTIONS,
+              "emprestimo",
+              PESSOAL_FLAG_TONE
+            ),
+            blocked
           )}
         </TableCell>
         <TableCell className={`${CELL} w-20`}>
-          {renderSelectCell(
+          {commentable(
             company.id,
-            record?.fgts ?? "",
-            EMPRESAS_FUNC_FGTS_OPTIONS,
             "fgts",
-            PESSOAL_FLAG_TONE
+            `FGTS — ${mes} — ${company.name}`,
+            renderSelectCell(
+              company.id,
+              record?.fgts ?? "",
+              EMPRESAS_FUNC_FGTS_OPTIONS,
+              "fgts",
+              PESSOAL_FLAG_TONE
+            ),
+            blocked
           )}
         </TableCell>
         <TableCell className={`${CELL} w-24`}>
-          {renderSelectCell(
+          {commentable(
             company.id,
-            record?.taxa_sindical ?? "",
-            EMPRESAS_FUNC_FLAG_OPTIONS,
             "taxa_sindical",
-            PESSOAL_FLAG_TONE
+            `Taxa Sindical — ${mes} — ${company.name}`,
+            renderSelectCell(
+              company.id,
+              record?.taxa_sindical ?? "",
+              EMPRESAS_FUNC_FLAG_OPTIONS,
+              "taxa_sindical",
+              PESSOAL_FLAG_TONE
+            ),
+            blocked
           )}
         </TableCell>
         <TableCell className={`${CELL} w-20`}>
-          {renderSelectCell(
+          {commentable(
             company.id,
-            record?.dctfweb ?? "",
-            EMPRESAS_FUNC_DCTFWEB_OPTIONS,
             "dctfweb",
-            PESSOAL_FLAG_TONE
+            `DCTFWEB — ${mes} — ${company.name}`,
+            renderSelectCell(
+              company.id,
+              record?.dctfweb ?? "",
+              EMPRESAS_FUNC_DCTFWEB_OPTIONS,
+              "dctfweb",
+              PESSOAL_FLAG_TONE
+            ),
+            blocked
           )}
         </TableCell>
         <TableCell className={`${CELL} w-20`}>
-          {renderSelectCell(
+          {commentable(
             company.id,
-            record?.envio ?? "",
-            EMPRESAS_FUNC_ENVIO_OPTIONS,
             "envio",
-            PESSOAL_ENVIO_TONE
+            `Envio — ${mes} — ${company.name}`,
+            renderSelectCell(
+              company.id,
+              record?.envio ?? "",
+              EMPRESAS_FUNC_ENVIO_OPTIONS,
+              "envio",
+              PESSOAL_ENVIO_TONE
+            ),
+            blocked
           )}
         </TableCell>
         {renderActionsCell(company)}
