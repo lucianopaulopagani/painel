@@ -37,6 +37,7 @@ import { useAuth } from "@/context/auth";
 import CompanyFormDialog from "@/components/admin/CompanyFormDialog";
 import CompanyImportDialog from "@/components/admin/CompanyImportDialog";
 import CompanyBulkEditDialog from "@/components/admin/CompanyBulkEditDialog";
+import { effectiveEmpresaFields } from "@/lib/empresas-permissions";
 import { formatCpfCnpj } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { CompanyWithDepartments } from "@/lib/types";
@@ -418,7 +419,7 @@ export default function CompaniesTab() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         company={editing}
-        allowedFields={isAdmin ? undefined : (profile?.empresas_fields ?? [])}
+        allowedFields={isAdmin ? undefined : effectiveEmpresaFields(profile)}
       />
 
       <CompanyImportDialog
@@ -433,7 +434,7 @@ export default function CompaniesTab() {
           if (!open) setSelected(new Set());
         }}
         ids={Array.from(selected)}
-        allowedFields={isAdmin ? undefined : (profile?.empresas_fields ?? [])}
+        allowedFields={isAdmin ? undefined : effectiveEmpresaFields(profile)}
       />
 
       <AlertDialog

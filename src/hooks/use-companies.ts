@@ -200,7 +200,8 @@ export function useBulkUpdateCompanies() {
       deptActions?: {
         department_id: string;
         action: "remove" | "set";
-        subdepartments: string[];
+        /** undefined = mantém os subdepartamentos atuais das empresas. */
+        subdepartments?: string[];
         /** Responsáveis por subdepartamento (nome do subdepartamento → ids). */
         subdepartment_responsibles?: Record<string, string[]>;
       }[];
@@ -257,21 +258,27 @@ export function useBulkUpdateCompanies() {
           // Mantém os responsáveis já definidos nos subdepartamentos mantidos.
           const { data: links, error: readError } = await supabase
             .from("company_departments")
-            .select("company_id, subdepartment_responsibles")
+            .select("company_id, subdepartments, subdepartment_responsibles")
             .in("company_id", ids)
             .eq("department_id", dept.department_id);
           if (readError) throw readError;
           const currentByCompany = new Map(
             (links ?? []).map((link) => [
               link.company_id,
-              link.subdepartment_responsibles ?? {},
+              {
+                subdepartments: link.subdepartments ?? [],
+                responsibles: link.subdepartment_responsibles ?? {},
+              },
             ])
           );
           for (const companyId of ids) {
+            const existing = currentByCompany.get(companyId);
+            // Sem subdepartamentos informados, mantém os das empresas.
+            const nextSubdepartments = dept.subdepartments ?? existing?.subdepartments ?? [];
             const merged = {
               ...sanitizeResponsibles(
-                currentByCompany.get(companyId) ?? {},
-                subdepartments
+                existing?.responsibles ?? {},
+                nextSubdepartments
               ),
               ...(dept.subdepartment_responsibles ?? {}),
             };
@@ -281,10 +288,10 @@ export function useBulkUpdateCompanies() {
                 {
                   company_id: companyId,
                   department_id: dept.department_id,
-                  subdepartments,
+                  subdepartments: nextSubdepartments,
                   subdepartment_responsibles: sanitizeResponsibles(
                     merged,
-                    subdepartments
+                    nextSubdepartments
                   ),
                 },
                 { onConflict: "company_id,department_id" }

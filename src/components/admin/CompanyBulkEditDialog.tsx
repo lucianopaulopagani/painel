@@ -141,16 +141,20 @@ export default function CompanyBulkEditDialog({
     if (clearIe) patch.inscricao_estadual = null;
     else if (ie.trim()) patch.inscricao_estadual = ie.trim();
 
+    // Sem a permissão de vínculo, os subdepartamentos e responsáveis atuais são
+    // mantidos (não são apagados pela ação em massa).
+    const canLink = canEdit("subdepartments") || canEdit("responsaveis");
     const deptActionsList = Object.entries(deptActions)
       .filter(([, value]) => value.action !== "none")
       .map(([department_id, value]) => ({
         department_id,
         action: value.action as "remove" | "set",
-        subdepartments: value.subdepartments,
-        subdepartment_responsibles: keepMarkedResponsibles(
-          value.responsibles,
-          value.subdepartments
-        ),
+        subdepartments: canEdit("subdepartments")
+          ? value.subdepartments
+          : undefined,
+        subdepartment_responsibles: canLink
+          ? keepMarkedResponsibles(value.responsibles, value.subdepartments)
+          : undefined,
       }));
 
     if (Object.keys(patch).length === 0 && deptActionsList.length === 0) {
@@ -325,7 +329,7 @@ export default function CompanyBulkEditDialog({
                                   : "Subdepartamentos (opcional)"
                               }
                               disabled={
-                                !canEdit("departments") ||
+                                !canEdit("subdepartments") ||
                                 !editableDepartment ||
                                 deptSubmenus.length === 0
                               }

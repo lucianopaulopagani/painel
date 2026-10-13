@@ -1,7 +1,12 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { EMPRESA_PERMISSION_FIELDS } from "@/lib/empresas-permissions";
+import {
+  EMPRESA_FIELD_CHECKBOXES,
+  EMPRESA_LINK_PERMISSION_KEYS,
+} from "@/lib/empresas-permissions";
+
+const LINK_KEYS = EMPRESA_LINK_PERMISSION_KEYS as readonly string[];
 
 interface EmpresasPermissionSectionProps {
   access: boolean;
@@ -35,6 +40,13 @@ export function EmpresasPermissionSection({
     } else {
       onFieldsChange([...fields, key]);
     }
+  };
+
+  /** Interruptor que libera subdepartamentos e responsáveis juntos. */
+  const linkPermissions = LINK_KEYS.some((key) => fields.includes(key));
+  const toggleLinkPermissions = (value: boolean) => {
+    const others = fields.filter((field) => !LINK_KEYS.includes(field));
+    onFieldsChange(value ? [...others, ...LINK_KEYS] : others);
   };
 
   return (
@@ -88,6 +100,22 @@ export function EmpresasPermissionSection({
             <div className="flex items-center justify-between gap-4">
               <div>
                 <Label className="text-sm font-medium">
+                  Subdepartamentos e responsáveis
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Permite vincular os subdepartamentos e os responsáveis das
+                  empresas, somente nos departamentos em que o usuário
+                  participa.
+                </p>
+              </div>
+              <Switch
+                checked={linkPermissions}
+                onCheckedChange={toggleLinkPermissions}
+              />
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <Label className="text-sm font-medium">
                   Manutenção em massa
                 </Label>
                 <p className="text-xs text-muted-foreground">
@@ -100,7 +128,7 @@ export function EmpresasPermissionSection({
           </div>
 
           <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-            {EMPRESA_PERMISSION_FIELDS.map((field) => (
+            {EMPRESA_FIELD_CHECKBOXES.map((field) => (
               <label
                 key={field.key}
                 className="flex cursor-pointer items-center gap-2 text-sm"

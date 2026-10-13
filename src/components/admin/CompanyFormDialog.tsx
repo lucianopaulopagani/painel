@@ -562,7 +562,7 @@ export default function CompanyFormDialog({
                           placeholder="Subdepartamentos (opcional)"
                           disabled={
                             !assignment.selected ||
-                            !canEdit("departments") ||
+                            !canEdit("subdepartments") ||
                             !editableDepartment ||
                             deptSubmenus.length === 0
                           }
