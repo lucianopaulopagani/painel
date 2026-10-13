@@ -76,6 +76,19 @@ const STATUS_SELECT_OPTIONS = EMPRESAS_FUNC_STATUS_OPTIONS.filter(
   (option) => option !== "Desativado"
 );
 
+/**
+ * Cores das opções OK (verde), Não Possui (azul) e Possui (vermelho) — padrão
+ * usado nas listas suspensas das colunas de marcação (Folha, Empréstimo, FGTS,
+ * Taxa Sindical e DCTFWEB).
+ */
+const FLAG_TONE: Record<string, string> = {
+  OK: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+  "Não Possui":
+    "bg-status-info text-status-info-foreground hover:bg-status-info/90",
+  Possui:
+    "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
+};
+
 /* Colunas fixas até "Empresa": offsets acompanham w-32 (128px) + w-10 (40px). */
 const STICKY_HEAD = "sticky top-0 z-20 bg-muted";
 const VHEAD = "sticky top-0 z-10 bg-muted";
@@ -570,7 +583,8 @@ export default function EmpresasFuncionarios() {
             company.id,
             record?.folha ?? "",
             EMPRESAS_FUNC_FOLHA_OPTIONS,
-            "folha"
+            "folha",
+            FLAG_TONE
           )}
         </TableCell>
         <TableCell className={`${CELL} w-24`}>
@@ -578,7 +592,8 @@ export default function EmpresasFuncionarios() {
             company.id,
             effectiveEmprestimo(company.id) ?? "",
             EMPRESAS_FUNC_EMPRESTIMO_OPTIONS,
-            "emprestimo"
+            "emprestimo",
+            FLAG_TONE
           )}
         </TableCell>
         <TableCell className={`${CELL} w-20`}>
@@ -586,7 +601,8 @@ export default function EmpresasFuncionarios() {
             company.id,
             record?.fgts ?? "",
             EMPRESAS_FUNC_FGTS_OPTIONS,
-            "fgts"
+            "fgts",
+            FLAG_TONE
           )}
         </TableCell>
         <TableCell className={`${CELL} w-24`}>
@@ -594,7 +610,8 @@ export default function EmpresasFuncionarios() {
             company.id,
             record?.taxa_sindical ?? "",
             EMPRESAS_FUNC_FLAG_OPTIONS,
-            "taxa_sindical"
+            "taxa_sindical",
+            FLAG_TONE
           )}
         </TableCell>
         <TableCell className={`${CELL} w-20`}>
@@ -602,7 +619,8 @@ export default function EmpresasFuncionarios() {
             company.id,
             record?.dctfweb ?? "",
             EMPRESAS_FUNC_DCTFWEB_OPTIONS,
-            "dctfweb"
+            "dctfweb",
+            FLAG_TONE
           )}
         </TableCell>
         <TableCell className={`${CELL} w-20`}>
