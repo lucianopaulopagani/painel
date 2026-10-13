@@ -110,8 +110,8 @@ export default function EmpresasFiscal() {
 
   /**
    * Valores efetivos no mês: usa o registro do mês; se não existir, carrega do
-   * mês anterior mais recente — mantém "Desativado" fixo (status/envio) e
-   * herda "informações de fechamento" e DCTFWEB.
+   * mês anterior mais recente (apenas "informações de fechamento"). Status e
+   * envio são individuais de cada mês e DCTFWEB fica no mês em que foi marcado.
    */
   const effectiveFields = (
     companyId: string
@@ -138,17 +138,12 @@ export default function EmpresasFiscal() {
       .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia));
     const latest = prior[0];
     return {
-      status: latest?.status === "Desativado" ? "Desativado" : null,
-      envio: latest?.envio === "Desativado" ? "Desativado" : null,
+      status: null,
+      envio: null,
       informacoes: latest?.informacoes ?? null,
       // DCTFWEB não herda: fica apenas no mês em que foi marcado.
       dctfweb: null,
     };
-  };
-
-  const isDesativada = (companyId: string): boolean => {
-    const { status, envio } = effectiveFields(companyId);
-    return status === "Desativado" || envio === "Desativado";
   };
 
   const filteredRows = rows.filter((company) => {
@@ -179,13 +174,6 @@ export default function EmpresasFiscal() {
       selectOrBlank(envio, busca.envio)
     );
   });
-
-  const displayActiveRows = filteredRows.filter(
-    (company) => !isDesativada(company.id)
-  );
-  const displayInactiveRows = filteredRows.filter((company) =>
-    isDesativada(company.id)
-  );
 
   const save = (companyId: string, patch: Record<string, unknown>) => {
     const eff = effectiveFields(companyId);
@@ -492,20 +480,8 @@ export default function EmpresasFiscal() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {displayActiveRows.map(renderRow)}
-              {displayInactiveRows.length > 0 && (
-                <TableRow className="bg-muted/50">
-                  <TableCell
-                    colSpan={7}
-                    className="px-2 py-1.5 text-xs font-semibold text-muted-foreground"
-                  >
-                    Empresas desativadas
-                  </TableCell>
-                </TableRow>
-              )}
-              {displayInactiveRows.map(renderRow)}
-              {displayActiveRows.length === 0 &&
-                displayInactiveRows.length === 0 && (
+              {filteredRows.map(renderRow)}
+              {filteredRows.length === 0 && (
                   <TableRow>
                     <TableCell
                       colSpan={7}

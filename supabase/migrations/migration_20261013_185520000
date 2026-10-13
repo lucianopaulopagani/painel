@@ -1,0 +1,5 @@
+-- Limpa o status antigo "Desativado" de Empresas Fiscal.
+update public.empresas_fiscal
+   set status = null,
+       updated_at = now()
+ where status = 'Desativado';

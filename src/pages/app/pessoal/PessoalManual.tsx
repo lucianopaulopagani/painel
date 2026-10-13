@@ -91,9 +91,9 @@ const SECTIONS: ManualSection[] = [
           "Status, Nº, Empresa, CNPJ, Informações fechamento, DCTFWEB e Envio.",
       },
       {
-        label: "Status e Desativado",
+        label: "Status",
         detail:
-          "Concluído, Pendente e Desativado. Empresas desativadas ficam na seção no fim da tabela e o status é levado para os próximos meses.",
+          "Concluído (verde), Pendente (vermelho), Em Andamento (âmbar) e Em Ajuste. O status é individual de cada mês.",
       },
       {
         label: "Filtros",
@@ -145,7 +145,7 @@ export default function PessoalManual() {
       description=""
       sections={SECTIONS}
       tips={[
-        "Status é individual por mês em Empresas com funcionários; nos demais módulos, use Desativado para tirar a empresa do movimento sem excluir o histórico.",
+        "O status de Empresas com funcionários e Empresas Fiscal é individual de cada mês; em Ponto e Complemento INSS, use Envio = Desativado para tirar a empresa do movimento sem excluir o histórico.",
         "Data Base, Empréstimo e notas herdam do mês anterior — basta ajustar quando mudar.",
         "As listas suspensas seguem o padrão de cores: OK e Enviado em verde, Não Possui em azul, Possui e Pendente em vermelho, Em Andamento em âmbar e Desativado no tom neutro.",
         "Use os filtros de coluna para localizar empresas por status, envio ou mês.",
