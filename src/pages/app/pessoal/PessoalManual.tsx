@@ -24,6 +24,28 @@ const SECTIONS: ManualSection[] = [
     ],
   },
   {
+    title: "Dashboard",
+    description:
+      "Visão do módulo Empresas com funcionários no mês de referência, no Dashboard geral.",
+    items: [
+      {
+        label: "Filtros",
+        detail:
+          "Mês de referência e Responsável (os usuários responsáveis pelo subdepartamento Empresas com funcionários no cadastro de empresas).",
+      },
+      {
+        label: "Cartões",
+        detail:
+          "Concluído (verde), Pendente (vermelho), Em Andamento (âmbar), Em Ajuste e Total de empresas, cada um com a quantidade e a porcentagem sobre o total.",
+      },
+      {
+        label: "Gráficos",
+        detail:
+          "Com o filtro em 'Todos os responsáveis': Empresas por responsável e Empresas por responsável e status (barras empilhadas, incluindo as empresas em branco).",
+      },
+    ],
+  },
+  {
     title: "Empresas com funcionários",
     description: "Acompanhamento mensal das empresas com funcionários.",
     items: [

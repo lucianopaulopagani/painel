@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import FiscalMovimentoDashboard from "./fiscal/FiscalMovimentoDashboard";
 import ParcelamentosDashboard from "./fiscal/ParcelamentosDashboard";
+import PessoalDashboard from "./pessoal/PessoalDashboard";
 import ContabilDashboard from "./contabil/ContabilDashboard";
 import SocietarioDashboard from "./societario/SocietarioDashboard";
 import AlvaraLocalizacaoDashboard from "./societario/AlvaraLocalizacaoDashboard";
@@ -152,6 +153,8 @@ export default function GeneralDashboard() {
           <FiscalMovimentoDashboard />
         ) : active === "fiscal" && submenuKey === "parcelamentos" ? (
           <ParcelamentosDashboard />
+        ) : active === "pessoal" && submenuKey === "dashboard" ? (
+          <PessoalDashboard />
         ) : active === "contabil" && submenuKey === "balancete-balanco" ? (
           <ContabilDashboard />
         ) : active === "societario" && submenuKey === "certificado-digital" ? (

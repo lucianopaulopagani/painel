@@ -32,6 +32,14 @@ export const PESSOAL_STATUS_TONE: Record<string, string> = {
   Desativado: NEUTRAL,
 };
 
+/** Cores dos cartões do dashboard por status (mesmos tons, sem hover). */
+export const PESSOAL_STATUS_CARD_TONE: Record<string, string> = {
+  Concluído: "bg-status-success text-status-success-foreground",
+  Pendente: "bg-status-danger text-status-danger-foreground",
+  "Em Andamento": "bg-status-warning text-status-warning-foreground",
+  "Em Ajuste": "bg-primary/10 text-primary",
+};
+
 /** Coluna Envio (e marcações simples como Enviado). */
 export const PESSOAL_ENVIO_TONE: Record<string, string> = {
   Enviado: GREEN,
