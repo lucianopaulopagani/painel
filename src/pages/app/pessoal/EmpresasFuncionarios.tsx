@@ -71,6 +71,11 @@ function readStoredMes(): string {
 const CELL = "px-1 py-1 text-[11px]";
 const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
 
+/** Opções de status exibidas nas linhas e no filtro (sem "Desativado"). */
+const STATUS_SELECT_OPTIONS = EMPRESAS_FUNC_STATUS_OPTIONS.filter(
+  (option) => option !== "Desativado"
+);
+
 /* Colunas fixas até "Empresa": offsets acompanham w-32 (128px) + w-10 (40px). */
 const STICKY_HEAD = "sticky top-0 z-20 bg-muted";
 const VHEAD = "sticky top-0 z-10 bg-muted";
@@ -227,23 +232,11 @@ export default function EmpresasFuncionarios() {
   );
 
   /**
-   * Status efetivo: usa o registro do mês; se não existir, mantém
-   * "Desativado" fixo caso o mês anterior mais recente seja Desativado.
+   * Status efetivo: usa o registro do mês; o status é individual por mês e não
+   * é herdado dos meses anteriores.
    */
-  const effectiveStatus = (companyId: string): string | null => {
-    const current = recordByCompany.get(companyId);
-    if (current) return current.status;
-    const prior = (allRecords ?? [])
-      .filter(
-        (record) =>
-          record.company_id === companyId && record.mes_referencia < mes
-      )
-      .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia));
-    return prior[0]?.status === "Desativado" ? "Desativado" : null;
-  };
-
-  const isDesativada = (companyId: string): boolean =>
-    effectiveStatus(companyId) === "Desativado";
+  const effectiveStatus = (companyId: string): string | null =>
+    recordByCompany.get(companyId)?.status ?? null;
 
   /**
    * Data Base efetiva: usa o registro do mês; se não existir, herda a do mês
@@ -346,12 +339,7 @@ export default function EmpresasFuncionarios() {
     );
   });
 
-  const activeRows = filteredRows.filter(
-    (company) => !isDesativada(company.id)
-  );
-  const inactiveRows = filteredRows.filter((company) =>
-    isDesativada(company.id)
-  );
+  const activeRows = filteredRows;
 
   const save = (companyId: string, patch: Record<string, unknown>) => {
     const effStatus = effectiveStatus(companyId);
@@ -521,7 +509,6 @@ export default function EmpresasFuncionarios() {
     "Em Andamento":
       "bg-status-warning text-status-warning-foreground hover:bg-status-warning/90",
     "Em Ajuste": "bg-primary/10 text-primary hover:bg-primary/15",
-    Desativado: "bg-muted text-muted-foreground hover:bg-muted/80",
   };
   const ENVIO_TONE = {
     Enviado: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
@@ -540,7 +527,7 @@ export default function EmpresasFuncionarios() {
           {renderSelectCell(
             company.id,
             effectiveStatus(company.id) ?? "",
-            EMPRESAS_FUNC_STATUS_OPTIONS,
+            STATUS_SELECT_OPTIONS,
             "status",
             STATUS_TONE
           )}
@@ -676,7 +663,7 @@ export default function EmpresasFuncionarios() {
           <Table className="table-fixed min-w-[1144px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
-                {renderFilterSelect("status", "Status", EMPRESAS_FUNC_STATUS_OPTIONS, "w-32", `${STICKY_HEAD} left-0`)}
+                {renderFilterSelect("status", "Status", STATUS_SELECT_OPTIONS, "w-32", `${STICKY_HEAD} left-0`)}
                 {renderFilterInput("numero", "Nº", "w-10", `${STICKY_HEAD} ${N_LEFT}`)}
                 {renderFilterInput("empresa", "Empresa", "w-24", `${STICKY_HEAD} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`)}
                 {renderFilterInput("cnpj", "CNPJ", "w-24")}
@@ -693,17 +680,6 @@ export default function EmpresasFuncionarios() {
             </TableHeader>
             <TableBody>
               {activeRows.map(renderRow)}
-              {inactiveRows.length > 0 && (
-                <TableRow className="bg-muted/50">
-                  <TableCell
-                    colSpan={13}
-                    className="px-2 py-1.5 text-xs font-semibold text-muted-foreground"
-                  >
-                    Empresas desativadas
-                  </TableCell>
-                </TableRow>
-              )}
-              {inactiveRows.map(renderRow)}
               {filteredRows.length === 0 && (
                 <TableRow>
                   <TableCell

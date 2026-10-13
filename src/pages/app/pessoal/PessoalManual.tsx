@@ -35,12 +35,12 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Status",
         detail:
-          "Concluído (verde), Pendente (vermelho), Em Andamento (amarelo), Em Ajuste e Desativado. Empresas com status 'Desativado' vão para a seção 'Empresas desativadas' no fim da tabela.",
+          "Concluído (verde), Pendente (vermelho), Em Andamento (amarelo) e Em Ajuste. A opção Desativado não existe neste módulo — empresas inativadas no cadastro saem da lista automaticamente.",
       },
       {
         label: "Herança entre meses",
         detail:
-          "Status, Data Base, Empréstimo e as notas (Obs. Fechamento, Info. Sindicato, Info. Sindicato Patronal) são levados para os próximos meses até serem alterados. Folha e DCTFWEB valem apenas no mês atual.",
+          "Data Base, Empréstimo e as notas (Obs. Fechamento, Info. Sindicato, Info. Sindicato Patronal) são levados para os próximos meses até serem alterados. Status, Folha e DCTFWEB valem apenas no mês atual.",
       },
       {
         label: "Notas",
@@ -118,7 +118,7 @@ export default function PessoalManual() {
       description=""
       sections={SECTIONS}
       tips={[
-        "Altere o status para 'Desativado' para tirar a empresa do movimento sem excluir o histórico.",
+        "Status é individual por mês em Empresas com funcionários; nos demais módulos, use Desativado para tirar a empresa do movimento sem excluir o histórico.",
         "Data Base, Empréstimo e notas herdam do mês anterior — basta ajustar quando mudar.",
         "Use os filtros de coluna para localizar empresas por status, envio ou mês.",
       ]}
