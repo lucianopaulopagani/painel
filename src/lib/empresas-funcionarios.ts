@@ -7,13 +7,11 @@ export const EMPRESAS_FUNC_STATUS_OPTIONS = [
   "Desativado",
 ] as const;
 
-/** Opções comuns das colunas de marcação (Empréstimo, FGTS, Taxa, DCTFWEB). */
+/** Opções da coluna Taxa Sindical. */
 export const EMPRESAS_FUNC_FLAG_OPTIONS = [
   "OK",
-  "Não Possui",
   "Possui",
-  "SEM",
-  "Oposição",
+  "Não Possui",
 ] as const;
 
 /** Opções do campo Empréstimo (herdado para os próximos meses). */

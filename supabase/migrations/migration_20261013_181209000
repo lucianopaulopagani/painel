@@ -1,0 +1,5 @@
+-- Limpa o valor antigo "Oposição" da coluna Taxa Sindical.
+update public.empresas_funcionarios
+   set taxa_sindical = null,
+       updated_at = now()
+ where taxa_sindical = 'Oposição';
