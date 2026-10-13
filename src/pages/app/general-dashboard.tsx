@@ -52,7 +52,7 @@ const DEPT_SUBMENUS: Record<DashboardKey, { key: string; label: string }[]> = {
     { key: "dashboard", label: "Movimento Fiscal" },
     { key: "parcelamentos", label: "Controle de Parcelamentos" },
   ],
-  pessoal: [{ key: "dashboard", label: "Dashboard" }],
+  pessoal: [{ key: "dashboard", label: "Empresas com funcionários" }],
   societario: [
     { key: "certificado-digital", label: "Certificado digital" },
     { key: "alvara-localizacao", label: "Alvará localização" },
