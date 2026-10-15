@@ -5,6 +5,8 @@
   <meta charset="UTF-8" />
   <link href="/brand/logo-blue-vertical.png" rel="icon">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Impede a tradução automática do navegador (ela altera o DOM e quebra o app). -->
+  <meta name="google" content="notranslate" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <title>Hub P4</title>
@@ -19,7 +21,7 @@
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root" translate="no"></div>
   <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
   <script type="module" src="/src/main.tsx"></script>
 </body>

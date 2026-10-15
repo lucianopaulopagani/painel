@@ -1,7 +1,14 @@
-import { Component, type ErrorInfo, type ReactNode } from "react";
+import {
+  Component,
+  useEffect,
+  useState,
+  type ErrorInfo,
+  type ReactNode,
+} from "react";
 import { AlertTriangle, RotateCw } from "lucide-react";
 import { useRouteError } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 import {
   Card,
   CardContent,
@@ -59,9 +66,40 @@ interface AppErrorBoundaryProps {
   children: ReactNode;
 }
 
+/** Erros típicos de DOM alterado por fora do React (ex.: tradutor do navegador). */
+const DOM_MUTATION_ERRORS = [
+  "removeChild",
+  "insertBefore",
+  "appendChild",
+  "not a child",
+  "não é filho",
+];
+
+/** Recuperação automática: recarrega uma única vez por sessão. */
+const RECOVERY_KEY = "p4:auto-recovery";
+
+function isDomMutationError(message: string): boolean {
+  return DOM_MUTATION_ERRORS.some((fragment) =>
+    message.toLowerCase().includes(fragment.toLowerCase())
+  );
+}
+
+function tryAutoRecovery(message: string): boolean {
+  if (!isDomMutationError(message)) return false;
+  try {
+    if (sessionStorage.getItem(RECOVERY_KEY) === "1") return false;
+    sessionStorage.setItem(RECOVERY_KEY, "1");
+  } catch {
+    return false;
+  }
+  window.location.reload();
+  return true;
+}
+
 /**
  * Captura erros de renderização do aplicativo e mostra uma tela amigável em vez
- * da tela de erro padrão do React Router.
+ * da tela de erro padrão do React Router. Erros de DOM (normalmente causados
+ * pelo tradutor automático do navegador) tentam uma recarga única antes disso.
  */
 export class AppErrorBoundary extends Component<
   AppErrorBoundaryProps,
@@ -75,6 +113,9 @@ export class AppErrorBoundary extends Component<
 
   componentDidCatch(error: unknown, info: ErrorInfo) {
     console.error("Erro não tratado no aplicativo:", error, info);
+    const message = errorMessage(error);
+    if (tryAutoRecovery(message)) return;
+    if (this.state.message !== message) this.setState({ message });
   }
 
   render() {
@@ -88,5 +129,16 @@ export class AppErrorBoundary extends Component<
 /** Erro de rota (errorElement) — mostra a mesma tela amigável. */
 export function RouteErrorBoundary() {
   const error = useRouteError();
-  return <ErrorScreen message={errorMessage(error)} />;
+  const message = errorMessage(error);
+
+  const [recovering, setRecovering] = useState(false);
+
+  // Erro de DOM (tradutor do navegador): recarrega uma vez antes de avisar.
+  useEffect(() => {
+    if (tryAutoRecovery(message)) setRecovering(true);
+  }, [message]);
+
+  if (recovering) return <LoadingScreen />;
+
+  return <ErrorScreen message={message} />;
 }
