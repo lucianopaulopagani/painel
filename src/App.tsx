@@ -6,11 +6,18 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "./context/auth";
 import { ThemeProvider } from "./lib/theme";
 import { routers } from "./router";
+import {
+  AppErrorBoundary,
+  RouteErrorBoundary,
+} from "./components/error-boundary";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  const router = createBrowserRouter(routers);
+  // Cada rota ganha a tela de erro amigável (substitui a padrão do React Router).
+  const router = createBrowserRouter(
+    routers.map((route) => ({ ...route, errorElement: <RouteErrorBoundary /> }))
+  );
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -18,7 +25,9 @@ const App = () => {
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <RouterProvider router={router} />
+            <AppErrorBoundary>
+              <RouterProvider router={router} />
+            </AppErrorBoundary>
           </TooltipProvider>
         </ThemeProvider>
       </AuthProvider>
