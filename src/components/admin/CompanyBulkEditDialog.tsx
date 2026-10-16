@@ -24,10 +24,13 @@ import { useBulkUpdateCompanies } from "@/hooks/use-companies";
 import { useAllUsersWithDepartments } from "@/hooks/use-all-users";
 import { useAllDepartmentSubmenus } from "@/hooks/use-department-submenus";
 import { useDepartments } from "@/hooks/use-departments";
+import { useMunicipios } from "@/hooks/use-municipios";
 import { useAuth } from "@/context/auth";
-import { TRIBUTACOES } from "@/lib/companies";
+import { MOTIVOS_INATIVACAO, TRIBUTACOES } from "@/lib/companies";
 import { UFS } from "@/lib/ufs";
+import { formatCpfCnpj } from "@/lib/utils";
 import type { EmpresaPermissionKey } from "@/lib/empresas-permissions";
+import type { SubdepartmentPeriod } from "@/lib/types";
 
 interface CompanyBulkEditDialogProps {
   open: boolean;
@@ -38,6 +41,8 @@ interface CompanyBulkEditDialogProps {
 }
 
 const NAO_ALTERAR = "nao-alterar";
+/** Opção que limpa o campo (em branco) nas empresas selecionadas. */
+const LIMPAR = "limpar";
 
 type DeptActionValue = "none" | "set" | "remove";
 
@@ -46,7 +51,17 @@ interface DeptAction {
   subdepartments: string[];
   /** Responsáveis por subdepartamento (nome do subdepartamento → ids). */
   responsibles: Record<string, string[]>;
+  /** Período por subdepartamento (nome do subdepartamento → início/fim). */
+  periods: Record<string, SubdepartmentPeriod>;
 }
+
+/** Estado vazio de um departamento. */
+const EMPTY_DEPT_ACTION: DeptAction = {
+  action: "none",
+  subdepartments: [],
+  responsibles: {},
+  periods: {},
+};
 
 export default function CompanyBulkEditDialog({
   open,
@@ -70,19 +85,48 @@ export default function CompanyBulkEditDialog({
     !allowedFields || allowedFields.includes(key);
 
   const [uf, setUf] = useState(NAO_ALTERAR);
+  const [municipio, setMunicipio] = useState(NAO_ALTERAR);
   const [tributacao, setTributacao] = useState(NAO_ALTERAR);
   const [ie, setIe] = useState("");
   const [clearIe, setClearIe] = useState(false);
+  const [socioResponsavel, setSocioResponsavel] = useState("");
+  const [clearSocioResponsavel, setClearSocioResponsavel] = useState(false);
+  const [socioCpf, setSocioCpf] = useState("");
+  const [clearSocioCpf, setClearSocioCpf] = useState(false);
+  const [ativa, setAtiva] = useState(NAO_ALTERAR);
+  const [motivoInativacao, setMotivoInativacao] = useState("");
+  const [dataInativacao, setDataInativacao] = useState("");
   const [deptActions, setDeptActions] = useState<Record<string, DeptAction>>(
     {}
   );
 
+  // Os municípios dependem da UF escolhida no próprio formulário.
+  const { data: municipios } = useMunicipios(
+    uf === NAO_ALTERAR ? "" : uf
+  );
+
+  const setAtivaValue = (value: string) => {
+    setAtiva(value);
+    if (value !== "nao") {
+      setMotivoInativacao("");
+      setDataInativacao("");
+    }
+  };
+
   useEffect(() => {
     if (open) {
       setUf(NAO_ALTERAR);
+      setMunicipio(NAO_ALTERAR);
       setTributacao(NAO_ALTERAR);
       setIe("");
       setClearIe(false);
+      setSocioResponsavel("");
+      setClearSocioResponsavel(false);
+      setSocioCpf("");
+      setClearSocioCpf(false);
+      setAtiva(NAO_ALTERAR);
+      setMotivoInativacao("");
+      setDataInativacao("");
       setDeptActions({});
     }
   }, [open]);
@@ -91,10 +135,7 @@ export default function CompanyBulkEditDialog({
     setDeptActions((prev) => ({
       ...prev,
       [departmentId]: {
-        action: "none",
-        subdepartments: [],
-        responsibles: {},
-        ...prev[departmentId],
+        ...(prev[departmentId] ?? EMPTY_DEPT_ACTION),
         ...patch,
       },
     }));
@@ -107,16 +148,31 @@ export default function CompanyBulkEditDialog({
     ids: string[]
   ) => {
     setDeptActions((prev) => {
-      const current = prev[departmentId] ?? {
-        action: "none" as DeptActionValue,
-        subdepartments: [],
-        responsibles: {},
-      };
+      const current = prev[departmentId] ?? EMPTY_DEPT_ACTION;
       return {
         ...prev,
         [departmentId]: {
           ...current,
           responsibles: { ...current.responsibles, [submenu]: ids },
+        },
+      };
+    });
+  };
+
+  /** Define o período (mês de início e mês final) de um subdepartamento. */
+  const setSubdepartmentPeriod = (
+    departmentId: string,
+    submenu: string,
+    patch: Partial<SubdepartmentPeriod>
+  ) => {
+    setDeptActions((prev) => {
+      const current = prev[departmentId] ?? EMPTY_DEPT_ACTION;
+      const period = current.periods[submenu] ?? { inicio: null, fim: null };
+      return {
+        ...prev,
+        [departmentId]: {
+          ...current,
+          periods: { ...current.periods, [submenu]: { ...period, ...patch } },
         },
       };
     });
@@ -133,13 +189,46 @@ export default function CompanyBulkEditDialog({
       )
     );
 
+  /**
+   * Mantém os períodos apenas dos subdepartamentos ainda marcados e com pelo
+   * menos uma data informada.
+   */
+  const keepMarkedPeriods = (
+    periods: Record<string, SubdepartmentPeriod>,
+    subdepartments: string[]
+  ): Record<string, SubdepartmentPeriod> =>
+    Object.fromEntries(
+      Object.entries(periods).filter(
+        ([submenu, period]) =>
+          subdepartments.includes(submenu) && (period.inicio || period.fim)
+      )
+    );
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const patch: Record<string, unknown> = {};
     if (uf !== NAO_ALTERAR) patch.uf = uf;
-    if (tributacao !== NAO_ALTERAR) patch.tributacao = tributacao;
+    if (municipio === LIMPAR) patch.municipio = null;
+    else if (municipio !== NAO_ALTERAR) patch.municipio = municipio;
+    if (tributacao === LIMPAR) patch.tributacao = null;
+    else if (tributacao !== NAO_ALTERAR) patch.tributacao = tributacao;
     if (clearIe) patch.inscricao_estadual = null;
     else if (ie.trim()) patch.inscricao_estadual = ie.trim();
+    if (clearSocioResponsavel) patch.socio_responsavel = null;
+    else if (socioResponsavel.trim())
+      patch.socio_responsavel = socioResponsavel.trim();
+    if (clearSocioCpf) patch.socio_cpf = null;
+    else if (socioCpf.replace(/\D/g, ""))
+      patch.socio_cpf = socioCpf.replace(/\D/g, "");
+    if (ativa === "sim") {
+      patch.ativa = true;
+      patch.motivo_inativacao = null;
+      patch.data_inativacao = null;
+    } else if (ativa === "nao") {
+      patch.ativa = false;
+      patch.motivo_inativacao = motivoInativacao || null;
+      patch.data_inativacao = dataInativacao || null;
+    }
 
     // Sem a permissão de vínculo, os subdepartamentos e responsáveis atuais são
     // mantidos (não são apagados pela ação em massa).
@@ -154,6 +243,9 @@ export default function CompanyBulkEditDialog({
           : undefined,
         subdepartment_responsibles: canLink
           ? keepMarkedResponsibles(value.responsibles, value.subdepartments)
+          : undefined,
+        subdepartment_periods: canEdit("subdepartments")
+          ? keepMarkedPeriods(value.periods, value.subdepartments)
           : undefined,
       }));
 
@@ -175,23 +267,28 @@ export default function CompanyBulkEditDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-5xl">
         <DialogHeader>
           <DialogTitle>Manutenção em massa</DialogTitle>
           <DialogDescription>
             Aplica as alterações em{" "}
             <span className="font-semibold">{ids.length} empresa(s)</span>.
-            Nome, CNPJ e Número não podem ser alterados em massa.
+            Nome, CNPJ e Número não podem ser alterados em massa; os demais
+            campos do cadastro aceitam "não alterar" para preservar o valor
+            atual de cada empresa.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="flex flex-col gap-1.5">
               <Label>UF</Label>
               <Select
                 value={uf}
-                onValueChange={setUf}
+                onValueChange={(value) => {
+                  setUf(value);
+                  setMunicipio(NAO_ALTERAR);
+                }}
                 disabled={!canEdit("uf")}
               >
                 <SelectTrigger>
@@ -210,6 +307,38 @@ export default function CompanyBulkEditDialog({
               </Select>
             </div>
             <div className="flex flex-col gap-1.5">
+              <Label>Município</Label>
+              <Select
+                value={municipio}
+                onValueChange={setMunicipio}
+                disabled={!canEdit("municipio") || uf === NAO_ALTERAR}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={
+                      uf === NAO_ALTERAR
+                        ? "Selecione a UF ao lado"
+                        : "Selecione o município"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent className="max-h-80">
+                  <SelectItem value={NAO_ALTERAR}>
+                    — (não alterar)
+                  </SelectItem>
+                  <SelectItem value={LIMPAR}>(em branco)</SelectItem>
+                  {(municipios ?? []).map((nome) => (
+                    <SelectItem key={nome} value={nome}>
+                      {nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                A lista de municípios acompanha a UF escolhida acima.
+              </p>
+            </div>
+            <div className="flex flex-col gap-1.5">
               <Label>Tributação</Label>
               <Select
                 value={tributacao}
@@ -223,6 +352,7 @@ export default function CompanyBulkEditDialog({
                   <SelectItem value={NAO_ALTERAR}>
                     — (não alterar)
                   </SelectItem>
+                  <SelectItem value={LIMPAR}>(em branco)</SelectItem>
                   {TRIBUTACOES.map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}
@@ -233,27 +363,130 @@ export default function CompanyBulkEditDialog({
             </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="bulk-ie">Inscrição Estadual</Label>
-            <Input
-              id="bulk-ie"
-              value={ie}
-              onChange={(e) => setIe(e.target.value)}
-              placeholder="Deixe em branco para não alterar"
-              disabled={!canEdit("inscricao_estadual")}
-            />
-            <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-              <Checkbox
-                checked={clearIe}
-                disabled={!canEdit("inscricao_estadual")}
-                onCheckedChange={(checked) => setClearIe(checked === true)}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="bulk-ie">Inscrição Estadual</Label>
+              <Input
+                id="bulk-ie"
+                value={ie}
+                onChange={(e) => setIe(e.target.value)}
+                placeholder="Deixe em branco para não alterar"
+                disabled={!canEdit("inscricao_estadual") || clearIe}
               />
-              Limpar a Inscrição Estadual das empresas selecionadas
-            </label>
+              <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+                <Checkbox
+                  checked={clearIe}
+                  disabled={!canEdit("inscricao_estadual")}
+                  onCheckedChange={(checked) => setClearIe(checked === true)}
+                />
+                Limpar a Inscrição Estadual
+              </label>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="bulk-socio">Sócio responsável</Label>
+              <Input
+                id="bulk-socio"
+                value={socioResponsavel}
+                onChange={(e) => setSocioResponsavel(e.target.value)}
+                placeholder="Deixe em branco para não alterar"
+                disabled={!canEdit("socio_responsavel") || clearSocioResponsavel}
+              />
+              <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+                <Checkbox
+                  checked={clearSocioResponsavel}
+                  disabled={!canEdit("socio_responsavel")}
+                  onCheckedChange={(checked) =>
+                    setClearSocioResponsavel(checked === true)
+                  }
+                />
+                Limpar o sócio responsável
+              </label>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="bulk-socio-cpf">CPF do sócio</Label>
+              <Input
+                id="bulk-socio-cpf"
+                value={socioCpf}
+                onChange={(e) => setSocioCpf(formatCpfCnpj(e.target.value))}
+                placeholder="000.000.000-00"
+                inputMode="numeric"
+                disabled={!canEdit("socio_cpf") || clearSocioCpf}
+              />
+              <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+                <Checkbox
+                  checked={clearSocioCpf}
+                  disabled={!canEdit("socio_cpf")}
+                  onCheckedChange={(checked) =>
+                    setClearSocioCpf(checked === true)
+                  }
+                />
+                Limpar o CPF do sócio
+              </label>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="flex flex-col gap-1.5">
+              <Label>Ativa?</Label>
+              <Select value={ativa} onValueChange={setAtivaValue}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NAO_ALTERAR}>
+                    — (não alterar)
+                  </SelectItem>
+                  <SelectItem value="sim">Sim</SelectItem>
+                  <SelectItem value="nao">Não</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Com "Não", a empresa sai de todos os departamentos a partir do
+                mês seguinte à data de inativação (o histórico é mantido).
+              </p>
+            </div>
+            {ativa === "nao" && (
+              <>
+                <div className="flex flex-col gap-1.5">
+                  <Label>Data de inativação</Label>
+                  <Input
+                    type="date"
+                    value={dataInativacao}
+                    onChange={(e) => setDataInativacao(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Último dia ativo (ex.: 30/09/2026).
+                  </p>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label>Motivo da inativação</Label>
+                  <Select
+                    value={motivoInativacao === "" ? "none" : motivoInativacao}
+                    onValueChange={(value) =>
+                      setMotivoInativacao(value === "none" ? "" : value)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o motivo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">—</SelectItem>
+                      {MOTIVOS_INATIVACAO.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label>Departamentos e responsáveis</Label>
+            <Label>Departamentos, subdepartamentos, datas e responsáveis</Label>
             {(departments ?? []).length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 Nenhum departamento cadastrado.
@@ -261,12 +494,9 @@ export default function CompanyBulkEditDialog({
             ) : (
               <div className="flex flex-col gap-2">
                 {(departments ?? []).map((department) => {
-                  const action =
-                    deptActions[department.id]?.action ?? "none";
-                  const responsibles =
-                    deptActions[department.id]?.responsibles ?? {};
-                  const subdepartments =
-                    deptActions[department.id]?.subdepartments ?? [];
+                  const current = deptActions[department.id] ?? EMPTY_DEPT_ACTION;
+                  const { action, responsibles, subdepartments, periods } =
+                    current;
                   const deptSubmenus = (allSubmenus ?? [])
                     .filter((submenu) => submenu.department_id === department.id)
                     .map((submenu) => submenu.name);
@@ -321,6 +551,7 @@ export default function CompanyBulkEditDialog({
                                     responsibles,
                                     values
                                   ),
+                                  periods: keepMarkedPeriods(periods, values),
                                 })
                               }
                               placeholder={
@@ -340,35 +571,102 @@ export default function CompanyBulkEditDialog({
                       </div>
 
                       {action === "set" &&
-                        subdepartments.map((submenu) => (
-                          <div
-                            key={submenu}
-                            className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:pl-6"
-                          >
-                            <span className="truncate text-xs text-muted-foreground">
-                              Responsáveis — {submenu}
-                            </span>
-                            <MultiSelectDropdown
-                              options={deptUsers.map((user) => ({
-                                value: user.id,
-                                label: user.full_name,
-                              }))}
-                              value={responsibles[submenu] ?? []}
-                              onChange={(values) =>
-                                setSubdepartmentResponsibles(
-                                  department.id,
-                                  submenu,
-                                  values
-                                )
-                              }
-                              placeholder="Responsáveis (opcional)"
-                              disabled={
-                                !canEdit("responsaveis") || !editableDepartment
-                              }
-                              className="w-full sm:w-60"
-                            />
-                          </div>
-                        ))}
+                        subdepartments.map((submenu) => {
+                          const period = periods[submenu] ?? {
+                            inicio: null,
+                            fim: null,
+                          };
+                          return (
+                            <div
+                              key={submenu}
+                              className="rounded-md border border-dashed bg-muted/30 p-2 lg:ml-6"
+                            >
+                              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(8rem,1fr)_9rem_9rem_minmax(13rem,1.7fr)] lg:items-end lg:gap-3">
+                                <span
+                                  className="truncate text-xs font-semibold lg:pb-2.5"
+                                  title={submenu}
+                                >
+                                  {submenu}
+                                </span>
+                                <div className="flex flex-col gap-1.5">
+                                  <Label
+                                    htmlFor={`bulk-periodo-inicio-${department.id}-${submenu}`}
+                                    className="text-xs text-muted-foreground"
+                                  >
+                                    Data de Início
+                                  </Label>
+                                  <Input
+                                    id={`bulk-periodo-inicio-${department.id}-${submenu}`}
+                                    type="month"
+                                    value={period.inicio ?? ""}
+                                    onChange={(e) =>
+                                      setSubdepartmentPeriod(
+                                        department.id,
+                                        submenu,
+                                        { inicio: e.target.value || null }
+                                      )
+                                    }
+                                    disabled={
+                                      !canEdit("subdepartments") ||
+                                      !editableDepartment
+                                    }
+                                    className="h-8"
+                                  />
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                  <Label
+                                    htmlFor={`bulk-periodo-fim-${department.id}-${submenu}`}
+                                    className="text-xs text-muted-foreground"
+                                  >
+                                    Data Final
+                                  </Label>
+                                  <Input
+                                    id={`bulk-periodo-fim-${department.id}-${submenu}`}
+                                    type="month"
+                                    value={period.fim ?? ""}
+                                    onChange={(e) =>
+                                      setSubdepartmentPeriod(
+                                        department.id,
+                                        submenu,
+                                        { fim: e.target.value || null }
+                                      )
+                                    }
+                                    disabled={
+                                      !canEdit("subdepartments") ||
+                                      !editableDepartment
+                                    }
+                                    className="h-8"
+                                  />
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                  <span className="text-xs text-muted-foreground">
+                                    Responsáveis
+                                  </span>
+                                  <MultiSelectDropdown
+                                    options={deptUsers.map((user) => ({
+                                      value: user.id,
+                                      label: user.full_name,
+                                    }))}
+                                    value={responsibles[submenu] ?? []}
+                                    onChange={(values) =>
+                                      setSubdepartmentResponsibles(
+                                        department.id,
+                                        submenu,
+                                        values
+                                      )
+                                    }
+                                    placeholder="Responsáveis (opcional)"
+                                    disabled={
+                                      !canEdit("responsaveis") ||
+                                      !editableDepartment
+                                    }
+                                    className="w-full"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
                     </div>
                   );
                 })}
@@ -376,10 +674,11 @@ export default function CompanyBulkEditDialog({
             )}
             <p className="text-xs text-muted-foreground">
               "Adicionar / definir" inclui o departamento nas empresas
-              selecionadas e define os responsáveis de cada subdepartamento
-              marcado; "Remover" remove os subdepartamentos selecionados (com os
-              responsáveis deles) e, se nenhum for escolhido, desvincula o
-              departamento.
+              selecionadas e define as datas e os responsáveis de cada
+              subdepartamento marcado; "Remover" remove os subdepartamentos
+              selecionados (com as datas e os responsáveis deles) e, se nenhum
+              for escolhido, desvincula o departamento. As datas em branco não
+              alteram o período já cadastrado.
             </p>
           </div>
 
