@@ -25,7 +25,6 @@ import {
   useAllMovimentoFiscalComentarios,
   useSaveMovimentoFiscalComentario,
 } from "@/hooks/use-movimento-fiscal-comentarios";
-import { DATA_INICIO_BLOCK_TITLE, isPeriodBeforeStart } from "@/lib/companies";
 import { SITUACAO_OPTIONS, SITUACAO_TONE } from "@/lib/fiscal";
 import {
   LUCRO_DESABILITADO,
@@ -180,13 +179,6 @@ export function LucroRealPresumidoTable({
     });
   };
 
-  /** Empresas bloqueadas no mês exibido (anterior à Data de Início). */
-  const startBlockedIds = new Set(
-    rows
-      .filter((company) => isPeriodBeforeStart(company, mes))
-      .map((company) => company.id)
-  );
-
   /** UFs presentes nas empresas da tabela (o filtro lista apenas essas). */
   const ufOptions = Array.from(
     new Set(
@@ -288,7 +280,6 @@ export function LucroRealPresumidoTable({
    */
   const renderSituacaoCell = (company: (typeof rows)[number]) => {
     const value = recordByCompany.get(company.id)?.situacao ?? "";
-    const blocked = startBlockedIds.has(company.id);
     if (!canEdit) {
       return (
         <span
@@ -304,9 +295,7 @@ export function LucroRealPresumidoTable({
     return (
       <Select
         value={value === "" ? "none" : value}
-        disabled={blocked}
         onValueChange={(next) => {
-          if (blocked) return;
           save(company.id, { situacao: next === "none" ? null : next });
         }}
       >
@@ -333,10 +322,9 @@ export function LucroRealPresumidoTable({
     field: LucroFieldDef
   ) => {
     const value = effectiveValue(company.id, field.key);
-    const blocked = startBlockedIds.has(company.id);
     return (
       <CommentableCell
-        disabled={!canEdit || blocked}
+        disabled={!canEdit}
         comment={commentOf(company.id, field.key)}
         label={`${field.label} ${mes} — ${company.name}`}
         onSave={(text) =>
@@ -360,9 +348,7 @@ export function LucroRealPresumidoTable({
         ) : (
           <Select
             value={value === "" ? "none" : value}
-            disabled={blocked}
             onValueChange={(next) => {
-              if (blocked) return;
               save(company.id, {
                 [field.key]: next === "none" ? null : next,
               });
@@ -437,12 +423,8 @@ export function LucroRealPresumidoTable({
           </TableHeader>
           <TableBody>
             {filteredRows.map((company) => {
-              const blocked = startBlockedIds.has(company.id);
               return (
-                <TableRow
-                  key={company.id}
-                  title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
-                >
+                <TableRow key={company.id}>
                   <TableCell
                     className={`${CELL} w-10 whitespace-nowrap text-center font-medium`}
                   >
@@ -474,7 +456,7 @@ export function LucroRealPresumidoTable({
                   ))}
                   <TableCell className={`${CELL} w-72`}>
                     <CommentableCell
-                      disabled={!canEdit || blocked}
+                      disabled={!canEdit}
                       comment={commentOf(company.id, "observacoes")}
                       label={`OBS ${mes} — ${company.name}`}
                       onSave={(text) =>
@@ -489,12 +471,8 @@ export function LucroRealPresumidoTable({
                       <Input
                         key={`${company.id}:${mes}:obs`}
                         defaultValue={effectiveObservacoes(company.id) ?? ""}
-                        disabled={!canEdit || blocked}
-                        title={
-                          blocked
-                            ? DATA_INICIO_BLOCK_TITLE
-                            : (effectiveObservacoes(company.id) ?? "")
-                        }
+                        disabled={!canEdit}
+                        title={effectiveObservacoes(company.id) ?? ""}
                         onBlur={(event) =>
                           save(company.id, {
                             observacoes: event.target.value.trim() || null,

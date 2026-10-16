@@ -1,0 +1,2 @@
+alter table public.company_departments add column if not exists subdepartment_periods jsonb not null default '{}'::jsonb;
+comment on column public.company_departments.subdepartment_periods is 'Período (início/fim, YYYY-MM) por subdepartamento: {"Movimento Fiscal": {"inicio": "2026-01", "fim": "2026-12"}}. Fora do período a empresa sai das tabelas do subdepartamento; os meses lançados mantêm o histórico.';

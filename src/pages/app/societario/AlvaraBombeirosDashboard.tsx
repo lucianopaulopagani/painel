@@ -31,7 +31,10 @@ import {
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { SOCIETARIO_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
-import { companyUsesSubmenu } from "@/lib/department-submenus";
+import {
+  companyUsesSubmenu,
+  isCompanyInSubmenuInYear,
+} from "@/lib/department-submenus";
 import { isCompanyInactiveToday } from "@/lib/companies";
 import { alvaraBombeirosAnos } from "@/lib/alvara-bombeiros";
 import { cn } from "@/lib/utils";
@@ -69,6 +72,12 @@ export default function AlvaraBombeirosDashboard() {
   const allCompanies = (companies ?? []).filter(
     (company) =>
       companyUsesSubmenu(company, societario?.id, "Alvará Bombeiros") &&
+      isCompanyInSubmenuInYear(
+        company,
+        societario?.id,
+        "Alvará Bombeiros",
+        ano
+      ) &&
       !isCompanyInactiveToday(company)
   );
 

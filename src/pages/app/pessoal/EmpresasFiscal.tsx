@@ -26,18 +26,13 @@ import {
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
-import { companyUsesSubmenu } from "@/lib/department-submenus";
+import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import {
   EMPRESAS_FISCAL_DCTFWEB_OPTIONS,
   EMPRESAS_FISCAL_ENVIO_OPTIONS,
   EMPRESAS_FISCAL_STATUS_OPTIONS,
 } from "@/lib/empresas-fiscal";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
-import {
-  DATA_INICIO_BLOCK_TITLE,
-  isCompanyInactiveInMonth,
-  isPeriodBeforeStart,
-} from "@/lib/companies";
 import { formatCpfCnpj } from "@/lib/utils";
 import {
   PESSOAL_ENVIO_TONE,
@@ -90,10 +85,8 @@ export default function EmpresasFiscal() {
   const pessoal = findDepartmentByName(departments, PESSOAL_DEPARTMENT_NAME);
 
   const rows = (companies ?? [])
-    .filter(
-      (company) =>
-        companyUsesSubmenu(company, pessoal?.id, "Empresas Fiscal") &&
-        !isCompanyInactiveInMonth(company, mes)
+    .filter((company) =>
+      companyInSubmenuInMonth(company, pessoal?.id, "Empresas Fiscal", mes)
     )
     .sort((a, b) => {
       if (!a.numero && !b.numero) {
@@ -218,17 +211,11 @@ export default function EmpresasFiscal() {
     const status = statusEff ?? "";
     const dctfweb = dctfwebEff ?? "";
     const envio = envioEff ?? "";
-    // Períodos anteriores à Data de Início da empresa ficam bloqueados.
-    const blocked = isPeriodBeforeStart(company, mes);
     return (
-      <TableRow
-        key={company.id}
-        title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
-      >
+      <TableRow key={company.id}>
         <TableCell className={`${CELL} w-20`}>
           <Select
             value={status === "" ? "none" : status}
-            disabled={blocked}
             onValueChange={(value) =>
               save(company.id, { status: value === "none" ? null : value })
             }
@@ -266,8 +253,7 @@ export default function EmpresasFiscal() {
           <Input
             key={`${company.id}:${mes}`}
             defaultValue={infoEff ?? ""}
-            disabled={blocked}
-            title={blocked ? DATA_INICIO_BLOCK_TITLE : (infoEff ?? "")}
+            title={infoEff ?? ""}
             onBlur={(event) =>
               save(company.id, {
                 informacoes: event.target.value.trim() || null,
@@ -279,7 +265,6 @@ export default function EmpresasFiscal() {
         <TableCell className={`${CELL} w-20`}>
           <Select
             value={dctfweb === "" ? "none" : dctfweb}
-            disabled={blocked}
             onValueChange={(value) =>
               save(company.id, { dctfweb: value === "none" ? null : value })
             }
@@ -305,7 +290,6 @@ export default function EmpresasFiscal() {
         <TableCell className={`${CELL} w-24`}>
           <Select
             value={envio === "" ? "none" : envio}
-            disabled={blocked}
             onValueChange={(value) =>
               save(company.id, { envio: value === "none" ? null : value })
             }

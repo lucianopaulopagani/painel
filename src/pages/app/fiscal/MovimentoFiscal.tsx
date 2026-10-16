@@ -42,12 +42,10 @@ import { useDepartments } from "@/hooks/use-departments";
 import { useUsers } from "@/hooks/use-users";
 import { useAuth } from "@/context/auth";
 import { FISCAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
-import { companyUsesSubmenu, subdepartmentResponsibleIds } from "@/lib/department-submenus";
 import {
-  DATA_INICIO_BLOCK_TITLE,
-  isCompanyInactiveInMonth,
-  isPeriodBeforeStart,
-} from "@/lib/companies";
+  companyInSubmenuInMonth,
+  subdepartmentResponsibleIds,
+} from "@/lib/department-submenus";
 import { CARNE_LEAO_TRIBUTACAO } from "@/lib/carne-leao";
 import { CarneLeaoTable } from "./CarneLeao";
 import {
@@ -148,10 +146,8 @@ export function MovimentoFiscal() {
   const responsiblesOf = (company: CompanyWithDepartments): string[] =>
     subdepartmentResponsibleIds(company, fiscal?.id, SUBMENU);
 
-  const fiscalCompanies = (companies ?? []).filter(
-    (company) =>
-      companyUsesSubmenu(company, fiscal?.id, SUBMENU) &&
-      !isCompanyInactiveInMonth(company, mes)
+  const fiscalCompanies = (companies ?? []).filter((company) =>
+    companyInSubmenuInMonth(company, fiscal?.id, SUBMENU, mes)
   );
 
   const responsibleIds = Array.from(
@@ -682,14 +678,9 @@ export function MovimentoFiscal() {
                 filteredRows.map((company) => {
                   const record = recordByCompany.get(company.id);
                   const situacao = record?.situacao ?? "";
-                  // Períodos anteriores à Data de Início ficam somente leitura.
-                  const blocked = isPeriodBeforeStart(company, mes);
-                  const rowEditable = canEdit && !blocked;
+                  const rowEditable = canEdit;
                   return (
-                    <TableRow
-                      key={company.id}
-                      title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
-                    >
+                    <TableRow key={company.id}>
                       <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
                         {company.numero || "—"}
                       </TableCell>

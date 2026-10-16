@@ -4,6 +4,7 @@ import { toCompanyWithDepartments, type RawCompanyRow } from "@/lib/mappers";
 import type {
   CompanyDepartmentLink,
   CompanyWithDepartments,
+  SubdepartmentPeriod,
 } from "@/lib/types";
 
 export const companiesKeys = {
@@ -24,6 +25,29 @@ function sanitizeResponsibles(
   return Object.fromEntries(entries);
 }
 
+/**
+ * Mantém apenas os subdepartamentos em uso no mapa de períodos e descarta
+ * períodos sem data (o registro fica limpo no banco).
+ */
+function sanitizePeriods(
+  periods: Record<string, SubdepartmentPeriod> | undefined,
+  subdepartments: string[]
+): Record<string, SubdepartmentPeriod> {
+  const entries = Object.entries(periods ?? {})
+    .filter(
+      ([submenu, period]) =>
+        subdepartments.includes(submenu) && (period.inicio || period.fim)
+    )
+    .map(
+      ([submenu, period]) =>
+        [
+          submenu,
+          { inicio: period.inicio || null, fim: period.fim || null },
+        ] as const
+    );
+  return Object.fromEntries(entries);
+}
+
 export function useCompanies() {
   return useQuery({
     queryKey: companiesKeys.all,
@@ -31,7 +55,7 @@ export function useCompanies() {
       const { data, error } = await supabase
         .from("companies")
         .select(
-          "*, company_departments(department_id, responsible_profile_ids, subdepartments, subdepartment_responsibles)"
+          "*, company_departments(department_id, responsible_profile_ids, subdepartments, subdepartment_responsibles, subdepartment_periods)"
         )
         .order("numero");
       if (error) throw error;
@@ -62,7 +86,6 @@ export interface CompanyInput {
   ativa: boolean;
   motivo_inativacao: string | null;
   data_inativacao: string | null;
-  data_inicio: string | null;
   department_links: CompanyDepartmentLink[];
 }
 
@@ -105,6 +128,10 @@ async function replaceCompanyDepartments(
           link.subdepartment_responsibles,
           link.subdepartments ?? []
         ),
+        subdepartment_periods: sanitizePeriods(
+          link.subdepartment_periods,
+          link.subdepartments ?? []
+        ),
       }))
     );
   if (insertError) throw insertError;
@@ -129,7 +156,6 @@ export function useCreateCompany() {
           ativa: input.ativa,
           motivo_inativacao: input.motivo_inativacao || null,
           data_inativacao: input.data_inativacao || null,
-          data_inicio: input.data_inicio || null,
         })
         .select("id")
         .single();
@@ -161,7 +187,6 @@ export function useUpdateCompany() {
           ativa: input.ativa,
           motivo_inativacao: input.motivo_inativacao || null,
           data_inativacao: input.data_inativacao || null,
-          data_inicio: input.data_inicio || null,
         })
         .eq("id", id);
       if (error) throw error;
@@ -204,6 +229,8 @@ export function useBulkUpdateCompanies() {
         subdepartments?: string[];
         /** Responsáveis por subdepartamento (nome do subdepartamento → ids). */
         subdepartment_responsibles?: Record<string, string[]>;
+        /** Períodos por subdepartamento (nome do subdepartamento → início/fim). */
+        subdepartment_periods?: Record<string, SubdepartmentPeriod>;
       }[];
     }) => {
       if (Object.keys(patch).length > 0) {
@@ -222,7 +249,7 @@ export function useBulkUpdateCompanies() {
             const { data: links, error: readError } = await supabase
               .from("company_departments")
               .select(
-                "company_id, subdepartments, subdepartment_responsibles"
+                "company_id, subdepartments, subdepartment_responsibles, subdepartment_periods"
               )
               .in("company_id", ids)
               .eq("department_id", dept.department_id);
@@ -237,6 +264,10 @@ export function useBulkUpdateCompanies() {
                   subdepartments: remaining,
                   subdepartment_responsibles: sanitizeResponsibles(
                     link.subdepartment_responsibles ?? {},
+                    remaining
+                  ),
+                  subdepartment_periods: sanitizePeriods(
+                    link.subdepartment_periods ?? {},
                     remaining
                   ),
                 })
@@ -258,7 +289,9 @@ export function useBulkUpdateCompanies() {
           // Mantém os responsáveis já definidos nos subdepartamentos mantidos.
           const { data: links, error: readError } = await supabase
             .from("company_departments")
-            .select("company_id, subdepartments, subdepartment_responsibles")
+            .select(
+              "company_id, subdepartments, subdepartment_responsibles, subdepartment_periods"
+            )
             .in("company_id", ids)
             .eq("department_id", dept.department_id);
           if (readError) throw readError;
@@ -268,6 +301,7 @@ export function useBulkUpdateCompanies() {
               {
                 subdepartments: link.subdepartments ?? [],
                 responsibles: link.subdepartment_responsibles ?? {},
+                periods: link.subdepartment_periods ?? {},
               },
             ])
           );
@@ -282,6 +316,10 @@ export function useBulkUpdateCompanies() {
               ),
               ...(dept.subdepartment_responsibles ?? {}),
             };
+            const mergedPeriods = {
+              ...sanitizePeriods(existing?.periods ?? {}, nextSubdepartments),
+              ...(dept.subdepartment_periods ?? {}),
+            };
             const { error } = await supabase
               .from("company_departments")
               .upsert(
@@ -291,6 +329,10 @@ export function useBulkUpdateCompanies() {
                   subdepartments: nextSubdepartments,
                   subdepartment_responsibles: sanitizeResponsibles(
                     merged,
+                    nextSubdepartments
+                  ),
+                  subdepartment_periods: sanitizePeriods(
+                    mergedPeriods,
                     nextSubdepartments
                   ),
                 },
@@ -315,7 +357,6 @@ export interface ImportCompanyItem {
   tributacao: string | null;
   socio_responsavel: string | null;
   socio_cpf: string | null;
-  data_inicio: string | null;
   /** Departamentos com os subdepartamentos marcados. */
   departments: { department_id: string; subdepartments: string[] }[];
   /** Responsáveis aplicados a cada subdepartamento informado. */
@@ -342,7 +383,6 @@ export function useImportCompanies() {
               tributacao: item.tributacao ?? null,
               socio_responsavel: item.socio_responsavel || null,
               socio_cpf: item.socio_cpf || null,
-              data_inicio: item.data_inicio || null,
             })
             .select("id")
             .single();
@@ -354,6 +394,7 @@ export function useImportCompanies() {
               department_id: dept.department_id,
               profile_ids: [],
               subdepartments: dept.subdepartments,
+              subdepartment_periods: {},
               // Os responsáveis informados valem para cada subdepartamento.
               subdepartment_responsibles: Object.fromEntries(
                 dept.subdepartments.map((submenu) => [

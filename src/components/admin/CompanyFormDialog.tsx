@@ -32,7 +32,7 @@ import { UFS } from "@/lib/ufs";
 import type { EmpresaPermissionKey } from "@/lib/empresas-permissions";
 import { formatCpfCnpj, isValidCpfCnpj } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import type { CompanyWithDepartments } from "@/lib/types";
+import type { CompanyWithDepartments, SubdepartmentPeriod } from "@/lib/types";
 
 interface CompanyFormDialogProps {
   open: boolean;
@@ -47,6 +47,8 @@ interface DepartmentAssignment {
   subdepartments: string[];
   /** Responsáveis por subdepartamento (nome do subdepartamento → ids). */
   responsibles: Record<string, string[]>;
+  /** Período por subdepartamento (nome do subdepartamento → início/fim). */
+  periods: Record<string, SubdepartmentPeriod>;
 }
 
 export default function CompanyFormDialog({
@@ -85,7 +87,6 @@ export default function CompanyFormDialog({
   const [ativa, setAtiva] = useState(true);
   const [motivoInativacao, setMotivoInativacao] = useState("");
   const [dataInativacao, setDataInativacao] = useState("");
-  const [dataInicio, setDataInicio] = useState("");
   const [assignments, setAssignments] = useState<
     Record<string, DepartmentAssignment>
   >({});
@@ -108,7 +109,6 @@ export default function CompanyFormDialog({
     setAtiva(company?.ativa ?? true);
     setMotivoInativacao(company?.motivo_inativacao ?? "");
     setDataInativacao(company?.data_inativacao ?? "");
-    setDataInicio(company?.data_inicio ?? "");
 
     const initial: Record<string, DepartmentAssignment> = {};
     for (const department of departments ?? []) {
@@ -119,6 +119,7 @@ export default function CompanyFormDialog({
         selected: !!link,
         subdepartments: link?.subdepartments ?? [],
         responsibles: link?.subdepartment_responsibles ?? {},
+        periods: link?.subdepartment_periods ?? {},
       };
     }
     setAssignments(initial);
@@ -136,6 +137,7 @@ export default function CompanyFormDialog({
           selected: false,
           subdepartments: [],
           responsibles: {},
+          periods: {},
         }),
         ...patch,
       },
@@ -153,12 +155,37 @@ export default function CompanyFormDialog({
         selected: false,
         subdepartments: [],
         responsibles: {},
+        periods: {},
       };
       return {
         ...prev,
         [departmentId]: {
           ...current,
           responsibles: { ...current.responsibles, [submenu]: ids },
+        },
+      };
+    });
+  };
+
+  /** Define o período (mês de início e mês final) de um subdepartamento. */
+  const setSubdepartmentPeriod = (
+    departmentId: string,
+    submenu: string,
+    patch: Partial<SubdepartmentPeriod>
+  ) => {
+    setAssignments((prev) => {
+      const current = prev[departmentId] ?? {
+        selected: false,
+        subdepartments: [],
+        responsibles: {},
+        periods: {},
+      };
+      const period = current.periods[submenu] ?? { inicio: null, fim: null };
+      return {
+        ...prev,
+        [departmentId]: {
+          ...current,
+          periods: { ...current.periods, [submenu]: { ...period, ...patch } },
         },
       };
     });
@@ -175,6 +202,21 @@ export default function CompanyFormDialog({
     Object.fromEntries(
       Object.entries(responsibles).filter(
         ([submenu, ids]) => subdepartments.includes(submenu) && ids.length > 0
+      )
+    );
+
+  /**
+   * Mantém os períodos apenas dos subdepartamentos ainda marcados e limpa os
+   * que foram desmarcados (ou ficaram sem data).
+   */
+  const keepMarkedPeriods = (
+    periods: Record<string, SubdepartmentPeriod>,
+    subdepartments: string[]
+  ): Record<string, SubdepartmentPeriod> =>
+    Object.fromEntries(
+      Object.entries(periods).filter(
+        ([submenu, period]) =>
+          subdepartments.includes(submenu) && (period.inicio || period.fim)
       )
     );
 
@@ -221,6 +263,10 @@ export default function CompanyFormDialog({
             assignment?.responsibles ?? {},
             subdepartments
           ),
+          subdepartment_periods: keepMarkedPeriods(
+            assignment?.periods ?? {},
+            subdepartments
+          ),
         };
       });
 
@@ -237,7 +283,6 @@ export default function CompanyFormDialog({
       ativa,
       motivo_inativacao: ativa ? null : motivoInativacao || null,
       data_inativacao: ativa ? null : dataInativacao || null,
-      data_inicio: dataInicio || null,
       department_links,
     };
 
@@ -431,24 +476,6 @@ export default function CompanyFormDialog({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="company-data-inicio">Data de Início</Label>
-              <Input
-                id="company-data-inicio"
-                type="date"
-                value={dataInicio}
-                onChange={(e) => setDataInicio(e.target.value)}
-                disabled={!canEdit("data_inicio")}
-              />
-              <p className="text-xs text-muted-foreground">
-                Períodos anteriores a esta data ficam bloqueados para edição em
-                todos os departamentos e subdepartamentos (o mês da própria data
-                já é editável).
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
               <Label>Ativa?</Label>
               <Select
                 value={ativa ? "sim" : "nao"}
@@ -517,6 +544,7 @@ export default function CompanyFormDialog({
                     selected: false,
                     subdepartments: [],
                     responsibles: {},
+                    periods: {},
                   };
                   const editableDepartment =
                     isAdmin || myDepartmentIds.has(department.id);
@@ -559,6 +587,10 @@ export default function CompanyFormDialog({
                                 assignment.responsibles,
                                 values
                               ),
+                              periods: keepMarkedPeriods(
+                                assignment.periods,
+                                values
+                              ),
                             })
                           }
                           placeholder="Subdepartamentos (opcional)"
@@ -572,46 +604,112 @@ export default function CompanyFormDialog({
                         />
                       </div>
 
-                      {assignment.subdepartments.map((submenu) => (
-                        <div
-                          key={submenu}
-                          className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:items-center sm:gap-3 sm:pl-6"
-                        >
-                          <span
-                            className="truncate text-xs text-muted-foreground"
-                            title={submenu}
+                      {assignment.subdepartments.map((submenu) => {
+                        const period = assignment.periods[submenu] ?? {
+                          inicio: null,
+                          fim: null,
+                        };
+                        const periodDisabled =
+                          !assignment.selected ||
+                          !canEdit("subdepartments") ||
+                          !editableDepartment;
+                        const responsibleDisabled =
+                          !assignment.selected ||
+                          !canEdit("responsaveis") ||
+                          !editableDepartment;
+                        return (
+                          <div
+                            key={submenu}
+                            className="flex flex-col gap-2 rounded-md border border-dashed bg-muted/30 p-2 sm:ml-6"
                           >
-                            Responsáveis — {submenu}
-                          </span>
-                          <UserMultiSelect
-                            value={assignment.responsibles[submenu] ?? []}
-                            onChange={(ids) =>
-                              setSubdepartmentResponsibles(
-                                department.id,
-                                submenu,
-                                ids
-                              )
-                            }
-                            disabled={
-                              !assignment.selected ||
-                              !canEdit("responsaveis") ||
-                              !editableDepartment
-                            }
-                            users={deptUsers}
-                            className="w-full justify-between font-normal"
-                          />
-                        </div>
-                      ))}
+                            <span className="text-xs font-semibold">
+                              {submenu}
+                            </span>
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
+                              <div className="flex flex-col gap-1.5">
+                                <Label
+                                  htmlFor={`periodo-inicio-${department.id}-${submenu}`}
+                                  className="text-xs text-muted-foreground"
+                                >
+                                  Data de Início
+                                </Label>
+                                <Input
+                                  id={`periodo-inicio-${department.id}-${submenu}`}
+                                  type="month"
+                                  value={period.inicio ?? ""}
+                                  onChange={(e) =>
+                                    setSubdepartmentPeriod(
+                                      department.id,
+                                      submenu,
+                                      { inicio: e.target.value || null }
+                                    )
+                                  }
+                                  disabled={periodDisabled}
+                                  className="h-8"
+                                />
+                              </div>
+                              <div className="flex flex-col gap-1.5">
+                                <Label
+                                  htmlFor={`periodo-fim-${department.id}-${submenu}`}
+                                  className="text-xs text-muted-foreground"
+                                >
+                                  Data Final
+                                </Label>
+                                <Input
+                                  id={`periodo-fim-${department.id}-${submenu}`}
+                                  type="month"
+                                  value={period.fim ?? ""}
+                                  onChange={(e) =>
+                                    setSubdepartmentPeriod(
+                                      department.id,
+                                      submenu,
+                                      { fim: e.target.value || null }
+                                    )
+                                  }
+                                  disabled={periodDisabled}
+                                  className="h-8"
+                                />
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:items-center sm:gap-3">
+                              <span
+                                className="truncate text-xs text-muted-foreground"
+                                title={submenu}
+                              >
+                                Responsáveis
+                              </span>
+                              <UserMultiSelect
+                                value={
+                                  assignment.responsibles[submenu] ?? []
+                                }
+                                onChange={(ids) =>
+                                  setSubdepartmentResponsibles(
+                                    department.id,
+                                    submenu,
+                                    ids
+                                  )
+                                }
+                                disabled={responsibleDisabled}
+                                users={deptUsers}
+                                className="w-full justify-between font-normal"
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   );
                 })}
               </div>
             )}
             <p className="text-xs text-muted-foreground">
-              Os responsáveis são definidos por subdepartamento: cada módulo
-              (ex.: Movimento Fiscal, Controle de Parcelamentos) usa os usuários
-              responsáveis do seu próprio subdepartamento. O usuário responsável
-              é opcional.
+              Cada subdepartamento tem suas próprias datas: a empresa entra nas
+              tabelas do módulo no mês da Data de Início e sai depois do mês da
+              Data Final (os meses já lançados continuam no histórico). Sem
+              datas, a empresa aparece em todos os meses. Os responsáveis também
+              são por subdepartamento: cada módulo (ex.: Movimento Fiscal,
+              Controle de Parcelamentos) usa os usuários responsáveis do seu
+              próprio subdepartamento. O usuário responsável é opcional.
             </p>
           </div>
 

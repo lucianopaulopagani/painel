@@ -29,13 +29,8 @@ import {
 } from "@/hooks/use-parcelamentos";
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
-import {
-  DATA_INICIO_BLOCK_TITLE,
-  isCompanyInactiveInMonth,
-  isPeriodBeforeStart,
-} from "@/lib/companies";
 import { FISCAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
-import { companyUsesSubmenu } from "@/lib/department-submenus";
+import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import {
   defaultReferenceMonth,
   readStoredMonth,
@@ -103,11 +98,7 @@ export default function ControleParcelamentos() {
 
   // Empresas marcadas com o subdepartamento "Controle de Parcelamentos".
   const rows = (companies ?? [])
-    .filter(
-      (company) =>
-        companyUsesSubmenu(company, fiscal?.id, SUBMENU) &&
-        !isCompanyInactiveInMonth(company, mes)
-    )
+    .filter((company) => companyInSubmenuInMonth(company, fiscal?.id, SUBMENU, mes))
     .sort((a, b) => {
       if (!a.numero && !b.numero) return a.name.localeCompare(b.name, "pt-BR");
       if (!a.numero) return 1;
@@ -179,13 +170,6 @@ export default function ControleParcelamentos() {
       rows.map((company) => company.uf).filter((uf): uf is string => Boolean(uf))
     )
   ).sort();
-
-  /** Empresas bloqueadas no mês exibido (anterior à Data de Início). */
-  const startBlockedIds = new Set(
-    rows
-      .filter((company) => isPeriodBeforeStart(company, mes))
-      .map((company) => company.id)
-  );
 
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
@@ -292,11 +276,9 @@ export default function ControleParcelamentos() {
     companyId: string,
     campo: string,
     label: string,
-    children: ReactNode,
-    blocked = false
+    children: ReactNode
   ) => (
     <CommentableCell
-      disabled={blocked}
       comment={commentOf(companyId, campo)}
       label={label}
       onSave={(text) =>
@@ -312,8 +294,7 @@ export default function ControleParcelamentos() {
   const renderFieldCell = (
     companyId: string,
     companyName: string,
-    field: ParcelamentoFieldDef,
-    blocked: boolean
+    field: ParcelamentoFieldDef
   ) => {
     const value = effectiveValue(companyId, field.key);
     return commentable(
@@ -322,9 +303,7 @@ export default function ControleParcelamentos() {
       `${field.label} — ${mes} — ${companyName}`,
       <Select
         value={value === "" ? "none" : value}
-        disabled={blocked}
         onValueChange={(next) => {
-          if (blocked) return;
           save(companyId, { [field.key]: next === "none" ? null : next });
         }}
       >
@@ -344,8 +323,7 @@ export default function ControleParcelamentos() {
             </SelectItem>
           ))}
         </SelectContent>
-      </Select>,
-      blocked
+      </Select>
     );
   };
 
@@ -355,9 +333,8 @@ export default function ControleParcelamentos() {
     companyName: string,
     campo: CadastroKey,
     label: string,
-    content: ReactNode,
-    blocked: boolean
-  ) => commentable(companyId, campo, `${label} — ${mes} — ${companyName}`, content, blocked);
+    content: ReactNode
+  ) => commentable(companyId, campo, `${label} — ${mes} — ${companyName}`, content);
 
   const renderHeaders = () => (
     <TableRow className="bg-muted hover:bg-muted">
@@ -446,13 +423,9 @@ export default function ControleParcelamentos() {
             <TableBody>
               {filteredRows.map((company) => {
                 const record = recordByCompany.get(company.id);
-                const blocked = startBlockedIds.has(company.id);
                 const envio = record?.envio ?? "";
                 return (
-                  <TableRow
-                    key={company.id}
-                    title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
-                  >
+                  <TableRow key={company.id}>
                     <TableCell className={`${CELL} w-10`}>
                       {renderCadastroCell(
                         company.id,
@@ -461,8 +434,7 @@ export default function ControleParcelamentos() {
                         "N",
                         <span className="block truncate font-medium">
                           {company.numero || "—"}
-                        </span>,
-                        blocked
+                        </span>
                       )}
                     </TableCell>
                     <TableCell className={`${CELL} w-12`}>
@@ -473,8 +445,7 @@ export default function ControleParcelamentos() {
                         "UF",
                         <span className="block truncate">
                           {company.uf || "—"}
-                        </span>,
-                        blocked
+                        </span>
                       )}
                     </TableCell>
                     <TableCell className={`${CELL} w-56`}>
@@ -488,8 +459,7 @@ export default function ControleParcelamentos() {
                           title={company.name}
                         >
                           {company.name}
-                        </span>,
-                        blocked
+                        </span>
                       )}
                     </TableCell>
                     <TableCell
@@ -502,8 +472,7 @@ export default function ControleParcelamentos() {
                         "CNPJ",
                         <span className="block truncate">
                           {formatCpfCnpj(company.documento)}
-                        </span>,
-                        blocked
+                        </span>
                       )}
                     </TableCell>
                     {PARCELAMENTO_FIELDS.map((field) => (
@@ -513,12 +482,7 @@ export default function ControleParcelamentos() {
                           field.key === "mei_relp_iss" ? "w-28" : "w-24"
                         }`}
                       >
-                        {renderFieldCell(
-                          company.id,
-                          company.name,
-                          field,
-                          blocked
-                        )}
+                        {renderFieldCell(company.id, company.name, field)}
                       </TableCell>
                     ))}
                     <TableCell className={`${CELL} w-24`}>
@@ -528,9 +492,7 @@ export default function ControleParcelamentos() {
                         `ENVIO — ${mes} — ${company.name}`,
                         <Select
                           value={envio === "" ? "none" : envio}
-                          disabled={blocked}
                           onValueChange={(next) => {
-                            if (blocked) return;
                             save(company.id, {
                               envio: next === "none" ? null : next,
                             });
@@ -552,8 +514,7 @@ export default function ControleParcelamentos() {
                               </SelectItem>
                             ))}
                           </SelectContent>
-                        </Select>,
-                        blocked
+                        </Select>
                       )}
                     </TableCell>
                   </TableRow>

@@ -33,13 +33,11 @@ import {
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { SOCIETARIO_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
-import { companyUsesSubmenu } from "@/lib/department-submenus";
 import {
-  DATA_INICIO_BLOCK_TITLE,
-  isCompanyInactiveToday,
-  isDateBeforeStart,
-  isYearBeforeStart,
-} from "@/lib/companies";
+  companyUsesSubmenu,
+  isCompanyInSubmenuInYear,
+} from "@/lib/department-submenus";
+import { isCompanyInactiveToday } from "@/lib/companies";
 import {
   ALVARA_ENVIADO_OPTIONS,
   ALVARA_GERADO_OPTIONS,
@@ -109,6 +107,12 @@ export default function AlvaraLocalizacao() {
     .filter(
       (company) =>
         companyUsesSubmenu(company, societario?.id, "Alvará localização") &&
+        isCompanyInSubmenuInYear(
+          company,
+          societario?.id,
+          "Alvará localização",
+          ano
+        ) &&
         !isCompanyInactiveToday(company)
     )
     .sort((a, b) => {
@@ -278,14 +282,11 @@ export default function AlvaraLocalizacao() {
     companyId: string,
     value: string,
     options: readonly string[],
-    patchKey: string,
-    blocked = false
+    patchKey: string
   ) => (
     <Select
       value={value === "" ? "none" : value}
-      disabled={blocked}
       onValueChange={(next) => {
-        if (blocked) return;
         save(companyId, { [patchKey]: next === "none" ? null : next });
       }}
     >
@@ -508,14 +509,9 @@ export default function AlvaraLocalizacao() {
             </TableHeader>
             <TableBody>
               {filteredRows.map((company) => {
-                // Exercícios anteriores à Data de Início ficam bloqueados.
-                const blocked = isYearBeforeStart(company, ano);
                 const record = recordByCompany.get(company.id);
                 return (
-                  <TableRow
-                    key={company.id}
-                    title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
-                  >
+                  <TableRow key={company.id}>
                     <TableCell className={`${CELL} whitespace-nowrap text-center font-medium`}>
                       {company.numero || "—"}
                     </TableCell>
@@ -545,12 +541,7 @@ export default function AlvaraLocalizacao() {
                       <Input
                         key={`${company.id}:${ano}:obs`}
                         defaultValue={effectiveObservacao(company.id) ?? ""}
-                        disabled={blocked}
-                        title={
-                          blocked
-                            ? DATA_INICIO_BLOCK_TITLE
-                            : (effectiveObservacao(company.id) ?? "")
-                        }
+                        title={effectiveObservacao(company.id) ?? ""}
                         onBlur={(event) =>
                           save(company.id, {
                             observacao: event.target.value.trim() || null,
@@ -563,22 +554,9 @@ export default function AlvaraLocalizacao() {
                       <Input
                         key={`${company.id}:${ano}:venc`}
                         defaultValue={effectiveVencimento(company.id) ?? ""}
-                        disabled={blocked}
                         placeholder="xx/xx"
                         onBlur={(event) => {
                           const value = event.target.value.trim();
-                          const match = /^(\d{1,2})\/(\d{1,2})$/.exec(value);
-                          const iso = match
-                            ? `${ano}-${match[2].padStart(2, "0")}-${match[1].padStart(2, "0")}`
-                            : "";
-                          if (value && iso && isDateBeforeStart(company, iso)) {
-                            toast.error(
-                              "Data anterior à Data de Início da empresa."
-                            );
-                            event.target.value =
-                              effectiveVencimento(company.id) ?? "";
-                            return;
-                          }
                           save(company.id, { vencimento: value || null });
                         }}
                         onChange={(event) => {
@@ -594,8 +572,7 @@ export default function AlvaraLocalizacao() {
                         company.id,
                         record?.gerado ?? "",
                         ALVARA_GERADO_OPTIONS,
-                        "gerado",
-                        blocked
+                        "gerado"
                       )}
                     </TableCell>
                     <TableCell className={`${CELL} w-24`}>
@@ -603,8 +580,7 @@ export default function AlvaraLocalizacao() {
                         company.id,
                         record?.enviado ?? "",
                         ALVARA_ENVIADO_OPTIONS,
-                        "enviado",
-                        blocked
+                        "enviado"
                       )}
                     </TableCell>
                   </TableRow>

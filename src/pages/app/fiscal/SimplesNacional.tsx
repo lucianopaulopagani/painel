@@ -20,7 +20,6 @@ import {
   useMovimentoFiscal,
   useSaveMovimentoFiscal,
 } from "@/hooks/use-movimento-fiscal";
-import { DATA_INICIO_BLOCK_TITLE, isPeriodBeforeStart } from "@/lib/companies";
 import {
   MOVIMENTO_FISCAL_FIELDS,
   SITUACAO_OPTIONS,
@@ -120,13 +119,6 @@ export function SimplesNacionalTable({
     )
   ).sort();
 
-  /** Empresas bloqueadas no mês exibido (anterior à Data de Início). */
-  const startBlockedIds = new Set(
-    rows
-      .filter((company) => isPeriodBeforeStart(company, mes))
-      .map((company) => company.id)
-  );
-
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
     const match = (value: string | null | undefined, query: string): boolean =>
@@ -187,14 +179,10 @@ export function SimplesNacionalTable({
     options: readonly string[],
     patchKey: string
   ) => {
-    // Períodos anteriores à Data de Início da empresa ficam bloqueados.
-    const blocked = startBlockedIds.has(companyId);
     return (
     <Select
       value={value === "" ? "none" : value}
-      disabled={blocked}
       onValueChange={(next) => {
-        if (blocked) return;
         save(companyId, { [patchKey]: next === "none" ? null : next });
       }}
     >
@@ -302,11 +290,9 @@ export function SimplesNacionalTable({
           <TableBody>
             {filteredRows.map((company) => {
               const record = recordByCompany.get(company.id);
-              const blocked = startBlockedIds.has(company.id);
               return (
                 <TableRow
                   key={company.id}
-                  title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
                 >
                   <TableCell
                     className={`${CELL} whitespace-nowrap text-center font-medium`}
@@ -359,9 +345,7 @@ export function SimplesNacionalTable({
                       {field.type === "checkbox" ? (
                         <Checkbox
                           checked={record?.[field.key] === true}
-                          disabled={blocked}
                           onCheckedChange={(checked) => {
-                            if (blocked) return;
                             save(company.id, {
                               [field.key]: checked === true,
                             });
@@ -373,7 +357,6 @@ export function SimplesNacionalTable({
                           defaultValue={
                             (record?.[field.key] as string) ?? ""
                           }
-                          disabled={blocked}
                           onBlur={(event) =>
                             save(company.id, {
                               [field.key]: event.target.value.trim() || null,
@@ -395,12 +378,7 @@ export function SimplesNacionalTable({
                     <Input
                       key={`${company.id}:${mes}:obs`}
                       defaultValue={effectiveObservacoes(company.id) ?? ""}
-                      disabled={blocked}
-                      title={
-                        blocked
-                          ? DATA_INICIO_BLOCK_TITLE
-                          : (effectiveObservacoes(company.id) ?? "")
-                      }
+                      title={effectiveObservacoes(company.id) ?? ""}
                       onBlur={(event) =>
                         save(company.id, {
                           observacoes: event.target.value.trim() || null,

@@ -32,8 +32,7 @@ import { useDepartments } from "@/hooks/use-departments";
 import { useMovimentoFiscal } from "@/hooks/use-movimento-fiscal";
 import { usePeopleDirectory } from "@/hooks/use-people-directory";
 import { FISCAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
-import { companyUsesSubmenu, subdepartmentResponsibleIds } from "@/lib/department-submenus";
-import { isCompanyInactiveInMonth } from "@/lib/companies";
+import { companyInSubmenuInMonth, subdepartmentResponsibleIds } from "@/lib/department-submenus";
 import { isSituacaoFinalizada } from "@/lib/fiscal";
 import {
   defaultReferenceMonth,
@@ -69,10 +68,8 @@ export default function FiscalMovimentoDashboard() {
     (directory ?? []).map((user) => [user.id, user.full_name])
   );
 
-  const all = (companies ?? []).filter(
-    (company) =>
-      companyUsesSubmenu(company, fiscal?.id, SUBMENU) &&
-      !isCompanyInactiveInMonth(company, mes)
+  const all = (companies ?? []).filter((company) =>
+    companyInSubmenuInMonth(company, fiscal?.id, SUBMENU, mes)
   );
 
   /** Responsáveis do subdepartamento do módulo (Movimento Fiscal). */

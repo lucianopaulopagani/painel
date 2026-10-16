@@ -34,9 +34,8 @@ import {
 } from "@/hooks/use-domesticas-movimento";
 import { usePeopleDirectory } from "@/hooks/use-people-directory";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
-import { isCompanyInactiveInMonth } from "@/lib/companies";
 import {
-  companyUsesSubmenu,
+  companyInSubmenuInMonth,
   subdepartmentResponsibleIds,
 } from "@/lib/department-submenus";
 import {
@@ -87,10 +86,8 @@ export default function DomesticasDashboard() {
     (directory ?? []).map((user) => [user.id, user.full_name])
   );
 
-  const all = (companies ?? []).filter(
-    (company) =>
-      companyUsesSubmenu(company, pessoal?.id, SUBMENU) &&
-      !isCompanyInactiveInMonth(company, mes)
+  const all = (companies ?? []).filter((company) =>
+    companyInSubmenuInMonth(company, pessoal?.id, SUBMENU, mes)
   );
 
   /** Responsáveis do subdepartamento do módulo. */

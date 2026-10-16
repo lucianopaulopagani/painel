@@ -3926,6 +3926,7 @@ export type Database = {
           company_id: string
           department_id: string
           responsible_profile_ids: string[]
+          subdepartment_periods: Json
           subdepartment_responsibles: Json
           subdepartments: string[]
         }
@@ -3933,6 +3934,7 @@ export type Database = {
           company_id: string
           department_id: string
           responsible_profile_ids?: string[]
+          subdepartment_periods?: Json
           subdepartment_responsibles?: Json
           subdepartments?: string[]
         }
@@ -3940,6 +3942,7 @@ export type Database = {
           company_id?: string
           department_id?: string
           responsible_profile_ids?: string[]
+          subdepartment_periods?: Json
           subdepartment_responsibles?: Json
           subdepartments?: string[]
         }

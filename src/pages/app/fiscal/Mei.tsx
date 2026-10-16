@@ -20,7 +20,6 @@ import {
   useMovimentoFiscal,
   useSaveMovimentoFiscal,
 } from "@/hooks/use-movimento-fiscal";
-import { DATA_INICIO_BLOCK_TITLE, isPeriodBeforeStart } from "@/lib/companies";
 import { cn } from "@/lib/utils";
 import type {
   CompanyWithDepartments,
@@ -112,13 +111,6 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
       rows.map((company) => company.uf).filter((uf): uf is string => Boolean(uf))
     )
   ).sort();
-
-  /** Empresas bloqueadas no mês exibido (anterior à Data de Início). */
-  const startBlockedIds = new Set(
-    rows
-      .filter((company) => isPeriodBeforeStart(company, mes))
-      .map((company) => company.id)
-  );
 
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
@@ -238,12 +230,8 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
           <TableBody>
             {filteredRows.map((company) => {
               const situacao = recordByCompany.get(company.id)?.situacao ?? "";
-              const blocked = startBlockedIds.has(company.id);
               return (
-                <TableRow
-                  key={company.id}
-                  title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
-                >
+                <TableRow key={company.id}>
                   <TableCell
                     className={`${CELL} w-12 whitespace-nowrap text-center font-medium`}
                   >
@@ -263,9 +251,7 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                   <TableCell className={`${CELL} w-28`}>
                     <Select
                       value={situacao === "" ? "none" : situacao}
-                      disabled={blocked}
                       onValueChange={(next) => {
-                        if (blocked) return;
                         save(company.id, {
                           situacao: next === "none" ? null : next,
                         });
@@ -293,12 +279,7 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                     <Input
                       key={`${company.id}:${mes}:obs`}
                       defaultValue={effectiveObservacoes(company.id) ?? ""}
-                      disabled={blocked}
-                      title={
-                        blocked
-                          ? DATA_INICIO_BLOCK_TITLE
-                          : (effectiveObservacoes(company.id) ?? "")
-                      }
+                      title={effectiveObservacoes(company.id) ?? ""}
                       onBlur={(event) =>
                         save(company.id, {
                           observacoes: event.target.value.trim() || null,

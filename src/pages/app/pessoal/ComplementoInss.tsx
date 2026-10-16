@@ -26,17 +26,12 @@ import {
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
-import { companyUsesSubmenu } from "@/lib/department-submenus";
+import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import {
   COMPLEMENTO_INSS_DARF_OPTIONS,
   COMPLEMENTO_INSS_ENVIO_OPTIONS,
 } from "@/lib/complemento-inss";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
-import {
-  DATA_INICIO_BLOCK_TITLE,
-  isCompanyInactiveInMonth,
-  isPeriodBeforeStart,
-} from "@/lib/companies";
 import {
   PESSOAL_ENVIO_TONE,
   PESSOAL_FLAG_TONE,
@@ -80,8 +75,7 @@ export default function ComplementoInss() {
 
   const rows = (companies ?? [])
     .filter((company) =>
-      companyUsesSubmenu(company, pessoal?.id, "Complemento INSS") &&
-      !isCompanyInactiveInMonth(company, mes)
+      companyInSubmenuInMonth(company, pessoal?.id, "Complemento INSS", mes)
     )
     .sort((a, b) => {
       if (!a.numero && !b.numero) {
@@ -182,14 +176,11 @@ export default function ComplementoInss() {
     value: string,
     options: readonly string[],
     patchKey: string,
-    toneClass: Record<string, string> = {},
-    blocked = false
+    toneClass: Record<string, string> = {}
   ) => (
     <Select
       value={value === "" ? "none" : value}
-      disabled={blocked}
       onValueChange={(next) => {
-        if (blocked) return;
         save(companyId, { [patchKey]: next === "none" ? null : next });
       }}
     >
@@ -244,13 +235,8 @@ export default function ComplementoInss() {
   const renderRow = (company: (typeof rows)[number]) => {
     const record = recordByCompany.get(company.id);
     const envio = effectiveEnvio(company.id) ?? "";
-    // Períodos anteriores à Data de Início da empresa ficam bloqueados.
-    const blocked = isPeriodBeforeStart(company, mes);
     return (
-      <TableRow
-        key={company.id}
-        title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
-      >
+      <TableRow key={company.id}>
         <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
           {company.numero || "—"}
         </TableCell>
@@ -265,8 +251,7 @@ export default function ComplementoInss() {
             record?.darf ?? "",
             COMPLEMENTO_INSS_DARF_OPTIONS,
             "darf",
-            PESSOAL_FLAG_TONE,
-            blocked
+            PESSOAL_FLAG_TONE
           )}
         </TableCell>
         <TableCell className={`${CELL} w-28`}>
@@ -275,8 +260,7 @@ export default function ComplementoInss() {
             envio,
             COMPLEMENTO_INSS_ENVIO_OPTIONS,
             "envio",
-            PESSOAL_ENVIO_TONE,
-            blocked
+            PESSOAL_ENVIO_TONE
           )}
         </TableCell>
       </TableRow>

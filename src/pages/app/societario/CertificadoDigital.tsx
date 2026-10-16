@@ -39,7 +39,10 @@ import {
   SOCIETARIO_DEPARTMENT_NAME,
   findDepartmentByName,
 } from "@/lib/departments";
-import { companyUsesSubmenu } from "@/lib/department-submenus";
+import {
+  companyUsesSubmenu,
+  isCompanyInSubmenuInYear,
+} from "@/lib/department-submenus";
 import { isCompanyInactiveToday } from "@/lib/companies";
 import {
   formatCpfCnpj,
@@ -110,10 +113,20 @@ export default function CertificadoDigital() {
     SOCIETARIO_DEPARTMENT_NAME
   );
 
+  /** O módulo não tem exercício: o período considera o ano corrente. */
+  const anoAtual = String(new Date().getFullYear());
+
   const rows: CertificateRow[] = (companies ?? [])
-    .filter((company) =>
-      companyUsesSubmenu(company, societario?.id, "Certificado digital") &&
-      !isCompanyInactiveToday(company)
+    .filter(
+      (company) =>
+        companyUsesSubmenu(company, societario?.id, "Certificado digital") &&
+        isCompanyInSubmenuInYear(
+          company,
+          societario?.id,
+          "Certificado digital",
+          anoAtual
+        ) &&
+        !isCompanyInactiveToday(company)
     )
     .map((company) => ({
       company,

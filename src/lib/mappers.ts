@@ -3,6 +3,7 @@ import type {
   DepartmentRef,
   ProfileWithDepartments,
   Role,
+  SubdepartmentPeriod,
 } from "@/lib/types";
 
 /** Linha crua de "profiles" com os vínculos aninhados do PostgREST. */
@@ -76,6 +77,7 @@ export interface RawCompanyRow {
         responsible_profile_ids: string[] | null;
         subdepartments: string[] | null;
         subdepartment_responsibles: Record<string, string[]> | null;
+        subdepartment_periods: Record<string, unknown> | null;
       }[]
     | null;
 }
@@ -91,6 +93,26 @@ export function toSubdepartmentResponsibles(
         [submenu, Array.isArray(ids) ? ids.filter(Boolean) : []] as const
     )
     .filter(([, ids]) => ids.length > 0);
+  return Object.fromEntries(entries);
+}
+
+/** Normaliza o jsonb de períodos por subdepartamento. */
+export function toSubdepartmentPeriods(
+  value: Record<string, unknown> | null | undefined
+): Record<string, SubdepartmentPeriod> {
+  if (!value || typeof value !== "object") return {};
+  const entries = Object.entries(value)
+    .map(([submenu, period]) => {
+      const raw = (period ?? {}) as { inicio?: unknown; fim?: unknown };
+      return [
+        submenu,
+        {
+          inicio: typeof raw.inicio === "string" && raw.inicio ? raw.inicio : null,
+          fim: typeof raw.fim === "string" && raw.fim ? raw.fim : null,
+        },
+      ] as const;
+    })
+    .filter(([, period]) => period.inicio !== null || period.fim !== null);
   return Object.fromEntries(entries);
 }
 
@@ -121,6 +143,7 @@ export function toCompanyWithDepartments(
       subdepartment_responsibles: toSubdepartmentResponsibles(
         link.subdepartment_responsibles
       ),
+      subdepartment_periods: toSubdepartmentPeriods(link.subdepartment_periods),
     })),
   };
 }

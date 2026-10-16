@@ -36,8 +36,7 @@ import {
   writeStoredMonth,
 } from "@/lib/fiscal-month";
 import { FISCAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
-import { isCompanyInactiveInMonth } from "@/lib/companies";
-import { companyUsesSubmenu, subdepartmentResponsibleIds } from "@/lib/department-submenus";
+import { companyInSubmenuInMonth, subdepartmentResponsibleIds } from "@/lib/department-submenus";
 import {
   PARCELAMENTO_ENVIO_ENVIADO,
   PARCELAMENTO_ENVIO_GERADO,
@@ -80,10 +79,8 @@ export default function ParcelamentosDashboard() {
     (directory ?? []).map((user) => [user.id, user.full_name])
   );
 
-  const all = (companies ?? []).filter(
-    (company) =>
-      companyUsesSubmenu(company, fiscal?.id, SUBMENU) &&
-      !isCompanyInactiveInMonth(company, mes)
+  const all = (companies ?? []).filter((company) =>
+    companyInSubmenuInMonth(company, fiscal?.id, SUBMENU, mes)
   );
 
   const responsaveisOf = (company: CompanyWithDepartments): string[] =>

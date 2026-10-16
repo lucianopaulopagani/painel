@@ -29,7 +29,11 @@ import { useCompanies } from "@/hooks/use-companies";
 import { useContabilUsuarios } from "@/hooks/use-contabil-usuarios";
 import { useDepartments } from "@/hooks/use-departments";
 import { CONTABIL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
-import { companyUsesSubmenu, subdepartmentResponsibleIds } from "@/lib/department-submenus";
+import {
+  companyUsesSubmenu,
+  isCompanyInSubmenuInYear,
+  subdepartmentResponsibleIds,
+} from "@/lib/department-submenus";
 import {
   balanceteAnos,
   BALANCETE_MESES,
@@ -64,8 +68,10 @@ export default function ContabilDashboard() {
     (usuarios ?? []).map((usuario) => [usuario.id, usuario.full_name])
   );
 
-  const all = (companies ?? []).filter((company) =>
-    companyUsesSubmenu(company, contabil?.id, SUBMENU)
+  const all = (companies ?? []).filter(
+    (company) =>
+      companyUsesSubmenu(company, contabil?.id, SUBMENU) &&
+      isCompanyInSubmenuInYear(company, contabil?.id, SUBMENU, ano)
   );
 
   /** Responsáveis do subdepartamento do módulo (Balancete/Balanço). */

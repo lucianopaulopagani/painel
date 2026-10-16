@@ -32,12 +32,13 @@ import { useCompanies } from "@/hooks/use-companies";
 import { useContabilUsuarios } from "@/hooks/use-contabil-usuarios";
 import { useDepartments } from "@/hooks/use-departments";
 import { CONTABIL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
-import { companyUsesSubmenu, subdepartmentResponsibleIds } from "@/lib/department-submenus";
 import {
-  DATA_INICIO_BLOCK_TITLE,
-  isPeriodBeforeStart,
-  isYearBeforeStart,
-} from "@/lib/companies";
+  companyUsesSubmenu,
+  isCompanyInSubmenuInMonth,
+  isCompanyInSubmenuInYear,
+  subdepartmentResponsibleIds,
+  SUBDEPARTMENT_PERIOD_BLOCK_TITLE,
+} from "@/lib/department-submenus";
 import {
   BALANCETE_MESES,
   BALANCETE_MES_OPTIONS,
@@ -102,7 +103,11 @@ export default function BalanceteBalanco() {
   const SUBMENU = "Balancete/Balanço";
 
   const rows = (companies ?? [])
-    .filter((company) => companyUsesSubmenu(company, contabil?.id, SUBMENU))
+    .filter(
+      (company) =>
+        companyUsesSubmenu(company, contabil?.id, SUBMENU) &&
+        isCompanyInSubmenuInYear(company, contabil?.id, SUBMENU, ano)
+    )
     .sort((a, b) => {
       if (!a.numero && !b.numero) {
         return a.name.localeCompare(b.name, "pt-BR");
@@ -435,12 +440,19 @@ export default function BalanceteBalanco() {
             <TableBody>
               {filteredRows.map((company) => {
                 const record = recordByCompany.get(company.id);
-                // Períodos anteriores à Data de Início ficam bloqueados
-                // (o ano do fechamento só é bloqueado em exercícios anteriores).
-                const fechamentoBlocked = isYearBeforeStart(company, ano);
+                // Meses fora do período do subdepartamento ficam bloqueados; o
+                // Fechamento acompanha o exercício.
+                const fechamentoBlocked = !isCompanyInSubmenuInYear(
+                  company,
+                  contabil?.id,
+                  SUBMENU,
+                  ano
+                );
                 const monthBlocked = (index: number): boolean =>
-                  isPeriodBeforeStart(
+                  !isCompanyInSubmenuInMonth(
                     company,
+                    contabil?.id,
+                    SUBMENU,
                     `${ano}-${String(index + 1).padStart(2, "0")}`
                   );
                 const anyBlocked =
@@ -449,7 +461,11 @@ export default function BalanceteBalanco() {
                 return (
                   <TableRow
                     key={company.id}
-                    title={anyBlocked ? DATA_INICIO_BLOCK_TITLE : undefined}
+                    title={
+                      anyBlocked
+                        ? SUBDEPARTMENT_PERIOD_BLOCK_TITLE
+                        : undefined
+                    }
                   >
                     <TableCell
                       className={`${CELL} w-10 whitespace-nowrap text-center font-medium ${N_LEFT} ${STICKY_CELL}`}
@@ -524,7 +540,7 @@ export default function BalanceteBalanco() {
                         disabled={fechamentoBlocked}
                         title={
                           fechamentoBlocked
-                            ? DATA_INICIO_BLOCK_TITLE
+                            ? SUBDEPARTMENT_PERIOD_BLOCK_TITLE
                             : (record?.observacoes ?? "")
                         }
                         onBlur={(event) =>

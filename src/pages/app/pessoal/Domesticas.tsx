@@ -45,13 +45,8 @@ import {
   DOMESTICAS_STATUS_OPTIONS,
 } from "@/lib/domesticas";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
-import { companyUsesSubmenu } from "@/lib/department-submenus";
+import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
-import {
-  DATA_INICIO_BLOCK_TITLE,
-  isCompanyInactiveInMonth,
-  isPeriodBeforeStart,
-} from "@/lib/companies";
 import {
   PESSOAL_ENVIO_TONE,
   PESSOAL_FLAG_TONE,
@@ -121,10 +116,8 @@ export default function Domesticas() {
   const pessoal = findDepartmentByName(departments, PESSOAL_DEPARTMENT_NAME);
 
   const rows = (companies ?? [])
-    .filter(
-      (company) =>
-        companyUsesSubmenu(company, pessoal?.id, SUBMENU) &&
-        !isCompanyInactiveInMonth(company, mes)
+    .filter((company) =>
+      companyInSubmenuInMonth(company, pessoal?.id, SUBMENU, mes)
     )
     .sort((a, b) => {
       if (!a.numero && !b.numero) return a.name.localeCompare(b.name, "pt-BR");
@@ -170,13 +163,6 @@ export default function Domesticas() {
       ? DOMESTICAS_SEM_MOVIMENTO
       : "";
   };
-
-  /** Empresas bloqueadas no mês exibido (anterior à Data de Início). */
-  const startBlockedIds = new Set(
-    rows
-      .filter((company) => isPeriodBeforeStart(company, mes))
-      .map((company) => company.id)
-  );
 
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
@@ -258,13 +244,10 @@ export default function Domesticas() {
     patchKey: string,
     toneClass: Record<string, string> = {}
   ) => {
-    const blocked = startBlockedIds.has(companyId);
     return (
       <Select
         value={value === "" ? "none" : value}
-        disabled={blocked}
         onValueChange={(next) => {
-          if (blocked) return;
           saveMutation.mutate({
             company_id: companyId,
             status: recordByCompany.get(companyId)?.status ?? null,
@@ -342,13 +325,9 @@ export default function Domesticas() {
 
   const renderRow = (company: (typeof rows)[number]) => {
     const record = recordByCompany.get(company.id);
-    const blocked = startBlockedIds.has(company.id);
     const senha = effectivePinned(company.id, "senha") ?? "";
     return (
-      <TableRow
-        key={company.id}
-        title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
-      >
+      <TableRow key={company.id}>
         <TableCell className={`${CELL} w-28`}>
           {renderSelectCell(
             company.id,
@@ -390,12 +369,7 @@ export default function Domesticas() {
               variant="ghost"
               size="icon"
               className="h-6 w-6 shrink-0"
-              disabled={blocked}
-              title={
-                blocked
-                  ? DATA_INICIO_BLOCK_TITLE
-                  : "Definir a senha (fica fixada para os meses seguintes)"
-              }
+              title="Definir a senha (fica fixada para os meses seguintes)"
               onClick={() => {
                 setSenhaText(senha);
                 setSenhaDialog({ companyId: company.id, nome: company.name });

@@ -22,13 +22,8 @@ import { usePonto, usePontoAll, useSavePonto } from "@/hooks/use-ponto";
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
-import { companyUsesSubmenu } from "@/lib/department-submenus";
+import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
-import {
-  DATA_INICIO_BLOCK_TITLE,
-  isCompanyInactiveInMonth,
-  isPeriodBeforeStart,
-} from "@/lib/companies";
 import { PONTO_ENVIO_OPTIONS } from "@/lib/ponto";
 import { PESSOAL_ENVIO_TONE } from "@/lib/pessoal-tones";
 import { cn } from "@/lib/utils";
@@ -64,10 +59,8 @@ export default function Ponto() {
   const pessoal = findDepartmentByName(departments, PESSOAL_DEPARTMENT_NAME);
 
   const rows = (companies ?? [])
-    .filter(
-      (company) =>
-        companyUsesSubmenu(company, pessoal?.id, "Ponto") &&
-        !isCompanyInactiveInMonth(company, mes)
+    .filter((company) =>
+      companyInSubmenuInMonth(company, pessoal?.id, "Ponto", mes)
     )
     .sort((a, b) => {
       if (!a.numero && !b.numero) {
@@ -156,13 +149,8 @@ export default function Ponto() {
 
   const renderRow = (company: (typeof rows)[number]) => {
     const envio = effectiveEnvio(company.id) ?? "";
-    // Períodos anteriores à Data de Início da empresa ficam bloqueados.
-    const blocked = isPeriodBeforeStart(company, mes);
     return (
-      <TableRow
-        key={company.id}
-        title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
-      >
+      <TableRow key={company.id}>
         <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
           {company.numero || "—"}
         </TableCell>
@@ -177,7 +165,6 @@ export default function Ponto() {
         <TableCell className={CELL}>
           <Select
             value={envio === "" ? "none" : envio}
-            disabled={blocked}
             onValueChange={(value) =>
               save(company.id, value === "none" ? null : value)
             }

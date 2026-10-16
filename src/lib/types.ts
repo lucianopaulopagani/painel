@@ -86,6 +86,16 @@ export interface DepartmentSubmenu {
   created_at: string;
 }
 
+/**
+ * Período (meses, YYYY-MM) de um subdepartamento: a empresa entra nas tabelas
+ * no mês de início e sai depois do mês final (o fim preserva o histórico).
+ * Campos nulos significam "sem limite".
+ */
+export interface SubdepartmentPeriod {
+  inicio: string | null;
+  fim: string | null;
+}
+
 /** Vínculo empresa × departamento, com os usuários responsáveis (opcional). */
 export interface CompanyDepartmentLink {
   department_id: string;
@@ -98,6 +108,8 @@ export interface CompanyDepartmentLink {
   subdepartments: string[];
   /** Responsáveis por subdepartamento (nome do subdepartamento → ids). */
   subdepartment_responsibles: Record<string, string[]>;
+  /** Período de cada subdepartamento (nome do subdepartamento → início/fim). */
+  subdepartment_periods: Record<string, SubdepartmentPeriod>;
 }
 
 /** Empresa já com os departamentos vinculados. */
