@@ -135,21 +135,41 @@ export default function DomesticasDashboard() {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
-  const percentOf = (value: number): string =>
-    total > 0 ? formatPct((value / total) * 100) : "0,00";
+  const percentOf = (value: number, base: number): string =>
+    base > 0 ? formatPct((value / base) * 100) : "0,00";
 
   const countStatus = (status: string, source = scoped): number =>
     source.filter((company) => statusOf(company.id) === status).length;
 
+  // Empresas sem movimento ficam fora da base de cálculo das demais situações.
+  const semMovimento = countStatus(SEM_MOVIMENTO);
+  const emMovimento = total - semMovimento;
+
   const CARDS = [
-    ...STATUS_CARDS.map((status) => ({
-      label: status,
-      value: countStatus(status),
-      className: PESSOAL_STATUS_CARD_TONE[status],
-    })),
+    ...STATUS_CARDS.filter((status) => status !== SEM_MOVIMENTO).map(
+      (status) => {
+        const value = countStatus(status);
+        return {
+          label: status,
+          value,
+          percent: percentOf(value, emMovimento),
+          basis: "das empresas em movimento",
+          className: PESSOAL_STATUS_CARD_TONE[status],
+        };
+      }
+    ),
+    {
+      label: SEM_MOVIMENTO,
+      value: semMovimento,
+      percent: percentOf(semMovimento, total),
+      basis: "do total",
+      className: PESSOAL_STATUS_CARD_TONE[SEM_MOVIMENTO],
+    },
     {
       label: "Total de empresas",
       value: total,
+      percent: percentOf(total, total),
+      basis: "do total",
       className: "bg-muted text-muted-foreground",
     },
   ];
@@ -276,7 +296,7 @@ export default function DomesticasDashboard() {
                     {card.value}
                   </div>
                   <CardDescription className="mt-1">
-                    {percentOf(card.value)}% do total
+                    {card.percent}% {card.basis}
                   </CardDescription>
                 </CardContent>
               </Card>

@@ -134,7 +134,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Dashboard",
         detail:
-          "No Dashboard geral, o submenu 'Domésticas' mostra os cartões Concluído, Pendente, Em Andamento, Em Ajuste, Sem Movimento e Total de empresas (com quantidade e porcentagem) e os gráficos por responsável e por responsável e status, no mesmo formato do dashboard de Empresas com funcionários.",
+          "No Dashboard geral, o submenu 'Domésticas' mostra os cartões Concluído, Pendente, Em Andamento, Em Ajuste, Sem Movimento e Total de empresas (com quantidade e porcentagem) e os gráficos por responsável e por responsável e status. As empresas Sem Movimento ficam fora da base de cálculo das demais situações: os percentuais de Concluído, Pendente, Em Andamento e Em Ajuste consideram apenas as empresas em movimento.",
       },
     ],
   },
