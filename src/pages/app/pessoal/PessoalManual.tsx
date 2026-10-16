@@ -155,7 +155,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Complemento INSS",
         detail:
-          "Nº, Empresa, Observações (botão de Ações), DARF (OK/Possui/Não Possui) e Envio (Enviado/Pendente/Desativado). Empresas desativadas vão para a seção no fim da tabela.",
+          "Nº, Empresa, Observações (botão de Ações), DARF (OK/Possui/Não Possui) e Envio (Enviado/Pendente). O valor antigo Desativado não é mais oferecido — os meses que já o tinham continuam exibidos na seção Empresas desativadas, no fim da tabela, até serem alterados.",
       },
       {
         label: "Observações (Ações)",
@@ -173,7 +173,7 @@ export default function PessoalManual() {
       description=""
       sections={SECTIONS}
       tips={[
-        "O status de Empresas com funcionários e Empresas Fiscal é individual de cada mês; no Complemento INSS, use Envio = Desativado para tirar a empresa do movimento sem excluir o histórico.",
+        "O status de Empresas com funcionários e Empresas Fiscal é individual de cada mês; em Ponto e Complemento INSS o Envio é Enviado ou Pendente, e empresas inativadas no cadastro saem da lista automaticamente.",
         "Data Base, Empréstimo e notas herdam do mês anterior — basta ajustar quando mudar.",
         "As listas suspensas seguem o padrão de cores: OK e Enviado em verde, Não Possui em azul, Possui e Pendente em vermelho, Em Andamento em âmbar e Desativado no tom neutro.",
         "Use os filtros de coluna para localizar empresas por status, envio ou mês.",

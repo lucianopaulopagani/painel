@@ -39,6 +39,7 @@ import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments
 import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import {
   COMPLEMENTO_INSS_DARF_OPTIONS,
+  COMPLEMENTO_INSS_ENVIO_DESATIVADO,
   COMPLEMENTO_INSS_ENVIO_OPTIONS,
 } from "@/lib/complemento-inss";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
@@ -109,8 +110,8 @@ export default function ComplementoInss() {
   );
 
   /**
-   * Envio efetivo: usa o registro do mês; se não existir, mantém "Desativado"
-   * fixo caso o mês anterior mais recente seja Desativado.
+   * Envio efetivo: usa o registro do mês; se não existir, mantém o valor legado
+   * "Desativado" fixo caso o mês anterior mais recente ainda seja Desativado.
    */
   const effectiveEnvio = (companyId: string): string | null => {
     const current = recordByCompany.get(companyId);
@@ -121,11 +122,13 @@ export default function ComplementoInss() {
           record.company_id === companyId && record.mes_referencia < mes
       )
       .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia));
-    return prior[0]?.envio === "Desativado" ? "Desativado" : null;
+    return prior[0]?.envio === COMPLEMENTO_INSS_ENVIO_DESATIVADO
+      ? COMPLEMENTO_INSS_ENVIO_DESATIVADO
+      : null;
   };
 
   const isDesativada = (companyId: string): boolean =>
-    effectiveEnvio(companyId) === "Desativado";
+    effectiveEnvio(companyId) === COMPLEMENTO_INSS_ENVIO_DESATIVADO;
 
   /**
    * Observações efetivas: usa o registro do mês; se não existir, carrega as do
@@ -323,7 +326,14 @@ export default function ComplementoInss() {
           {renderSelectCell(
             company.id,
             envio,
-            COMPLEMENTO_INSS_ENVIO_OPTIONS,
+            // O valor legado "Desativado" só aparece na linha que já o tem,
+            // para continuar visível e poder ser alterado.
+            envio === COMPLEMENTO_INSS_ENVIO_DESATIVADO
+              ? [
+                  COMPLEMENTO_INSS_ENVIO_DESATIVADO,
+                  ...COMPLEMENTO_INSS_ENVIO_OPTIONS,
+                ]
+              : COMPLEMENTO_INSS_ENVIO_OPTIONS,
             "envio",
             PESSOAL_ENVIO_TONE
           )}
