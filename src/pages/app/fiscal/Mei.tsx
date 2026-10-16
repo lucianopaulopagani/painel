@@ -1,5 +1,16 @@
 import { useState } from "react";
+import { Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -21,6 +32,7 @@ import {
   useSaveMovimentoFiscal,
 } from "@/hooks/use-movimento-fiscal";
 import { cn } from "@/lib/utils";
+import { SITUACAO_TONE } from "@/lib/fiscal";
 import { CompanyNumber } from "@/components/company-number";
 import type {
   CompanyWithDepartments,
@@ -34,12 +46,30 @@ const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
 /** Tributação desta subtabela. */
 export const MEI_TRIBUTACAO = "MEI";
 
-/** Situação do MEI: apenas OK e FAZENDO. */
-export const MEI_SITUACAO_OPTIONS = ["OK", "FAZENDO"] as const;
+/**
+ * Situação do MEI: OK, FAZENDO e SM. O "SM" (Simples Nacional) é gravado como
+ * "OK-SM", o mesmo valor usado no restante do Movimento Fiscal.
+ */
+export const MEI_SITUACAO_OPTIONS = [
+  { value: "OK", label: "OK" },
+  { value: "FAZENDO", label: "FAZENDO" },
+  { value: "OK-SM", label: "SM" },
+] as const;
 
-/** Cores: OK = finalizada (verde); FAZENDO = pendente (vermelho). */
+/** Coluna DAS: OK e SM (SM gravado como "OK-SM"). */
+const MEI_DAS_OPTIONS = [
+  { value: "OK", label: "OK" },
+  { value: "OK-SM", label: "SM" },
+] as const;
+
+/** Coluna Envio: apenas OK. */
+const MEI_ENVIO_OPTIONS = [{ value: "OK", label: "OK" }] as const;
+
+/** Cores: OK, SM e Envio = finalizada (verde); FAZENDO = pendente (vermelho). */
 const TONE: Record<string, string> = {
   OK: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+  "OK-SM":
+    "bg-status-success text-status-success-foreground hover:bg-status-success/90",
   FAZENDO:
     "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
 };
@@ -56,10 +86,11 @@ interface MeiTableProps {
 
 /**
  * Subtabela do MEI — exibida dentro do Movimento Fiscal quando a tributação
- * "MEI" é selecionada. Colunas: N, UF, Empresa, Situação e Observação.
+ * "MEI" é selecionada. Colunas: N, UF, Empresa, Situação, DAS, Envio e
+ * Observação (com botão de Ações).
  *
- * A Situação tem apenas OK (finalizada) e FAZENDO (pendente) e alimenta os
- * dashboards do Movimento Fiscal com esses mesmos parâmetros.
+ * A Situação tem OK, FAZENDO e SM; o DAS tem OK e SM; o Envio tem apenas OK —
+ * todos alimentam os dashboards do Movimento Fiscal com esses mesmos valores.
  */
 export function MeiTable({ mes, companies }: MeiTableProps) {
   const [busca, setBusca] = useState({
@@ -67,8 +98,17 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
     uf: "",
     empresa: "",
     situacao: "",
+    das: "",
+    envio: "",
     observacoes: "",
   });
+  /* Diálogo do botão de Ações da coluna Observação. */
+  const [obsDialog, setObsDialog] = useState<{
+    companyId: string;
+    empresa: string;
+    numero: string;
+  } | null>(null);
+  const [obsText, setObsText] = useState("");
 
   const setBuscaField = (key: keyof typeof busca, value: string) =>
     setBusca((prev) => ({ ...prev, [key]: value }));
@@ -132,6 +172,8 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
       selectOrBlank(company.uf, busca.uf) &&
       match(company.name, busca.empresa) &&
       selectOrBlank(record?.situacao, busca.situacao) &&
+      selectOrBlank(record?.das, busca.das) &&
+      selectOrBlank(record?.envio_sn, busca.envio) &&
       match(effectiveObservacoes(company.id), busca.observacoes)
     );
   });
@@ -176,7 +218,7 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
         MEI — empresas com tributação {MEI_TRIBUTACAO}
       </p>
       <div className="overflow-x-auto rounded-lg border">
-        <Table className="table-fixed min-w-[820px]">
+        <Table className="table-fixed min-w-[1100px]">
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
               {renderFilterInput("numero", "N", "w-12")}
@@ -203,7 +245,7 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                 </Select>
               </TableHead>
               {renderFilterInput("empresa", "Empresa", "w-[22rem]")}
-              <TableHead className={`${HEAD} w-28 align-bottom`}>
+              <TableHead className={`${HEAD} w-24 align-bottom`}>
                 <span className="mb-1 block whitespace-nowrap">Situação</span>
                 <Select
                   value={busca.situacao === "" ? "todos" : busca.situacao}
@@ -218,19 +260,67 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                     <SelectItem value="todos">Todos</SelectItem>
                     <SelectItem value="branco">Em branco</SelectItem>
                     {MEI_SITUACAO_OPTIONS.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </TableHead>
-              {renderFilterInput("observacoes", "Observação", "w-[26rem]")}
+              <TableHead className={`${HEAD} w-20 align-bottom`}>
+                <span className="mb-1 block">DAS</span>
+                <Select
+                  value={busca.das === "" ? "todos" : busca.das}
+                  onValueChange={(value) =>
+                    setBuscaField("das", value === "todos" ? "" : value)
+                  }
+                >
+                  <SelectTrigger className="h-6 w-full min-w-0 px-1 text-xs">
+                    <SelectValue placeholder="Todos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="branco">Em branco</SelectItem>
+                    {MEI_DAS_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </TableHead>
+              <TableHead className={`${HEAD} w-20 align-bottom`}>
+                <span className="mb-1 block">Envio</span>
+                <Select
+                  value={busca.envio === "" ? "todos" : busca.envio}
+                  onValueChange={(value) =>
+                    setBuscaField("envio", value === "todos" ? "" : value)
+                  }
+                >
+                  <SelectTrigger className="h-6 w-full min-w-0 px-1 text-xs">
+                    <SelectValue placeholder="Todos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="branco">Em branco</SelectItem>
+                    {MEI_ENVIO_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </TableHead>
+              {renderFilterInput("observacoes", "Observação", "w-[18rem]")}
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredRows.map((company) => {
-              const situacao = recordByCompany.get(company.id)?.situacao ?? "";
+              const record = recordByCompany.get(company.id);
+              const situacao = record?.situacao ?? "";
+              const das = record?.das ?? "";
+              const envio = record?.envio_sn ?? "";
+              const observacoes = effectiveObservacoes(company.id) ?? "";
               return (
                 <TableRow key={company.id}>
                   <TableCell
@@ -249,7 +339,7 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                       {company.name}
                     </span>
                   </TableCell>
-                  <TableCell className={`${CELL} w-28`}>
+                  <TableCell className={`${CELL} w-24`}>
                     <Select
                       value={situacao === "" ? "none" : situacao}
                       onValueChange={(next) => {
@@ -269,25 +359,93 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                       <SelectContent>
                         <SelectItem value="none">—</SelectItem>
                         {MEI_SITUACAO_OPTIONS.map((option) => (
-                          <SelectItem key={option} value={option}>
-                            {option}
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </TableCell>
-                  <TableCell className={`${CELL} w-[26rem]`}>
-                    <Input
-                      key={`${company.id}:${mes}:obs`}
-                      defaultValue={effectiveObservacoes(company.id) ?? ""}
-                      title={effectiveObservacoes(company.id) ?? ""}
-                      onBlur={(event) =>
+                  <TableCell className={`${CELL} w-20`}>
+                    <Select
+                      value={das === "" ? "none" : das}
+                      onValueChange={(next) => {
                         save(company.id, {
-                          observacoes: event.target.value.trim() || null,
-                        })
-                      }
-                      className="h-7 w-full min-w-0 px-1 text-[11px]"
-                    />
+                          das: next === "none" ? null : next,
+                        });
+                      }}
+                    >
+                      <SelectTrigger
+                        className={cn(
+                          "h-7 w-full min-w-0 px-1 text-[11px] font-semibold",
+                          TONE[das]
+                        )}
+                      >
+                        <SelectValue placeholder="—" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">—</SelectItem>
+                        {MEI_DAS_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell className={`${CELL} w-20`}>
+                    <Select
+                      value={envio === "" ? "none" : envio}
+                      onValueChange={(next) => {
+                        save(company.id, {
+                          envio_sn: next === "none" ? null : next,
+                        });
+                      }}
+                    >
+                      <SelectTrigger
+                        className={cn(
+                          "h-7 w-full min-w-0 px-1 text-[11px] font-semibold",
+                          TONE[envio]
+                        )}
+                      >
+                        <SelectValue placeholder="—" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">—</SelectItem>
+                        {MEI_ENVIO_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell className={CELL}>
+                    <div className="flex items-center gap-1">
+                      <span
+                        className="block h-7 flex-1 truncate py-1"
+                        title={observacoes}
+                      >
+                        {observacoes || "—"}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 shrink-0"
+                        title="Ações — Observação"
+                        onClick={() => {
+                          setObsText(observacoes);
+                          setObsDialog({
+                            companyId: company.id,
+                            empresa: company.name,
+                            numero: company.numero ?? "",
+                          });
+                        }}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               );
@@ -295,7 +453,7 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
             {filteredRows.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={7}
                   className={`${CELL} py-8 text-center text-muted-foreground`}
                 >
                   {Object.values(busca).some(Boolean) && rows.length > 0
@@ -307,6 +465,54 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
           </TableBody>
         </Table>
       </div>
+
+      <Dialog
+        open={obsDialog !== null}
+        onOpenChange={(open) => {
+          if (!open) setObsDialog(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Observação</DialogTitle>
+            <DialogDescription>
+              {obsDialog?.numero ? `${obsDialog.numero} — ` : ""}
+              {obsDialog?.empresa} — {mes}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={obsText}
+            onChange={(event) => setObsText(event.target.value)}
+            placeholder="Escreva a observação desta empresa"
+            rows={5}
+            autoFocus
+          />
+          <p className="text-xs text-muted-foreground">
+            A observação é levada para os meses seguintes até ser alterada.
+          </p>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setObsDialog(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (!obsDialog) return;
+                save(obsDialog.companyId, {
+                  observacoes: obsText.trim() || null,
+                });
+                setObsDialog(null);
+              }}
+            >
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

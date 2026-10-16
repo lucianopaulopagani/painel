@@ -105,7 +105,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "MEI",
         detail:
-          "Selecionando 'MEI' no filtro de Tributação, é exibida a subtabela enxuta dessa tributação, apenas com N, UF, Empresa, Situação e Observação (as demais colunas do Movimento Fiscal não se aplicam ao MEI). A Situação tem somente OK (finalizada) e FAZENDO (pendente) e alimenta os dashboards do Movimento Fiscal com esses mesmos parâmetros: OK conta como finalizada e FAZENDO como pendente.",
+          "Selecionando 'MEI' no filtro de Tributação, é exibida a subtabela enxuta dessa tributação, apenas com N, UF, Empresa, Situação, DAS, Envio e Observação (as demais colunas do Movimento Fiscal não se aplicam ao MEI). A Situação tem OK, FAZENDO e SM (o SM é gravado como OK-SM, o mesmo valor usado no restante do Movimento Fiscal); o DAS tem OK e SM; o Envio tem apenas OK. A coluna Observação é editada pelo botão de lápis (Ações), que abre um diálogo — o texto é levado para os meses seguintes até ser alterado. A Situação alimenta os dashboards do Movimento Fiscal: OK e SM contam como finalizada e FAZENDO como pendente.",
       },
       {
         label: "Lucro Real e Lucro Presumido",
