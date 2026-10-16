@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import FiscalMovimentoDashboard from "./fiscal/FiscalMovimentoDashboard";
 import ParcelamentosDashboard from "./fiscal/ParcelamentosDashboard";
 import PessoalDashboard from "./pessoal/PessoalDashboard";
+import DomesticasDashboard from "./pessoal/DomesticasDashboard";
 import ContabilDashboard from "./contabil/ContabilDashboard";
 import SocietarioDashboard from "./societario/SocietarioDashboard";
 import AlvaraLocalizacaoDashboard from "./societario/AlvaraLocalizacaoDashboard";
@@ -52,7 +53,10 @@ const DEPT_SUBMENUS: Record<DashboardKey, { key: string; label: string }[]> = {
     { key: "dashboard", label: "Movimento Fiscal" },
     { key: "parcelamentos", label: "Controle de Parcelamentos" },
   ],
-  pessoal: [{ key: "dashboard", label: "Empresas com funcionários" }],
+  pessoal: [
+    { key: "dashboard", label: "Empresas com funcionários" },
+    { key: "domesticas", label: "Domésticas" },
+  ],
   societario: [
     { key: "certificado-digital", label: "Certificado digital" },
     { key: "alvara-localizacao", label: "Alvará localização" },
@@ -155,6 +159,8 @@ export default function GeneralDashboard() {
           <ParcelamentosDashboard />
         ) : active === "pessoal" && submenuKey === "dashboard" ? (
           <PessoalDashboard />
+        ) : active === "pessoal" && submenuKey === "domesticas" ? (
+          <DomesticasDashboard />
         ) : active === "contabil" && submenuKey === "balancete-balanco" ? (
           <ContabilDashboard />
         ) : active === "societario" && submenuKey === "certificado-digital" ? (

@@ -131,6 +131,11 @@ const SECTIONS: ManualSection[] = [
         detail:
           "Filtros por coluna no cabeçalho (Status, Data Base, N, Nome, CPF, Senha, Folha, DAE, Envio e Ponto). Meses anteriores à Data de Início da empresa ficam bloqueados para edição.",
       },
+      {
+        label: "Dashboard",
+        detail:
+          "No Dashboard geral, o submenu 'Domésticas' mostra os cartões Concluído, Pendente, Em Andamento, Em Ajuste, Sem Movimento e Total de empresas (com quantidade e porcentagem) e os gráficos por responsável e por responsável e status, no mesmo formato do dashboard de Empresas com funcionários.",
+      },
     ],
   },
   {

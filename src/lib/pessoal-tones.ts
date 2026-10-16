@@ -39,6 +39,7 @@ export const PESSOAL_STATUS_CARD_TONE: Record<string, string> = {
   Pendente: "bg-status-danger text-status-danger-foreground",
   "Em Andamento": "bg-status-warning text-status-warning-foreground",
   "Em Ajuste": "bg-primary/10 text-primary",
+  "Sem Movimento": "bg-muted text-muted-foreground",
 };
 
 /** Coluna Envio (e marcações simples como Enviado). */
