@@ -91,6 +91,11 @@ const SECTIONS: ManualSection[] = [
           "Status, Nº, Empresa, CNPJ, Informações fechamento, DCTFWEB e Envio.",
       },
       {
+        label: "Informações fechamento (Ações)",
+        detail:
+          "O botão de lápis (Ações) na coluna Informações fechamento abre um diálogo para escrever o texto da empresa no mês exibido. O texto é levado para os meses seguintes até ser alterado.",
+      },
+      {
         label: "Status",
         detail:
           "Concluído (verde), Pendente (vermelho), Em Andamento (âmbar) e Em Ajuste. O status é individual de cada mês.",

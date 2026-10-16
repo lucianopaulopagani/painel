@@ -1,8 +1,18 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Pencil } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -71,6 +81,13 @@ export default function EmpresasFiscal() {
     dctfweb: "",
     envio: "",
   });
+  /* Diálogo do botão de Ações da coluna "Informações fechamento". */
+  const [infoDialog, setInfoDialog] = useState<{
+    companyId: string;
+    empresa: string;
+    numero: string;
+  } | null>(null);
+  const [infoText, setInfoText] = useState("");
 
   const setBuscaField = (key: keyof typeof busca, value: string) => {
     setBusca((prev) => ({ ...prev, [key]: value }));
@@ -250,17 +267,31 @@ export default function EmpresasFiscal() {
           {formatCpfCnpj(company.documento)}
         </TableCell>
         <TableCell className={CELL}>
-          <Input
-            key={`${company.id}:${mes}`}
-            defaultValue={infoEff ?? ""}
-            title={infoEff ?? ""}
-            onBlur={(event) =>
-              save(company.id, {
-                informacoes: event.target.value.trim() || null,
-              })
-            }
-            className="h-7 w-full min-w-0 px-1 text-[11px]"
-          />
+          <div className="flex items-center gap-1">
+            <span
+              className="block h-7 flex-1 truncate py-1"
+              title={infoEff ?? ""}
+            >
+              {infoEff || "—"}
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 shrink-0"
+              title="Ações — Informações fechamento"
+              onClick={() => {
+                setInfoText(infoEff ?? "");
+                setInfoDialog({
+                  companyId: company.id,
+                  empresa: company.name,
+                  numero: company.numero ?? "",
+                });
+              }}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </TableCell>
         <TableCell className={`${CELL} w-20`}>
           <Select
@@ -481,6 +512,54 @@ export default function EmpresasFiscal() {
           </Table>
         </div>
       )}
+
+      <Dialog
+        open={infoDialog !== null}
+        onOpenChange={(open) => {
+          if (!open) setInfoDialog(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Informações fechamento</DialogTitle>
+            <DialogDescription>
+              {infoDialog?.numero ? `${infoDialog.numero} — ` : ""}
+              {infoDialog?.empresa} — {mes}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={infoText}
+            onChange={(event) => setInfoText(event.target.value)}
+            placeholder="Escreva as informações de fechamento desta empresa"
+            rows={5}
+            autoFocus
+          />
+          <p className="text-xs text-muted-foreground">
+            O texto é levado para os meses seguintes até ser alterado.
+          </p>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setInfoDialog(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (!infoDialog) return;
+                save(infoDialog.companyId, {
+                  informacoes: infoText.trim() || null,
+                });
+                setInfoDialog(null);
+              }}
+            >
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
