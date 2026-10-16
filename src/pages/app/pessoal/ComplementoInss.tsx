@@ -48,6 +48,7 @@ import {
   PESSOAL_FLAG_TONE,
 } from "@/lib/pessoal-tones";
 import { cn } from "@/lib/utils";
+import { CompanyNumber } from "@/components/company-number";
 import type { ComplementoInssInput } from "@/lib/types";
 
 const STORAGE_KEY = "pessoal:complemento-inss-mes";
@@ -279,7 +280,7 @@ export default function ComplementoInss() {
     return (
       <TableRow key={company.id}>
         <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
-          {company.numero || "—"}
+          <CompanyNumber company={company} />
         </TableCell>
         <TableCell className={`${CELL}`}>
           <span className="block truncate font-medium" title={company.name}>

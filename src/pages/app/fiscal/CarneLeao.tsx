@@ -25,6 +25,7 @@ import {
   CARNE_LEAO_TOMADOS_OPTIONS,
   CARNE_LEAO_TRIBUTACAO,
 } from "@/lib/carne-leao";
+import { CompanyNumber } from "@/components/company-number";
 import { cn, formatCpfCnpj } from "@/lib/utils";
 import type { CompanyWithDepartments, MovimentoCarneLeaoInput } from "@/lib/types";
 
@@ -280,7 +281,7 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
               return (
                 <TableRow key={company.id}>
                   <TableCell className={`${CELL} whitespace-nowrap text-center font-medium`}>
-                    {company.numero || "—"}
+                    <CompanyNumber company={company} />
                   </TableCell>
                   <TableCell className={`${CELL} whitespace-nowrap`}>
                     {company.uf || "—"}

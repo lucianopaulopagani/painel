@@ -52,6 +52,7 @@ import {
   PESSOAL_FLAG_TONE,
   PESSOAL_STATUS_TONE,
 } from "@/lib/pessoal-tones";
+import { CompanyNumber } from "@/components/company-number";
 import { cn, formatCpfCnpj } from "@/lib/utils";
 import type { DomesticasMovimentoInput, DomesticasMovimentoRecord } from "@/lib/types";
 
@@ -346,7 +347,7 @@ export default function Domesticas() {
           )}
         </TableCell>
         <TableCell className={`${CELL} w-12 whitespace-nowrap text-center font-medium`}>
-          {company.numero || "—"}
+          <CompanyNumber company={company} />
         </TableCell>
         <TableCell className={`${CELL} w-56`}>
           <span className="block truncate font-medium" title={company.name}>

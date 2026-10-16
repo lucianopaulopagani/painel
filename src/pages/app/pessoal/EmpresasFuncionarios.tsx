@@ -62,6 +62,7 @@ import {
 } from "@/lib/pessoal-tones";
 import { formatCpfCnpj } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { CompanyNumber } from "@/components/company-number";
 import type { EmpresasFuncionariosInput } from "@/lib/types";
 
 const STORAGE_KEY = "pessoal:empresas-funcionarios-mes";
@@ -557,7 +558,7 @@ export default function EmpresasFuncionarios() {
         <TableCell
           className={`${CELL} w-10 whitespace-nowrap text-center font-medium ${STICKY_CELL} ${N_LEFT}`}
         >
-          {company.numero || "—"}
+          <CompanyNumber company={company} />
         </TableCell>
         <TableCell
           className={`${CELL} w-24 ${STICKY_CELL} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`}

@@ -46,6 +46,7 @@ import {
   type ParcelamentoFieldDef,
   type ParcelamentoFieldKey,
 } from "@/lib/parcelamentos";
+import { CompanyNumber } from "@/components/company-number";
 import { cn, formatCpfCnpj } from "@/lib/utils";
 import type { ParcelamentoInput, ParcelamentoRecord } from "@/lib/types";
 
@@ -433,7 +434,7 @@ export default function ControleParcelamentos() {
                         "numero",
                         "N",
                         <span className="block truncate font-medium">
-                          {company.numero || "—"}
+                          <CompanyNumber company={company} />
                         </span>
                       )}
                     </TableCell>

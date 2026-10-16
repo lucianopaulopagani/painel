@@ -39,6 +39,7 @@ import CompanyImportDialog from "@/components/admin/CompanyImportDialog";
 import CompanyBulkEditDialog from "@/components/admin/CompanyBulkEditDialog";
 import { effectiveEmpresaFields } from "@/lib/empresas-permissions";
 import { formatMonthLabel } from "@/lib/fiscal-month";
+import { CompanyNumber } from "@/components/company-number";
 import { formatCpfCnpj } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { CompanyWithDepartments } from "@/lib/types";
@@ -289,20 +290,8 @@ export default function CompaniesTab() {
                         />
                       </TableCell>
                     )}
-                    <TableCell className="px-3 py-1.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">
-                          {company.numero || "—"}
-                        </span>
-                        <Badge
-                          variant={
-                            company.tipo === "filial" ? "secondary" : "outline"
-                          }
-                          className="px-1.5 py-0 text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
-                        >
-                          {company.tipo === "filial" ? "Filial" : "Matriz"}
-                        </Badge>
-                      </div>
+                    <TableCell className="px-3 py-1.5 font-medium">
+                      <CompanyNumber company={company} />
                     </TableCell>
                     <TableCell className="px-3 py-1.5 font-medium">
                       <span

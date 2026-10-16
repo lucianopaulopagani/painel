@@ -50,6 +50,7 @@ import {
   PESSOAL_STATUS_TONE,
 } from "@/lib/pessoal-tones";
 import { cn } from "@/lib/utils";
+import { CompanyNumber } from "@/components/company-number";
 import type { EmpresasFiscalInput, EmpresasFiscalRecord } from "@/lib/types";
 
 const STORAGE_KEY = "pessoal:empresas-fiscal-mes";
@@ -256,7 +257,7 @@ export default function EmpresasFiscal() {
           </Select>
         </TableCell>
         <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
-          {company.numero || "—"}
+          <CompanyNumber company={company} />
         </TableCell>
         <TableCell className={CELL}>
           <span className="block truncate font-medium" title={company.name}>

@@ -27,6 +27,7 @@ import { defaultReferenceMonth } from "@/lib/fiscal-month";
 import { PONTO_ENVIO_DESATIVADO, PONTO_ENVIO_OPTIONS } from "@/lib/ponto";
 import { PESSOAL_ENVIO_TONE } from "@/lib/pessoal-tones";
 import { cn } from "@/lib/utils";
+import { CompanyNumber } from "@/components/company-number";
 import type { PontoInput } from "@/lib/types";
 
 const STORAGE_KEY = "pessoal:ponto-mes";
@@ -158,7 +159,7 @@ export default function Ponto() {
     return (
       <TableRow key={company.id}>
         <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
-          {company.numero || "—"}
+          <CompanyNumber company={company} />
         </TableCell>
         <TableCell className={CELL}>
           <span

@@ -25,6 +25,7 @@ import {
   SITUACAO_OPTIONS,
   isSituacaoFinalizada,
 } from "@/lib/fiscal";
+import { CompanyNumber } from "@/components/company-number";
 import { cn, formatCpfCnpj } from "@/lib/utils";
 import type {
   CompanyWithDepartments,
@@ -297,7 +298,7 @@ export function SimplesNacionalTable({
                   <TableCell
                     className={`${CELL} whitespace-nowrap text-center font-medium`}
                   >
-                    {company.numero || "—"}
+                    <CompanyNumber company={company} />
                   </TableCell>
                   <TableCell
                     className={`${CELL} w-16 whitespace-nowrap`}

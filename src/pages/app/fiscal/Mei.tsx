@@ -21,6 +21,7 @@ import {
   useSaveMovimentoFiscal,
 } from "@/hooks/use-movimento-fiscal";
 import { cn } from "@/lib/utils";
+import { CompanyNumber } from "@/components/company-number";
 import type {
   CompanyWithDepartments,
   MovementFiscalInput,
@@ -235,7 +236,7 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                   <TableCell
                     className={`${CELL} w-12 whitespace-nowrap text-center font-medium`}
                   >
-                    {company.numero || "—"}
+                    <CompanyNumber company={company} />
                   </TableCell>
                   <TableCell className={`${CELL} w-16 whitespace-nowrap`}>
                     {company.uf || "—"}

@@ -48,6 +48,7 @@ import {
   writeStoredBalanceteAno,
 } from "@/lib/contabil";
 import { cn } from "@/lib/utils";
+import { CompanyNumber } from "@/components/company-number";
 import type { BalanceteBalancoInput } from "@/lib/types";
 
 const CELL = "px-1 py-1 text-[11px]";
@@ -470,7 +471,7 @@ export default function BalanceteBalanco() {
                     <TableCell
                       className={`${CELL} w-10 whitespace-nowrap text-center font-medium ${N_LEFT} ${STICKY_CELL}`}
                     >
-                      {company.numero || "—"}
+                      <CompanyNumber company={company} />
                     </TableCell>
                     <TableCell
                       className={`${CELL} w-12 whitespace-nowrap ${UF_LEFT} ${STICKY_CELL}`}

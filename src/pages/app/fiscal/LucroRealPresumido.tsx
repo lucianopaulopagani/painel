@@ -35,6 +35,7 @@ import {
   type LucroFieldKey,
 } from "@/lib/fiscal-lucro-real";
 import { cn } from "@/lib/utils";
+import { CompanyNumber } from "@/components/company-number";
 import type { CompanyWithDepartments, MovementFiscalInput } from "@/lib/types";
 
 const CELL = "px-1 py-1 text-[11px]";
@@ -428,7 +429,7 @@ export function LucroRealPresumidoTable({
                   <TableCell
                     className={`${CELL} w-10 whitespace-nowrap text-center font-medium`}
                   >
-                    {company.numero || "—"}
+                    <CompanyNumber company={company} />
                   </TableCell>
                   <TableCell className={`${CELL} w-56`}>
                     <span

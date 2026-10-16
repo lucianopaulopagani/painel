@@ -61,6 +61,7 @@ import {
   SITUACAO_TONE,
 } from "@/lib/fiscal";
 import { cn } from "@/lib/utils";
+import { CompanyNumber } from "@/components/company-number";
 import type {
   CompanyWithDepartments,
   MovementFiscalInput,
@@ -682,7 +683,7 @@ export function MovimentoFiscal() {
                   return (
                     <TableRow key={company.id}>
                       <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
-                        {company.numero || "—"}
+                        <CompanyNumber company={company} />
                       </TableCell>
                       <TableCell className={`${CELL} whitespace-nowrap`}>
                         {company.uf}

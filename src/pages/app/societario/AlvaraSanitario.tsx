@@ -44,6 +44,7 @@ import {
   alvaraSanitarioAnos,
 } from "@/lib/alvara-sanitario";
 import { formatCpfCnpj, cn } from "@/lib/utils";
+import { CompanyNumber } from "@/components/company-number";
 import {
   downloadAlvaraReportExcel,
   printAlvaraReport,
@@ -517,7 +518,7 @@ export default function AlvaraSanitario() {
                 return (
                   <TableRow key={company.id}>
                     <TableCell className={`${CELL} whitespace-nowrap text-center font-medium`}>
-                      {company.numero || "—"}
+                      <CompanyNumber company={company} />
                     </TableCell>
                     <TableCell className={CELL}>
                       <span
