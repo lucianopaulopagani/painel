@@ -24,7 +24,7 @@ import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
-import { PONTO_ENVIO_OPTIONS } from "@/lib/ponto";
+import { PONTO_ENVIO_DESATIVADO, PONTO_ENVIO_OPTIONS } from "@/lib/ponto";
 import { PESSOAL_ENVIO_TONE } from "@/lib/pessoal-tones";
 import { cn } from "@/lib/utils";
 import type { PontoInput } from "@/lib/types";
@@ -76,8 +76,9 @@ export default function Ponto() {
   );
 
   /**
-   * Status efetivo da empresa no mês: usa o registro do mês; se não existir,
-   * mantém "Desativado" fixo caso o mês anterior mais recente seja Desativado.
+   * Envio efetivo da empresa no mês: usa o registro do mês; se não existir,
+   * mantém o valor legado "Desativado" fixo caso o mês anterior mais recente
+   * ainda seja Desativado.
    */
   const effectiveEnvio = (companyId: string): string | null => {
     const current = recordByCompany.get(companyId);
@@ -87,7 +88,9 @@ export default function Ponto() {
         (record) => record.company_id === companyId && record.mes_referencia < mes
       )
       .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia));
-    return prior[0]?.envio === "Desativado" ? "Desativado" : null;
+    return prior[0]?.envio === PONTO_ENVIO_DESATIVADO
+      ? PONTO_ENVIO_DESATIVADO
+      : null;
   };
 
   const filteredRows = rows.filter((company) => {
@@ -115,10 +118,10 @@ export default function Ponto() {
   });
 
   const activeRows = filteredRows.filter(
-    (company) => effectiveEnvio(company.id) !== "Desativado"
+    (company) => effectiveEnvio(company.id) !== PONTO_ENVIO_DESATIVADO
   );
   const inactiveRows = filteredRows.filter(
-    (company) => effectiveEnvio(company.id) === "Desativado"
+    (company) => effectiveEnvio(company.id) === PONTO_ENVIO_DESATIVADO
   );
 
   const save = (companyId: string, envio: string | null) => {
@@ -149,6 +152,9 @@ export default function Ponto() {
 
   const renderRow = (company: (typeof rows)[number]) => {
     const envio = effectiveEnvio(company.id) ?? "";
+    // O valor legado "Desativado" não é mais oferecido, mas continua visível
+    // (e alterável) nos meses em que já estava gravado.
+    const legadoDesativado = envio === PONTO_ENVIO_DESATIVADO;
     return (
       <TableRow key={company.id}>
         <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
@@ -179,6 +185,11 @@ export default function Ponto() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">—</SelectItem>
+              {legadoDesativado && (
+                <SelectItem value={PONTO_ENVIO_DESATIVADO}>
+                  {PONTO_ENVIO_DESATIVADO}
+                </SelectItem>
+              )}
               {PONTO_ENVIO_OPTIONS.map((option) => (
                 <SelectItem key={option} value={option}>
                   {option}

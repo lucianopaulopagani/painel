@@ -149,7 +149,8 @@ const SECTIONS: ManualSection[] = [
     items: [
       {
         label: "Ponto",
-        detail: "Registro do envio do ponto das empresas no mês (Enviado/Pendente/Desativado).",
+        detail:
+          "Registro do envio do ponto das empresas no mês: Envio com Enviado (verde) ou Pendente (vermelho). O valor antigo Desativado não é mais oferecido — os meses que já o tinham continuam exibidos na seção Empresas desativadas, no fim da tabela, até serem alterados.",
       },
       {
         label: "Complemento INSS",
@@ -167,7 +168,7 @@ export default function PessoalManual() {
       description=""
       sections={SECTIONS}
       tips={[
-        "O status de Empresas com funcionários e Empresas Fiscal é individual de cada mês; em Ponto e Complemento INSS, use Envio = Desativado para tirar a empresa do movimento sem excluir o histórico.",
+        "O status de Empresas com funcionários e Empresas Fiscal é individual de cada mês; no Complemento INSS, use Envio = Desativado para tirar a empresa do movimento sem excluir o histórico.",
         "Data Base, Empréstimo e notas herdam do mês anterior — basta ajustar quando mudar.",
         "As listas suspensas seguem o padrão de cores: OK e Enviado em verde, Não Possui em azul, Possui e Pendente em vermelho, Em Andamento em âmbar e Desativado no tom neutro.",
         "Use os filtros de coluna para localizar empresas por status, envio ou mês.",
