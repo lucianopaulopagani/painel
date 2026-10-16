@@ -383,6 +383,30 @@ export type DomesticaMovimentoInput = Omit<
   "id" | "created_at" | "updated_at"
 >;
 
+/**
+ * Movimento mensal de Domésticas por empresa (empresas marcadas com o
+ * subdepartamento "Domésticas"). N, Nome e CPF vêm do cadastro de empresas.
+ */
+export interface DomesticasMovimentoRecord {
+  id: string;
+  company_id: string;
+  mes_referencia: string;
+  status: string | null;
+  data_base: string | null;
+  senha: string | null;
+  folha: string | null;
+  dae: string | null;
+  envio: string | null;
+  ponto: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type DomesticasMovimentoInput = Omit<
+  DomesticasMovimentoRecord,
+  "id" | "created_at" | "updated_at"
+>;
+
 /** Registro anual do Balancete/Balanço (Contábil). */
 export interface BalanceteBalancoRecord {
   id: string;

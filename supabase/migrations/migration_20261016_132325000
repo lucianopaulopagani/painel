@@ -1,0 +1,42 @@
+-- Movimento mensal de Domésticas por empresa (subdepartamento "Domésticas")
+create table if not exists public.domesticas_movimento (
+  id uuid primary key default gen_random_uuid(),
+  company_id uuid not null references public.companies(id) on delete cascade,
+  mes_referencia text not null,
+  status text,
+  data_base text,
+  senha text,
+  folha text,
+  dae text,
+  envio text,
+  ponto text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint domesticas_movimento_company_mes_key unique (company_id, mes_referencia)
+);
+
+alter table public.domesticas_movimento enable row level security;
+
+create policy domesticas_movimento_admin_all on public.domesticas_movimento
+  for all to public using (is_admin()) with check (is_admin());
+
+create policy domesticas_movimento_member_all on public.domesticas_movimento
+  for all to public
+  using (exists (
+    select 1 from public.company_departments cd
+    join public.profile_departments pd on pd.department_id = cd.department_id
+    join public.departments d on d.id = cd.department_id
+    where cd.company_id = domesticas_movimento.company_id
+      and pd.profile_id = auth.uid()
+      and d.name = 'Depart. Pessoal'
+  ))
+  with check (exists (
+    select 1 from public.company_departments cd
+    join public.profile_departments pd on pd.department_id = cd.department_id
+    join public.departments d on d.id = cd.department_id
+    where cd.company_id = domesticas_movimento.company_id
+      and pd.profile_id = auth.uid()
+      and d.name = 'Depart. Pessoal'
+  ));
+
+grant select, insert, update, delete on public.domesticas_movimento to anon, authenticated;

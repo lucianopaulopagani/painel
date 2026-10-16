@@ -4126,6 +4126,58 @@ export type Database = {
         }
         Relationships: []
       }
+      domesticas_movimento: {
+        Row: {
+          company_id: string
+          created_at: string
+          dae: string | null
+          data_base: string | null
+          envio: string | null
+          folha: string | null
+          id: string
+          mes_referencia: string
+          ponto: string | null
+          senha: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          dae?: string | null
+          data_base?: string | null
+          envio?: string | null
+          folha?: string | null
+          id?: string
+          mes_referencia: string
+          ponto?: string | null
+          senha?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          dae?: string | null
+          data_base?: string | null
+          envio?: string | null
+          folha?: string | null
+          id?: string
+          mes_referencia?: string
+          ponto?: string | null
+          senha?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "domesticas_movimento_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       empresas_fiscal: {
         Row: {
           company_id: string

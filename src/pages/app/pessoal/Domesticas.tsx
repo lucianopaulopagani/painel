@@ -1,8 +1,18 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Pencil } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -18,35 +28,42 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useCompanies } from "@/hooks/use-companies";
+import { useDepartments } from "@/hooks/use-departments";
 import {
-  useDomesticas,
-  useDomesticaMovimento,
-  useSaveDomestica,
-  useSaveDomesticaMovimento,
-} from "@/hooks/use-domesticas";
+  useAllDomesticasMovimento,
+  useDomesticasMovimento,
+  useSaveDomesticasMovimento,
+} from "@/hooks/use-domesticas-movimento";
 import {
   DOMESTICAS_DAE_OPTIONS,
   DOMESTICAS_ENVIO_OPTIONS,
   DOMESTICAS_FOLHA_OPTIONS,
   DOMESTICAS_MESES_OPTIONS,
   DOMESTICAS_PONTO_OPTIONS,
+  DOMESTICAS_SEM_MOVIMENTO,
   DOMESTICAS_STATUS_OPTIONS,
 } from "@/lib/domesticas";
+import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
+import { companyUsesSubmenu } from "@/lib/department-submenus";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
+import {
+  DATA_INICIO_BLOCK_TITLE,
+  isCompanyInactiveInMonth,
+  isPeriodBeforeStart,
+} from "@/lib/companies";
 import {
   PESSOAL_ENVIO_TONE,
   PESSOAL_FLAG_TONE,
   PESSOAL_STATUS_TONE,
 } from "@/lib/pessoal-tones";
-import { cn } from "@/lib/utils";
-import { formatCpfCnpj } from "@/lib/utils";
-import type {
-  DomesticaMovimentoInput,
-  DomesticaMovimentoRecord,
-  DomesticasRecord,
-} from "@/lib/types";
+import { cn, formatCpfCnpj } from "@/lib/utils";
+import type { DomesticasMovimentoInput, DomesticasMovimentoRecord } from "@/lib/types";
 
 const STORAGE_KEY = "pessoal:domesticas-mes";
+
+/** Subdepartamento que define as empresas do módulo. */
+const SUBMENU = "Domésticas";
 
 function readStoredMes(): string {
   try {
@@ -58,7 +75,19 @@ function readStoredMes(): string {
 
 const CELL = "px-1 py-1 text-[11px]";
 const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
+const VHEAD = "sticky top-0 z-10 bg-muted";
 
+/** Colunas de valor herdadas do mês anterior até serem alteradas. */
+type PinnedKey = "data_base" | "senha";
+
+/**
+ * Domésticas — folha mensal das empresas marcadas com o subdepartamento
+ * "Domésticas" no departamento Pessoal.
+ *
+ * N, Nome e CPF vêm do cadastro de empresas. Data Base e Senha ficam fixados
+ * para os meses seguintes até serem alterados; o Status "Sem Movimento" joga a
+ * empresa para a tabela "Sem movimento" abaixo da principal.
+ */
 export default function Domesticas() {
   const [mes, setMes] = useState<string>(readStoredMes);
   const [busca, setBusca] = useState({
@@ -73,42 +102,95 @@ export default function Domesticas() {
     envio: "",
     ponto: "",
   });
+  const [senhaDialog, setSenhaDialog] = useState<{
+    companyId: string;
+    nome: string;
+  } | null>(null);
+  const [senhaText, setSenhaText] = useState("");
 
   const setBuscaField = (key: keyof typeof busca, value: string) => {
     setBusca((prev) => ({ ...prev, [key]: value }));
   };
 
-  const { data: domesticas, isLoading, isError } = useDomesticas();
-  const { data: records } = useDomesticaMovimento(mes);
-  const saveDomesticaMutation = useSaveDomestica();
-  const saveMovimentoMutation = useSaveDomesticaMovimento(mes);
+  const { data: departments } = useDepartments();
+  const { data: companies, isLoading, isError } = useCompanies();
+  const { data: records } = useDomesticasMovimento(mes);
+  const { data: allRecords } = useAllDomesticasMovimento();
+  const saveMutation = useSaveDomesticasMovimento(mes);
 
-  const rows = (domesticas ?? []).sort((a, b) => {
-    if (!a.numero && !b.numero) return a.nome.localeCompare(b.nome, "pt-BR");
-    if (!a.numero) return 1;
-    if (!b.numero) return -1;
-    return a.numero.localeCompare(b.numero, "pt-BR", { numeric: true });
-  });
+  const pessoal = findDepartmentByName(departments, PESSOAL_DEPARTMENT_NAME);
 
-  const movByDomestica = new Map<string, DomesticaMovimentoRecord>(
-    (records ?? []).map((record) => [record.domestica_id, record])
+  const rows = (companies ?? [])
+    .filter(
+      (company) =>
+        companyUsesSubmenu(company, pessoal?.id, SUBMENU) &&
+        !isCompanyInactiveInMonth(company, mes)
+    )
+    .sort((a, b) => {
+      if (!a.numero && !b.numero) return a.name.localeCompare(b.name, "pt-BR");
+      if (!a.numero) return 1;
+      if (!b.numero) return -1;
+      return a.numero.localeCompare(b.numero, "pt-BR", { numeric: true });
+    });
+
+  const recordByCompany = new Map<string, DomesticasMovimentoRecord>(
+    (records ?? []).map((record) => [record.company_id, record])
   );
 
-  const semMovimento = (domesticaId: string): boolean => {
-    const status = movByDomestica.get(domesticaId)?.status;
-    return !status || status === "Desativado";
+  /** Histórico anterior ao mês exibido, do mais recente para o mais antigo. */
+  const priorRecords = (companyId: string) =>
+    (allRecords ?? [])
+      .filter(
+        (record) =>
+          record.company_id === companyId && record.mes_referencia < mes
+      )
+      .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia));
+
+  /**
+   * Data Base e Senha: valor do mês; sem registro no mês, herda do mês anterior
+   * mais recente (fica fixado para os meses seguintes até ser alterado).
+   */
+  const effectivePinned = (
+    companyId: string,
+    key: PinnedKey
+  ): string | null => {
+    const current = recordByCompany.get(companyId);
+    if (current) return current[key];
+    return priorRecords(companyId)[0]?.[key] ?? null;
   };
 
-  const filteredRows = rows.filter((domestica) => {
-    const record = movByDomestica.get(domestica.id);
-    const match = (
-      value: string | null | undefined,
-      query: string
-    ): boolean =>
+  /**
+   * Status: valor do mês; sem registro, mantém "Sem Movimento" do mês anterior
+   * mais recente (a empresa segue fora do movimento até ser alterada).
+   */
+  const effectiveStatus = (companyId: string): string => {
+    const current = recordByCompany.get(companyId);
+    if (current) return current.status ?? "";
+    return priorRecords(companyId)[0]?.status === DOMESTICAS_SEM_MOVIMENTO
+      ? DOMESTICAS_SEM_MOVIMENTO
+      : "";
+  };
+
+  /** Empresas bloqueadas no mês exibido (anterior à Data de Início). */
+  const startBlockedIds = new Set(
+    rows
+      .filter((company) => isPeriodBeforeStart(company, mes))
+      .map((company) => company.id)
+  );
+
+  const filteredRows = rows.filter((company) => {
+    const record = recordByCompany.get(company.id);
+    const match = (value: string | null | undefined, query: string): boolean =>
       !query ||
       (value ?? "")
         .toLocaleLowerCase("pt-BR")
         .includes(query.toLocaleLowerCase("pt-BR"));
+    const matchDigits = (
+      value: string | null | undefined,
+      query: string
+    ): boolean =>
+      !query ||
+      (value ?? "").replace(/\D/g, "").includes(query.replace(/\D/g, ""));
     const selectOrBlank = (
       value: string | null | undefined,
       query: string
@@ -117,12 +199,12 @@ export default function Domesticas() {
       return !query || (value ?? "") === query;
     };
     return (
-      selectOrBlank(record?.status, busca.status) &&
-      selectOrBlank(record?.data_base, busca.dataBase) &&
-      match(domestica.numero, busca.numero) &&
-      match(domestica.nome, busca.nome) &&
-      match(domestica.cpf, busca.cpf) &&
-      match(domestica.senha, busca.senha) &&
+      selectOrBlank(effectiveStatus(company.id), busca.status) &&
+      selectOrBlank(effectivePinned(company.id, "data_base"), busca.dataBase) &&
+      match(company.numero, busca.numero) &&
+      match(company.name, busca.nome) &&
+      matchDigits(company.documento, busca.cpf) &&
+      match(effectivePinned(company.id, "senha"), busca.senha) &&
       selectOrBlank(record?.folha, busca.folha) &&
       selectOrBlank(record?.dae, busca.dae) &&
       selectOrBlank(record?.envio, busca.envio) &&
@@ -130,45 +212,26 @@ export default function Domesticas() {
     );
   });
 
-  const activeRows = filteredRows.filter(
-    (domestica) => !semMovimento(domestica.id)
+  const movimentadas = filteredRows.filter(
+    (company) => effectiveStatus(company.id) !== DOMESTICAS_SEM_MOVIMENTO
   );
-  const inactiveRows = filteredRows.filter((domestica) =>
-    semMovimento(domestica.id)
+  const semMovimento = filteredRows.filter(
+    (company) => effectiveStatus(company.id) === DOMESTICAS_SEM_MOVIMENTO
   );
 
-  const saveMovimento = (
-    domesticaId: string,
-    patch: Record<string, unknown>
-  ) => {
-    const current = movByDomestica.get(domesticaId);
-    const base = current ?? {};
-    const {
-      id: _id,
-      created_at: _createdAt,
-      updated_at: _updatedAt,
-      ...fields
-    } = base;
-    saveMovimentoMutation.mutate(
+  const save = (companyId: string, patch: Record<string, unknown>) => {
+    const record = recordByCompany.get(companyId);
+    const { id: _id, created_at: _createdAt, updated_at: _updatedAt, ...fields } =
+      record ?? {};
+    saveMutation.mutate(
       {
-        domestica_id: domesticaId,
-        mes_referencia: mes,
+        company_id: companyId,
+        status: record?.status ?? null,
+        data_base: effectivePinned(companyId, "data_base"),
+        senha: effectivePinned(companyId, "senha"),
         ...fields,
         ...patch,
-      } as unknown as DomesticaMovimentoInput,
-      {
-        onError: (error) => {
-          toast.error(
-            error instanceof Error ? error.message : "Erro ao salvar."
-          );
-        },
-      }
-    );
-  };
-
-  const saveDomestica = (id: string, patch: Record<string, unknown>) => {
-    saveDomesticaMutation.mutate(
-      { id, ...patch },
+      } as unknown as DomesticasMovimentoInput,
       {
         onError: (error) => {
           toast.error(
@@ -189,68 +252,55 @@ export default function Domesticas() {
   };
 
   const renderSelectCell = (
-    domesticaId: string,
+    companyId: string,
     value: string,
     options: readonly string[],
     patchKey: string,
     toneClass: Record<string, string> = {}
-  ) => (
-    <Select
-      value={value === "" ? "none" : value}
-      onValueChange={(next) =>
-        saveMovimento(domesticaId, {
-          [patchKey]: next === "none" ? null : next,
-        })
-      }
-    >
-      <SelectTrigger
-        className={cn(
-          "h-7 w-full min-w-0 px-1 text-xs font-semibold",
-          toneClass[value]
-        )}
+  ) => {
+    const blocked = startBlockedIds.has(companyId);
+    return (
+      <Select
+        value={value === "" ? "none" : value}
+        disabled={blocked}
+        onValueChange={(next) => {
+          if (blocked) return;
+          saveMutation.mutate({
+            company_id: companyId,
+            status: recordByCompany.get(companyId)?.status ?? null,
+            data_base: effectivePinned(companyId, "data_base"),
+            senha: effectivePinned(companyId, "senha"),
+            [patchKey]: next === "none" ? null : next,
+          } as unknown as DomesticasMovimentoInput);
+        }}
       >
-        <SelectValue placeholder="—" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="none">—</SelectItem>
-        {options.map((option) => (
-          <SelectItem key={option} value={option}>
-            {option}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-
-  const renderTextCell = (
-    domesticaId: string,
-    value: string | null,
-    patchKey: string,
-    format?: (input: string) => string
-  ) => (
-    <Input
-      key={`${domesticaId}:${patchKey}`}
-      defaultValue={format ? format(value ?? "") : (value ?? "")}
-      title={value ?? ""}
-      onBlur={(event) => {
-        const raw = format
-          ? event.target.value.replace(/\D/g, "")
-          : event.target.value.trim();
-        const next = raw.trim();
-        saveDomestica(domesticaId, {
-          [patchKey]: next || null,
-        });
-      }}
-      className="h-7 w-full min-w-0 px-1 text-[11px]"
-    />
-  );
+        <SelectTrigger
+          className={cn(
+            "h-7 w-full min-w-0 px-1 text-[11px] font-semibold",
+            toneClass[value]
+          )}
+        >
+          <SelectValue placeholder="—" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">—</SelectItem>
+          {options.map((option) => (
+            <SelectItem key={option} value={option}>
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  };
 
   const renderFilterSelect = (
     key: keyof typeof busca,
     label: string,
-    options: readonly string[]
+    options: readonly string[],
+    widthClass = "w-24"
   ) => (
-    <TableHead className={`${HEAD} w-28 align-bottom`}>
+    <TableHead className={`${HEAD} ${widthClass} align-bottom ${VHEAD}`}>
       <span className="mb-1 block whitespace-nowrap">{label}</span>
       <Select
         value={busca[key] === "" ? "todos" : busca[key]}
@@ -274,63 +324,99 @@ export default function Domesticas() {
     </TableHead>
   );
 
-  const renderFilterInput = (key: keyof typeof busca, label: string) => (
-    <TableHead className={`${HEAD} align-bottom`}>
+  const renderFilterInput = (
+    key: keyof typeof busca,
+    label: string,
+    widthClass = "w-24"
+  ) => (
+    <TableHead className={`${HEAD} ${widthClass} align-bottom ${VHEAD}`}>
       <span className="mb-1 block whitespace-nowrap">{label}</span>
       <Input
         value={busca[key]}
-        onChange={(e) => setBuscaField(key, e.target.value)}
+        onChange={(event) => setBuscaField(key, event.target.value)}
         placeholder="Filtrar"
         className="h-6 w-full min-w-0 px-1 text-xs"
       />
     </TableHead>
   );
 
-  const renderRow = (domestica: DomesticasRecord) => {
-    const record = movByDomestica.get(domestica.id);
+  const renderRow = (company: (typeof rows)[number]) => {
+    const record = recordByCompany.get(company.id);
+    const blocked = startBlockedIds.has(company.id);
+    const senha = effectivePinned(company.id, "senha") ?? "";
     return (
-      <TableRow key={domestica.id}>
+      <TableRow
+        key={company.id}
+        title={blocked ? DATA_INICIO_BLOCK_TITLE : undefined}
+      >
         <TableCell className={`${CELL} w-28`}>
           {renderSelectCell(
-            domestica.id,
-            record?.status ?? "",
+            company.id,
+            effectiveStatus(company.id),
             DOMESTICAS_STATUS_OPTIONS,
             "status",
             PESSOAL_STATUS_TONE
           )}
         </TableCell>
-        <TableCell className={`${CELL} w-28`}>
+        <TableCell className={`${CELL} w-24`}>
           {renderSelectCell(
-            domestica.id,
-            record?.data_base ?? "",
+            company.id,
+            effectivePinned(company.id, "data_base") ?? "",
             DOMESTICAS_MESES_OPTIONS,
             "data_base"
           )}
         </TableCell>
-        <TableCell className={`${CELL} w-12`}>
-          {renderTextCell(domestica.id, domestica.numero, "numero")}
+        <TableCell className={`${CELL} w-12 whitespace-nowrap text-center font-medium`}>
+          {company.numero || "—"}
         </TableCell>
-        <TableCell className={`${CELL} w-36`}>
-          {renderTextCell(domestica.id, domestica.nome, "nome")}
+        <TableCell className={`${CELL} w-56`}>
+          <span className="block truncate font-medium" title={company.name}>
+            {company.name}
+          </span>
         </TableCell>
-        <TableCell className={`${CELL} w-32`}>
-          {renderTextCell(domestica.id, domestica.cpf, "cpf", formatCpfCnpj)}
+        <TableCell className={`${CELL} w-32 whitespace-nowrap text-muted-foreground`}>
+          {formatCpfCnpj(company.documento)}
         </TableCell>
-        <TableCell className={`${CELL} w-32`}>
-          {renderTextCell(domestica.id, domestica.senha, "senha")}
+        <TableCell className={`${CELL} w-40`}>
+          <div className="flex items-center gap-1">
+            <span
+              className="block min-w-0 flex-1 truncate"
+              title={senha}
+            >
+              {senha || "—"}
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 shrink-0"
+              disabled={blocked}
+              title={
+                blocked
+                  ? DATA_INICIO_BLOCK_TITLE
+                  : "Definir a senha (fica fixada para os meses seguintes)"
+              }
+              onClick={() => {
+                setSenhaText(senha);
+                setSenhaDialog({ companyId: company.id, nome: company.name });
+              }}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </TableCell>
-        <TableCell className={`${CELL} w-20`}>
+        <TableCell className={`${CELL} w-24`}>
           {renderSelectCell(
-            domestica.id,
+            company.id,
             record?.folha ?? "",
             DOMESTICAS_FOLHA_OPTIONS,
             "folha",
             PESSOAL_FLAG_TONE
           )}
         </TableCell>
-        <TableCell className={`${CELL} w-16`}>
+        <TableCell className={`${CELL} w-24`}>
           {renderSelectCell(
-            domestica.id,
+            company.id,
             record?.dae ?? "",
             DOMESTICAS_DAE_OPTIONS,
             "dae",
@@ -339,16 +425,16 @@ export default function Domesticas() {
         </TableCell>
         <TableCell className={`${CELL} w-24`}>
           {renderSelectCell(
-            domestica.id,
+            company.id,
             record?.envio ?? "",
             DOMESTICAS_ENVIO_OPTIONS,
             "envio",
             PESSOAL_ENVIO_TONE
           )}
         </TableCell>
-        <TableCell className={`${CELL} w-20`}>
+        <TableCell className={`${CELL} w-24`}>
           {renderSelectCell(
-            domestica.id,
+            company.id,
             record?.ponto ?? "",
             DOMESTICAS_PONTO_OPTIONS,
             "ponto",
@@ -359,12 +445,49 @@ export default function Domesticas() {
     );
   };
 
+  const renderTable = (
+    data: typeof rows,
+    emptyMessage: string
+  ) => (
+    <Table className="table-fixed min-w-[1180px]">
+      <TableHeader>
+        <TableRow className="bg-muted hover:bg-muted">
+          {renderFilterSelect("status", "Status", DOMESTICAS_STATUS_OPTIONS, "w-28")}
+          {renderFilterSelect("dataBase", "Data Base", DOMESTICAS_MESES_OPTIONS)}
+          {renderFilterInput("numero", "N", "w-12")}
+          {renderFilterInput("nome", "Nome", "w-56")}
+          {renderFilterInput("cpf", "CPF", "w-32")}
+          {renderFilterInput("senha", "Senha", "w-40")}
+          {renderFilterSelect("folha", "Folha", DOMESTICAS_FOLHA_OPTIONS)}
+          {renderFilterSelect("dae", "DAE", DOMESTICAS_DAE_OPTIONS)}
+          {renderFilterSelect("envio", "Envio", DOMESTICAS_ENVIO_OPTIONS)}
+          {renderFilterSelect("ponto", "Ponto", DOMESTICAS_PONTO_OPTIONS)}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {data.length > 0 ? (
+          data.map(renderRow)
+        ) : (
+          <TableRow>
+            <TableCell
+              colSpan={10}
+              className={`${CELL} py-6 text-center text-muted-foreground`}
+            >
+              {emptyMessage}
+            </TableCell>
+          </TableRow>
+        )}
+      </TableBody>
+    </Table>
+  );
+
   return (
     <div className="space-y-4">
       <div>
         <h2 className="text-lg font-semibold">Domésticas</h2>
         <p className="text-sm text-muted-foreground">
-          Folha de pagamento das domésticas — departamento Pessoal.
+          Empresas vinculadas ao departamento {PESSOAL_DEPARTMENT_NAME} marcadas
+          com o subdepartamento {SUBMENU}.
         </p>
       </div>
 
@@ -374,7 +497,7 @@ export default function Domesticas() {
           id="dom-mes"
           type="month"
           value={mes}
-          onChange={(e) => handleMonthChange(e.target.value)}
+          onChange={(event) => handleMonthChange(event.target.value)}
           className="mt-1.5"
         />
       </div>
@@ -387,56 +510,78 @@ export default function Domesticas() {
 
       {isError && (
         <p className="py-12 text-center text-sm text-destructive">
-          Não foi possível carregar as domésticas.
+          Não foi possível carregar as empresas.
         </p>
       )}
 
       {!isLoading && !isError && (
-        <div className="overflow-x-auto rounded-lg border">
-          <Table className="table-fixed min-w-[992px]">
-            <TableHeader>
-              <TableRow className="bg-muted hover:bg-muted">
-                {renderFilterSelect("status", "Status", DOMESTICAS_STATUS_OPTIONS)}
-                {renderFilterSelect("dataBase", "Data Base", DOMESTICAS_MESES_OPTIONS)}
-                {renderFilterInput("numero", "N°")}
-                {renderFilterInput("nome", "Nome")}
-                {renderFilterInput("cpf", "CPF")}
-                {renderFilterInput("senha", "Senha")}
-                {renderFilterSelect("folha", "Folha", DOMESTICAS_FOLHA_OPTIONS)}
-                {renderFilterSelect("dae", "DAE", DOMESTICAS_DAE_OPTIONS)}
-                {renderFilterSelect("envio", "Envio", DOMESTICAS_ENVIO_OPTIONS)}
-                {renderFilterSelect("ponto", "Ponto", DOMESTICAS_PONTO_OPTIONS)}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {activeRows.map(renderRow)}
-              {inactiveRows.length > 0 && (
-                <TableRow className="bg-muted/50">
-                  <TableCell
-                    colSpan={10}
-                    className="px-2 py-1.5 text-xs font-semibold text-muted-foreground"
-                  >
-                    SEM MOVIMENTO
-                  </TableCell>
-                </TableRow>
+        <>
+          <div className="overflow-x-auto rounded-lg border">
+            {renderTable(
+              movimentadas,
+              Object.values(busca).some(Boolean) && rows.length > 0
+                ? "Nenhuma empresa encontrada com os filtros."
+                : `Nenhuma empresa marcada com o subdepartamento ${SUBMENU}. Marque esse subdepartamento no cadastro de empresas (departamento ${PESSOAL_DEPARTMENT_NAME}) para que elas apareçam aqui.`
+            )}
+          </div>
+
+          <div className="space-y-2 pt-2">
+            <h3 className="text-sm font-semibold">
+              {DOMESTICAS_SEM_MOVIMENTO} ({semMovimento.length})
+            </h3>
+            <div className="overflow-x-auto rounded-lg border">
+              {renderTable(
+                semMovimento,
+                "Nenhuma empresa sem movimento neste mês."
               )}
-              {inactiveRows.map(renderRow)}
-              {filteredRows.length === 0 && (
-                <TableRow>
-                  <TableCell
-                    colSpan={10}
-                    className={`${CELL} py-8 text-center text-muted-foreground`}
-                  >
-                    {Object.values(busca).some(Boolean) && rows.length > 0
-                      ? "Nenhuma doméstica encontrada com os filtros."
-                      : "Nenhuma doméstica cadastrada."}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+            </div>
+          </div>
+        </>
       )}
+
+      <Dialog
+        open={senhaDialog !== null}
+        onOpenChange={(open) => {
+          if (!open) setSenhaDialog(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Senha</DialogTitle>
+            <DialogDescription>
+              {senhaDialog?.nome} — {mes}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={senhaText}
+            onChange={(event) => setSenhaText(event.target.value)}
+            placeholder="Escreva a senha desta empresa"
+            rows={3}
+            autoFocus
+          />
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setSenhaDialog(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (!senhaDialog) return;
+                save(senhaDialog.companyId, {
+                  senha: senhaText.trim() || null,
+                });
+                setSenhaDialog(null);
+              }}
+            >
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

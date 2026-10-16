@@ -30,6 +30,7 @@ export const PESSOAL_STATUS_TONE: Record<string, string> = {
   "Em Andamento": AMBER,
   "Em Ajuste": "bg-primary/10 text-primary hover:bg-primary/15",
   Desativado: NEUTRAL,
+  "Sem Movimento": NEUTRAL,
 };
 
 /** Cores dos cartões do dashboard por status (mesmos tons, sem hover). */

@@ -103,21 +103,33 @@ const SECTIONS: ManualSection[] = [
   },
   {
     title: "Domésticas",
-    description: "Controle mensal das domésticas atendidas pelo escritório.",
+    description:
+      "Controle mensal das empresas marcadas com o subdepartamento Domésticas.",
     items: [
       {
-        label: "Colunas",
+        label: "Empresas",
         detail:
-          "Status, Data Base, N°, Nome, CPF, Senha, Folha, DAE, Envio e Ponto. N°, Nome, CPF e Senha são editáveis no cadastro.",
+          "Aparecem as empresas do departamento Pessoal marcadas com o subdepartamento 'Domésticas' no cadastro de empresas. N, Nome e CPF vêm desse cadastro.",
       },
       {
-        label: "SEM MOVIMENTO",
+        label: "Status",
         detail:
-          "Domésticas sem status no mês (ou marcadas como Desativado) ficam na seção 'SEM MOVIMENTO' no fim da tabela.",
+          "Concluído (verde), Pendente (vermelho), Em Andamento (âmbar), Em Ajuste e Sem Movimento (tom neutro). Ao marcar Sem Movimento, a empresa sai da tabela principal e vai para a tabela 'Sem movimento' logo abaixo, e ali permanece nos meses seguintes até ser alterada.",
       },
       {
-        label: "Filtros",
-        detail: "Filtros por coluna no cabeçalho.",
+        label: "Data Base e Senha",
+        detail:
+          "Data Base (lista dos 12 meses) e Senha ficam fixadas para os meses seguintes até serem alteradas. A Senha é digitada pelo botão de lápis da coluna, que abre um diálogo — assim não é alterada por acidente.",
+      },
+      {
+        label: "Folha, DAE, Envio e Ponto",
+        detail:
+          "Folha e DAE com OK (verde), Possui (vermelho) e Não Possui (azul); Envio e Ponto com Enviado (verde) e Pendente (vermelho).",
+      },
+      {
+        label: "Filtros e bloqueio",
+        detail:
+          "Filtros por coluna no cabeçalho (Status, Data Base, N, Nome, CPF, Senha, Folha, DAE, Envio e Ponto). Meses anteriores à Data de Início da empresa ficam bloqueados para edição.",
       },
     ],
   },
