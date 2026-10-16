@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import FiscalMovimentoDashboard from "./fiscal/FiscalMovimentoDashboard";
 import ParcelamentosDashboard from "./fiscal/ParcelamentosDashboard";
 import PessoalDashboard from "./pessoal/PessoalDashboard";
+import EmpresasFiscalDashboard from "./pessoal/EmpresasFiscalDashboard";
 import DomesticasDashboard from "./pessoal/DomesticasDashboard";
 import ContabilDashboard from "./contabil/ContabilDashboard";
 import SocietarioDashboard from "./societario/SocietarioDashboard";
@@ -55,6 +56,7 @@ const DEPT_SUBMENUS: Record<DashboardKey, { key: string; label: string }[]> = {
   ],
   pessoal: [
     { key: "dashboard", label: "Empresas com funcionários" },
+    { key: "empresas-fiscal", label: "Empresas Fiscal" },
     { key: "domesticas", label: "Domésticas" },
   ],
   societario: [
@@ -159,6 +161,8 @@ export default function GeneralDashboard() {
           <ParcelamentosDashboard />
         ) : active === "pessoal" && submenuKey === "dashboard" ? (
           <PessoalDashboard />
+        ) : active === "pessoal" && submenuKey === "empresas-fiscal" ? (
+          <EmpresasFiscalDashboard />
         ) : active === "pessoal" && submenuKey === "domesticas" ? (
           <DomesticasDashboard />
         ) : active === "contabil" && submenuKey === "balancete-balanco" ? (

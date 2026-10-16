@@ -104,6 +104,11 @@ const SECTIONS: ManualSection[] = [
         label: "Filtros",
         detail: "Filtros por coluna no cabeçalho da tabela.",
       },
+      {
+        label: "Dashboard",
+        detail:
+          "No Dashboard geral, o submenu 'Empresas Fiscal' mostra os cartões Concluído, Pendente, Em Andamento, Em Ajuste e Total de empresas (com quantidade e porcentagem sobre o total) e os gráficos por responsável e por responsável e status, considerando a coluna Status do mês de referência.",
+      },
     ],
   },
   {
