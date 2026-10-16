@@ -225,8 +225,14 @@ export function validateCompanyImportRows(
   rows: CompanyImportRow[],
   departments: Department[],
   users: ProfileWithDepartments[],
-  submenus: DepartmentSubmenu[] = []
+  submenus: DepartmentSubmenu[] = [],
+  existingNumbers: string[] = []
 ): CompanyImportValidation[] {
+  // O número da empresa não pode repetir (na base nem dentro do arquivo).
+  const baseNumbers = new Set(
+    existingNumbers.map((numero) => numero.trim()).filter(Boolean)
+  );
+  const usedNumbers = new Set(baseNumbers);
   const departmentByName = new Map(
     departments.map((d) => [d.name.toLocaleLowerCase("pt-BR"), d.id])
   );
@@ -245,6 +251,13 @@ export function validateCompanyImportRows(
     const errors: string[] = [];
 
     if (!row.name) errors.push("Nome obrigatório");
+    const numero = row.numero.trim();
+    if (numero) {
+      if (baseNumbers.has(numero)) errors.push("Número já cadastrado");
+      else if (usedNumbers.has(numero))
+        errors.push("Número repetido no arquivo");
+      usedNumbers.add(numero);
+    }
     if (!isValidCpfCnpj(row.documento)) {
       errors.push("CPF/CNPJ inválido (11 ou 14 dígitos)");
     }

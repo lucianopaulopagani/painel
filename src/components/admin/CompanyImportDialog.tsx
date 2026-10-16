@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { useUsers } from "@/hooks/use-users";
 import { useAllDepartmentSubmenus } from "@/hooks/use-department-submenus";
@@ -43,6 +44,7 @@ export default function CompanyImportDialog({
   const { data: departments } = useDepartments();
   const { data: users } = useUsers();
   const { data: allSubmenus } = useAllDepartmentSubmenus();
+  const { data: companies } = useCompanies();
   const importMutation = useImportCompanies();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [validations, setValidations] = useState<
@@ -75,7 +77,10 @@ export default function CompanyImportDialog({
           rows,
           departments ?? [],
           users ?? [],
-          allSubmenus ?? []
+          allSubmenus ?? [],
+          (companies ?? [])
+            .map((item) => item.numero ?? "")
+            .filter(Boolean)
         )
       );
       if (rows.length === 0) {
@@ -132,7 +137,8 @@ export default function CompanyImportDialog({
           <DialogTitle>Importar empresas</DialogTitle>
           <DialogDescription>
             Baixe o modelo em Excel, preencha com as empresas e importe aqui.
-            Colunas obrigatórias: Nome, CPF/CNPJ e UF. A coluna Data de Início
+            Colunas obrigatórias: Nome, CPF/CNPJ e UF. O Número não pode
+            repetir (CPF/CNPJ podem ser duplicados). A coluna Data de Início
             (dd/mm/aaaa) é opcional e bloqueia os períodos anteriores nos
             departamentos. A coluna Subdepartamentos (opcional) marca os módulos
             da empresa e recebe os responsáveis informados — os responsáveis são

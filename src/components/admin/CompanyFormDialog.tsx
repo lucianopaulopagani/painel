@@ -188,16 +188,18 @@ export default function CompanyFormDialog({
       toast.error("Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.");
       return;
     }
-    // Só permite cadastrar empresas ainda não cadastradas (sem CPF/CNPJ repetido).
-    const digits = documento.replace(/\D/g, "");
-    const duplicated = (companies ?? []).some(
-      (item) =>
-        item.id !== company?.id &&
-        item.documento.replace(/\D/g, "") === digits
-    );
-    if (duplicated) {
+    // O número da empresa não pode repetir (o CPF/CNPJ pode ser duplicado).
+    const numeroLimpo = numero.trim();
+    const numeroRepetido =
+      numeroLimpo !== "" &&
+      (companies ?? []).some(
+        (item) =>
+          item.id !== company?.id &&
+          (item.numero ?? "").trim() === numeroLimpo
+      );
+    if (numeroRepetido) {
       toast.error(
-        "Este CPF/CNPJ já está cadastrado. Não é possível duplicar empresas."
+        `O número ${numeroLimpo} já está cadastrado em outra empresa. Informe um número diferente.`
       );
       return;
     }

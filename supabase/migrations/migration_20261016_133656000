@@ -1,0 +1,4 @@
+-- Número da empresa passa a ser único (CPF/CNPJ pode repetir).
+create unique index if not exists companies_numero_key
+  on public.companies (numero)
+  where numero is not null;
