@@ -158,6 +158,11 @@ const SECTIONS: ManualSection[] = [
           "Registro do envio do ponto das empresas no mês: Envio com Enviado (verde) ou Pendente (vermelho). O valor antigo Desativado não é mais oferecido — os meses que já o tinham continuam exibidos na seção Empresas desativadas, no fim da tabela, até serem alterados.",
       },
       {
+        label: "Dashboard do Ponto",
+        detail:
+          "No Dashboard geral, o submenu 'Ponto' mostra os cartões Enviado, Pendente e Total de empresas (com quantidade e porcentagem sobre o total) e os gráficos por responsável e por responsável e envio, considerando a coluna Envio do mês de referência.",
+      },
+      {
         label: "Complemento INSS",
         detail:
           "Nº, Empresa, Observações (botão de Ações), DARF (OK/Possui/Não Possui) e Envio (Enviado/Pendente). O valor antigo Desativado não é mais oferecido — os meses que já o tinham continuam exibidos na seção Empresas desativadas, no fim da tabela, até serem alterados.",

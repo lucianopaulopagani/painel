@@ -48,3 +48,10 @@ export const PESSOAL_ENVIO_TONE: Record<string, string> = {
   Pendente: RED,
   Desativado: NEUTRAL,
 };
+
+/** Cores dos cartões do dashboard por Envio (mesmos tons, sem hover). */
+export const PESSOAL_ENVIO_CARD_TONE: Record<string, string> = {
+  Enviado: "bg-status-success text-status-success-foreground",
+  Pendente: "bg-status-danger text-status-danger-foreground",
+  Desativado: "bg-muted text-muted-foreground",
+};
