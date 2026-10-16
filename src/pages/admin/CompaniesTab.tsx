@@ -38,6 +38,7 @@ import CompanyFormDialog from "@/components/admin/CompanyFormDialog";
 import CompanyImportDialog from "@/components/admin/CompanyImportDialog";
 import CompanyBulkEditDialog from "@/components/admin/CompanyBulkEditDialog";
 import { effectiveEmpresaFields } from "@/lib/empresas-permissions";
+import { formatMonthLabel } from "@/lib/fiscal-month";
 import { formatCpfCnpj } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { CompanyWithDepartments } from "@/lib/types";
@@ -334,16 +335,34 @@ export default function CompaniesTab() {
                                     .filter(
                                       (name): name is string => !!name
                                     );
-                                const submenus = Object.entries(
-                                  link.subdepartment_responsibles ?? {}
-                                )
-                                  .filter(([, ids]) => ids.length > 0)
-                                  .map(([submenu, ids]) => {
-                                    const names = namesFor(ids);
-                                    return names.length > 0
-                                      ? `${submenu}: ${names.join(", ")}`
-                                      : submenu;
-                                  });
+                                const submenus = Array.from(
+                                  new Set([
+                                    ...Object.keys(
+                                      link.subdepartment_responsibles ?? {}
+                                    ),
+                                    ...Object.keys(
+                                      link.subdepartment_periods ?? {}
+                                    ),
+                                  ])
+                                ).map((submenu) => {
+                                  const names = namesFor(
+                                    link.subdepartment_responsibles?.[
+                                      submenu
+                                    ] ?? []
+                                  );
+                                  const period =
+                                    link.subdepartment_periods?.[submenu];
+                                  const periodText = period
+                                    ? `${period.inicio ? formatMonthLabel(period.inicio) : "início em branco"} a ${period.fim ? formatMonthLabel(period.fim) : "sem data final"}`
+                                    : "";
+                                  const parts = [
+                                    periodText,
+                                    names.join(", "),
+                                  ].filter(Boolean);
+                                  return parts.length > 0
+                                    ? `${submenu} (${parts.join(" — ")})`
+                                    : submenu;
+                                });
                                 const legacyNames = namesFor(
                                   link.profile_ids
                                 );

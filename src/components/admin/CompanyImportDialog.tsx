@@ -27,7 +27,6 @@ import { useImportCompanies } from "@/hooks/use-companies";
 import {
   buildCompanyImportTemplate,
   parseCompanyImportFile,
-  parseImportDate,
   validateCompanyImportRows,
   type CompanyImportValidation,
 } from "@/lib/company-import";
@@ -111,7 +110,6 @@ export default function CompanyImportDialog({
           tributacao: v.row.tributacao || null,
           socio_responsavel: v.row.socioResponsavel || null,
           socio_cpf: v.row.socioCpf.replace(/\D/g, "") || null,
-          data_inicio: parseImportDate(v.row.dataInicio),
           departments: v.department_ids.map((department_id) => ({
             department_id,
             subdepartments:
@@ -138,11 +136,11 @@ export default function CompanyImportDialog({
           <DialogDescription>
             Baixe o modelo em Excel, preencha com as empresas e importe aqui.
             Colunas obrigatórias: Nome, CPF/CNPJ e UF. O Número não pode
-            repetir (CPF/CNPJ podem ser duplicados). A coluna Data de Início
-            (dd/mm/aaaa) é opcional e bloqueia os períodos anteriores nos
-            departamentos. A coluna Subdepartamentos (opcional) marca os módulos
-            da empresa e recebe os responsáveis informados — os responsáveis são
-            por subdepartamento.
+            repetir (CPF/CNPJ podem ser duplicados). A coluna Subdepartamentos
+            (opcional) marca os módulos da empresa e recebe os responsáveis
+            informados — os responsáveis são por subdepartamento. As datas de
+            início e final são definidas por subdepartamento no cadastro da
+            empresa.
           </DialogDescription>
         </DialogHeader>
 

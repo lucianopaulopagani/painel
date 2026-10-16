@@ -30,7 +30,7 @@ interface CommentableCellProps {
   children: ReactNode;
   onSave: (value: string) => void;
   onRemove: () => void;
-  /** Bloqueado pela Data de Início da empresa: sem menu de comentário. */
+  /** Bloqueado (fora do período do subdepartamento ou sem permissão de edição). */
   disabled?: boolean;
 }
 
@@ -64,7 +64,7 @@ export function CommentableCell({
     </Tooltip>
   ) : null;
 
-  // Período bloqueado (anterior à Data de Início): sem edição de comentário.
+  // Período bloqueado (fora do período do subdepartamento): sem comentário.
   if (disabled) {
     return (
       <div className="relative h-full w-full">

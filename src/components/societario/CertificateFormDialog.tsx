@@ -23,12 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MultiSelectDropdown } from "@/components/ui/multi-select-dropdown";
 import { useUpsertCertificate } from "@/hooks/use-certificates";
 import { CERTIFICATE_PRODUCTS } from "@/lib/certificate-products";
-import {
-  formatDateOnlyBr,
-  joinDateTimeLocal,
-  splitDateTimeLocal,
-} from "@/lib/utils";
-import { isDateBeforeStart } from "@/lib/companies";
+import { joinDateTimeLocal, splitDateTimeLocal } from "@/lib/utils";
 import type { CertificateRow } from "@/lib/types";
 
 interface CertificateFormDialogProps {

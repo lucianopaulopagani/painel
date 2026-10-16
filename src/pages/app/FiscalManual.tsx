@@ -76,9 +76,9 @@ const SECTIONS: ManualSection[] = [
           "A observação é sempre copiada do mês atual (referência) e replicada para os demais meses. Ao editar a obs em qualquer mês, a alteração vale para todos.",
       },
       {
-        label: "Data de Início (bloqueio de retroatividade)",
+        label: "Datas por subdepartamento",
         detail:
-          "A Data de Início cadastrada na empresa vale para todos os departamentos: meses anteriores a ela ficam bloqueados (campos desabilitados) para edição e inserção. O mês da própria data já é editável — ex.: 15/03/2026 bloqueia até 02/2026.",
+          "As datas de início e final são definidas por subdepartamento no cadastro da empresa. Antes do mês da Data de Início a empresa não aparece nas tabelas; depois do mês da Data Final ela sai — os meses já lançados continuam no histórico. Sem datas, a empresa aparece em todos os meses.",
       },
       {
         label: "Filtros",
@@ -126,11 +126,6 @@ const SECTIONS: ManualSection[] = [
         label: "Comentários nas células",
         detail:
           "Clique com o botão direito em qualquer célula de ISSQN até OBS para Adicionar Comentário (igual ao Balancete/Balanço do Contábil). A célula ganha um marcador no canto superior direito com o comentário no tooltip, e o comentário é levado para os meses seguintes até ser alterado ou removido (remover no mês exibido encerra a herança a partir dele).",
-      },
-      {
-        label: "Data de Início",
-        detail:
-          "Meses anteriores à Data de Início da empresa ficam com os campos desabilitados também nesta tabela.",
       },
       {
         label: "Demais tributações",
@@ -199,11 +194,6 @@ const SECTIONS: ManualSection[] = [
         label: "Comentários nas células",
         detail:
           "Todas as colunas aceitam comentário (clique com o botão direito em qualquer célula, de N até ENVIO). A célula ganha um marcador no canto superior direito com o comentário no tooltip, e o comentário é levado para os meses seguintes até ser alterado ou removido.",
-      },
-      {
-        label: "Data de Início",
-        detail:
-          "Meses anteriores à Data de Início da empresa ficam com os campos desabilitados também nesta tabela.",
       },
       {
         label: "Filtros",

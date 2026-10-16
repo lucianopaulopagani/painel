@@ -306,7 +306,7 @@ export default function CompanyFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-5xl">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Editar empresa" : "Nova empresa"}
@@ -559,7 +559,7 @@ export default function CompanyFormDialog({
                       key={department.id}
                       className="flex flex-col gap-2 rounded-md border p-2"
                     >
-                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:items-center sm:gap-3">
+                      <div className="flex flex-col gap-2">
                         <label className="flex cursor-pointer items-center gap-2 text-sm">
                           <Checkbox
                             checked={assignment.selected}
@@ -620,12 +620,15 @@ export default function CompanyFormDialog({
                         return (
                           <div
                             key={submenu}
-                            className="flex flex-col gap-2 rounded-md border border-dashed bg-muted/30 p-2 sm:ml-6"
+                            className="rounded-md border border-dashed bg-muted/30 p-2 lg:ml-6"
                           >
-                            <span className="text-xs font-semibold">
-                              {submenu}
-                            </span>
-                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(8rem,1fr)_9rem_9rem_minmax(13rem,1.7fr)] lg:items-end lg:gap-3">
+                              <span
+                                className="truncate text-xs font-semibold lg:pb-2.5"
+                                title={submenu}
+                              >
+                                {submenu}
+                              </span>
                               <div className="flex flex-col gap-1.5">
                                 <Label
                                   htmlFor={`periodo-inicio-${department.id}-${submenu}`}
@@ -670,29 +673,24 @@ export default function CompanyFormDialog({
                                   className="h-8"
                                 />
                               </div>
-                            </div>
-                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:items-center sm:gap-3">
-                              <span
-                                className="truncate text-xs text-muted-foreground"
-                                title={submenu}
-                              >
-                                Responsáveis
-                              </span>
-                              <UserMultiSelect
-                                value={
-                                  assignment.responsibles[submenu] ?? []
-                                }
-                                onChange={(ids) =>
-                                  setSubdepartmentResponsibles(
-                                    department.id,
-                                    submenu,
-                                    ids
-                                  )
-                                }
-                                disabled={responsibleDisabled}
-                                users={deptUsers}
-                                className="w-full justify-between font-normal"
-                              />
+                              <div className="flex flex-col gap-1.5">
+                                <span className="text-xs text-muted-foreground">
+                                  Responsáveis
+                                </span>
+                                <UserMultiSelect
+                                  value={assignment.responsibles[submenu] ?? []}
+                                  onChange={(ids) =>
+                                    setSubdepartmentResponsibles(
+                                      department.id,
+                                      submenu,
+                                      ids
+                                    )
+                                  }
+                                  disabled={responsibleDisabled}
+                                  users={deptUsers}
+                                  className="w-full justify-between font-normal"
+                                />
+                              </div>
                             </div>
                           </div>
                         );

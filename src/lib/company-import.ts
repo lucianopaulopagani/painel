@@ -20,8 +20,6 @@ export interface CompanyImportRow {
   responsaveis: string[];
   socioResponsavel: string;
   socioCpf: string;
-  /** Data de Início (YYYY-MM-DD) ou vazia. */
-  dataInicio: string;
   /** Nomes de subdepartamentos (separados por ";") — opcional. */
   subdepartamentos: string[];
 }
@@ -36,20 +34,59 @@ export interface CompanyImportValidation {
   responsible_ids: string[];
 }
 
-const HEADERS = [
-  "Numero",
-  "Nome",
-  "CPF/CNPJ",
-  "UF",
-  "Inscrição Estadual",
-  "Tributação",
-  "Departamentos",
-  "Responsáveis",
-  "Sócio Responsável",
-  "CPF do Sócio",
-  "Data de Início",
-  "Subdepartamentos",
+/**
+ * Colunas do modelo, na ordem posicional (usada quando o cabeçalho não é
+ * reconhecido) com os nomes aceitos no cabeçalho.
+ */
+const COLUMNS: { key: string; header: string; aliases: string[] }[] = [
+  { key: "numero", header: "Numero", aliases: ["numero", "n"] },
+  { key: "name", header: "Nome", aliases: ["nome"] },
+  { key: "documento", header: "CPF/CNPJ", aliases: ["cpf/cnpj", "documento"] },
+  { key: "uf", header: "UF", aliases: ["uf"] },
+  {
+    key: "inscricaoEstadual",
+    header: "Inscrição Estadual",
+    aliases: ["inscricao estadual", "ie"],
+  },
+  { key: "tributacao", header: "Tributação", aliases: ["tributacao"] },
+  { key: "departamentos", header: "Departamentos", aliases: ["departamentos"] },
+  { key: "responsaveis", header: "Responsáveis", aliases: ["responsaveis"] },
+  {
+    key: "socioResponsavel",
+    header: "Sócio Responsável",
+    aliases: ["socio responsavel"],
+  },
+  { key: "socioCpf", header: "CPF do Sócio", aliases: ["cpf do socio"] },
+  {
+    key: "subdepartamentos",
+    header: "Subdepartamentos",
+    aliases: ["subdepartamentos"],
+  },
 ];
+
+const HEADERS = COLUMNS.map((column) => column.header);
+
+/**
+ * Índice de cada coluna. O cabeçalho é usado quando reconhecido, o que mantém
+ * planilhas do modelo antigo (com a coluna "Data de Início") funcionando.
+ */
+function columnIndexes(header: unknown[]): Record<string, number> {
+  const normalize = (value: unknown): string =>
+    String(value ?? "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .toLowerCase();
+  const headers = header.map(normalize);
+  const indexes: Record<string, number> = {};
+  COLUMNS.forEach((column, position) => {
+    const found = headers.findIndex((value) =>
+      column.aliases.includes(value)
+    );
+    indexes[column.key] = found >= 0 ? found : position;
+  });
+  return indexes;
+}
 
 /** Converte um valor de célula em data ISO (AAAA-MM-DD) ou null. */
 export function parseImportDate(value: unknown): string | null {
@@ -108,7 +145,6 @@ export function buildCompanyImportTemplate(
       "Elizandra;Jannaina",
       "ELIZANDRA PEREIRA",
       "000.000.000-00",
-      "01/01/2026",
       "Movimento Fiscal",
     ],
   ]);
@@ -123,7 +159,6 @@ export function buildCompanyImportTemplate(
     { wch: 40 },
     { wch: 28 },
     { wch: 20 },
-    { wch: 16 },
     { wch: 32 },
   ];
 
@@ -148,8 +183,8 @@ export function buildCompanyImportTemplate(
       "Sócio responsável (nome) e CPF do sócio são opcionais.",
     ],
     [
-      "Data de Início:",
-      "Opcional, no formato dd/mm/aaaa (ex.: 01/01/2026) ou aaaa-mm-dd. Períodos anteriores ficam bloqueados nos departamentos.",
+      "Datas por subdepartamento:",
+      "As datas de início e final (mês/ano) são definidas por subdepartamento no cadastro da empresa: fora do período a empresa sai das tabelas do módulo.",
     ],
     ["Dica:", "Não altere a linha de cabeçalho."],
     [],
@@ -185,6 +220,7 @@ export function parseCompanyImportFile(
     header: 1,
     defval: "",
   });
+  const columns = columnIndexes(rows[0] ?? []);
 
   return rows
     .slice(1)
@@ -192,27 +228,25 @@ export function parseCompanyImportFile(
       row.some((cell) => String(cell ?? "").trim() !== "")
     )
     .map((row) => {
-      const get = (index: number) => String(row[index] ?? "").trim();
+      const get = (key: string) => String(row[columns[key]] ?? "").trim();
       return {
-        numero: get(0),
-        name: get(1),
-        documento: get(2),
-        uf: get(3).toUpperCase(),
-        inscricaoEstadual: get(4),
-        tributacao: get(5),
-        departamentos: get(6)
+        numero: get("numero"),
+        name: get("name"),
+        documento: get("documento"),
+        uf: get("uf").toUpperCase(),
+        inscricaoEstadual: get("inscricaoEstadual"),
+        tributacao: get("tributacao"),
+        departamentos: get("departamentos")
           .split(";")
           .map((name) => name.trim())
           .filter(Boolean),
-        responsaveis: get(7)
+        responsaveis: get("responsaveis")
           .split(";")
           .map((name) => name.trim())
           .filter(Boolean),
-        socioResponsavel: get(8),
-        socioCpf: get(9),
-        // Célula pode vir como data do Excel, número serial ou texto.
-        dataInicio: parseImportDate(row[10] as unknown) ?? get(10),
-        subdepartamentos: get(11)
+        socioResponsavel: get("socioResponsavel"),
+        socioCpf: get("socioCpf"),
+        subdepartamentos: get("subdepartamentos")
           .split(";")
           .map((name) => name.trim())
           .filter(Boolean),
@@ -275,9 +309,6 @@ export function validateCompanyImportRows(
       row.socioCpf.replace(/\D/g, "").length !== 11
     ) {
       errors.push("CPF do sócio inválido (11 dígitos)");
-    }
-    if (row.dataInicio && !parseImportDate(row.dataInicio)) {
-      errors.push("Data de Início inválida (use dd/mm/aaaa)");
     }
 
     const department_ids = row.departamentos

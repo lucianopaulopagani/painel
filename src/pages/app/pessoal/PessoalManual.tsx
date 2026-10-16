@@ -12,9 +12,9 @@ const SECTIONS: ManualSection[] = [
           "Dashboard, Empresas com funcionários, Empresas Fiscal, Domésticas, Ponto e Complemento INSS — acessíveis no menu suspenso do departamento.",
       },
       {
-        label: "Data de Início (bloqueio de retroatividade)",
+        label: "Datas por subdepartamento",
         detail:
-          "A Data de Início cadastrada na empresa vale para todos os departamentos: meses anteriores a ela ficam bloqueados (campos desabilitados) para edição e inserção. O mês da própria data já é editável — ex.: 15/03/2026 bloqueia até 02/2026.",
+          "As datas de início e final são definidas por subdepartamento no cadastro da empresa. Antes do mês da Data de Início a empresa não aparece nas tabelas; depois do mês da Data Final ela sai — os meses já lançados continuam no histórico. Sem datas, a empresa aparece em todos os meses.",
       },
       {
         label: "Mês de referência",
@@ -129,7 +129,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Filtros e bloqueio",
         detail:
-          "Filtros por coluna no cabeçalho (Status, Data Base, N, Nome, CPF, Senha, Folha, DAE, Envio e Ponto). Meses anteriores à Data de Início da empresa ficam bloqueados para edição.",
+          "Filtros por coluna no cabeçalho (Status, Data Base, N, Nome, CPF, Senha, Folha, DAE, Envio e Ponto). A tabela Sem movimento (abaixo) reúne as empresas com o status Sem Movimento.",
       },
       {
         label: "Dashboard",
