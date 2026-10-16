@@ -3882,6 +3882,7 @@ export type Database = {
           numero: string | null
           socio_cpf: string | null
           socio_responsavel: string | null
+          tipo: string
           tributacao: string | null
           uf: string
         }
@@ -3899,6 +3900,7 @@ export type Database = {
           numero?: string | null
           socio_cpf?: string | null
           socio_responsavel?: string | null
+          tipo?: string
           tributacao?: string | null
           uf: string
         }
@@ -3916,6 +3918,7 @@ export type Database = {
           numero?: string | null
           socio_cpf?: string | null
           socio_responsavel?: string | null
+          tipo?: string
           tributacao?: string | null
           uf?: string
         }

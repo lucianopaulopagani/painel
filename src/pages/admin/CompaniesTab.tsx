@@ -289,8 +289,20 @@ export default function CompaniesTab() {
                         />
                       </TableCell>
                     )}
-                    <TableCell className="px-3 py-1.5 font-medium">
-                      {company.numero || "—"}
+                    <TableCell className="px-3 py-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">
+                          {company.numero || "—"}
+                        </span>
+                        <Badge
+                          variant={
+                            company.tipo === "filial" ? "secondary" : "outline"
+                          }
+                          className="px-1.5 py-0 text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
+                        >
+                          {company.tipo === "filial" ? "Filial" : "Matriz"}
+                        </Badge>
+                      </div>
                     </TableCell>
                     <TableCell className="px-3 py-1.5 font-medium">
                       <span

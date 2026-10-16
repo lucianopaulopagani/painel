@@ -58,6 +58,7 @@ export function toProfileWithDepartments(
 export interface RawCompanyRow {
   id: string;
   numero: string | null;
+  tipo?: string | null;
   name: string;
   documento: string;
   inscricao_estadual: string | null;
@@ -123,6 +124,7 @@ export function toCompanyWithDepartments(
   return {
     id: row.id,
     numero: row.numero,
+    tipo: row.tipo ?? "matriz",
     name: row.name,
     documento: row.documento,
     inscricao_estadual: row.inscricao_estadual,

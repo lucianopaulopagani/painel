@@ -75,6 +75,8 @@ export function useCompanies() {
 
 export interface CompanyInput {
   numero: string;
+  /** Matriz ou Filial (o número é único entre matrizes). */
+  tipo: string;
   name: string;
   documento: string;
   inscricao_estadual: string | null;
@@ -145,6 +147,7 @@ export function useCreateCompany() {
         .from("companies")
         .insert({
           numero: input.numero.trim() || null,
+          tipo: input.tipo === "filial" ? "filial" : "matriz",
           name: input.name.trim(),
           documento: input.documento.trim(),
           inscricao_estadual: input.inscricao_estadual?.trim() || null,
@@ -176,6 +179,7 @@ export function useUpdateCompany() {
         .from("companies")
         .update({
           numero: input.numero.trim() || null,
+          tipo: input.tipo === "filial" ? "filial" : "matriz",
           name: input.name.trim(),
           documento: input.documento.trim(),
           inscricao_estadual: input.inscricao_estadual?.trim() || null,

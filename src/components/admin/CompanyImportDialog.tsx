@@ -77,7 +77,9 @@ export default function CompanyImportDialog({
           departments ?? [],
           users ?? [],
           allSubmenus ?? [],
+          // O número é único entre matrizes (as empresas importadas são matrizes).
           (companies ?? [])
+            .filter((item) => item.tipo !== "filial")
             .map((item) => item.numero ?? "")
             .filter(Boolean)
         )
@@ -135,8 +137,9 @@ export default function CompanyImportDialog({
           <DialogTitle>Importar empresas</DialogTitle>
           <DialogDescription>
             Baixe o modelo em Excel, preencha com as empresas e importe aqui.
-            Colunas obrigatórias: Nome, CPF/CNPJ e UF. O Número não pode
-            repetir (CPF/CNPJ podem ser duplicados). A coluna Subdepartamentos
+            Colunas obrigatórias: Nome, CPF/CNPJ e UF. O Número não pode repetir
+            entre matrizes (as empresas importadas entram como Matriz; CPF/CNPJ
+            podem ser duplicados). A coluna Subdepartamentos
             (opcional) marca os módulos da empresa e recebe os responsáveis
             informados — os responsáveis são por subdepartamento. As datas de
             início e final são definidas por subdepartamento no cadastro da

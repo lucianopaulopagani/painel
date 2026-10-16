@@ -287,7 +287,7 @@ export function validateCompanyImportRows(
     if (!row.name) errors.push("Nome obrigatório");
     const numero = row.numero.trim();
     if (numero) {
-      if (baseNumbers.has(numero)) errors.push("Número já cadastrado");
+      if (baseNumbers.has(numero)) errors.push("Número já cadastrado em uma matriz");
       else if (usedNumbers.has(numero))
         errors.push("Número repetido no arquivo");
       usedNumbers.add(numero);

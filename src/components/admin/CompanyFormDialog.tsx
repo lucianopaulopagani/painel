@@ -42,6 +42,9 @@ interface CompanyFormDialogProps {
   allowedFields?: EmpresaPermissionKey[];
 }
 
+/** Matriz ou filial — o número é único entre matrizes. */
+type CompanyType = "matriz" | "filial";
+
 interface DepartmentAssignment {
   selected: boolean;
   subdepartments: string[];
@@ -76,6 +79,7 @@ export default function CompanyFormDialog({
     !allowedFields || allowedFields.includes(key);
 
   const [numero, setNumero] = useState("");
+  const [tipo, setTipo] = useState<CompanyType>("matriz");
   const [name, setName] = useState("");
   const [documento, setDocumento] = useState("");
   const [inscricaoEstadual, setInscricaoEstadual] = useState("");
@@ -98,6 +102,7 @@ export default function CompanyFormDialog({
   useEffect(() => {
     if (!open) return;
     setNumero(company?.numero ?? "");
+    setTipo(company?.tipo === "filial" ? "filial" : "matriz");
     setName(company?.name ?? "");
     setDocumento(company ? formatCpfCnpj(company.documento) : "");
     setInscricaoEstadual(company?.inscricao_estadual ?? "");
@@ -230,18 +235,21 @@ export default function CompanyFormDialog({
       toast.error("Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.");
       return;
     }
-    // O número da empresa não pode repetir (o CPF/CNPJ pode ser duplicado).
+    // O número da empresa não pode repetir entre matrizes; uma filial pode
+    // repetir o número da matriz (CPF/CNPJ também pode ser duplicado).
     const numeroLimpo = numero.trim();
     const numeroRepetido =
       numeroLimpo !== "" &&
+      tipo === "matriz" &&
       (companies ?? []).some(
         (item) =>
           item.id !== company?.id &&
+          item.tipo !== "filial" &&
           (item.numero ?? "").trim() === numeroLimpo
       );
     if (numeroRepetido) {
       toast.error(
-        `O número ${numeroLimpo} já está cadastrado em outra empresa. Informe um número diferente.`
+        `O número ${numeroLimpo} já está cadastrado em outra matriz. Para uma filial, marque o tipo Filial.`
       );
       return;
     }
@@ -272,6 +280,7 @@ export default function CompanyFormDialog({
 
     const payload = {
       numero: numero.trim(),
+      tipo,
       name: name.trim(),
       documento,
       inscricao_estadual: inscricaoEstadual,
@@ -314,7 +323,7 @@ export default function CompanyFormDialog({
           <DialogDescription>
             {isEditing
               ? "Atualize os dados da empresa, seus departamentos e responsáveis."
-              : "Cadastre uma empresa e vincule os departamentos que a utilizam."}
+              : "Cadastre uma empresa (matriz ou filial) e vincule os departamentos que a utilizam."}
           </DialogDescription>
         </DialogHeader>
         <form
@@ -325,16 +334,47 @@ export default function CompanyFormDialog({
               "[&_label]:text-destructive [&_input]:border-destructive [&_input]:text-destructive [&_[role=combobox]]:border-destructive [&_[role=combobox]]:text-destructive"
           )}
         >
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[12rem_14rem_1fr]">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="company-numero">Numero</Label>
+              <Label htmlFor="company-numero">Número</Label>
               <Input
                 id="company-numero"
                 value={numero}
                 onChange={(e) => setNumero(e.target.value)}
-                placeholder="Ex.: 001 (opcional)"
+                placeholder="Ex.: 001"
+                className="text-center font-medium tabular-nums"
                 disabled={!canEdit("numero")}
               />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label>Tipo</Label>
+              <div
+                role="group"
+                aria-label="Matriz ou filial"
+                className="inline-flex w-fit rounded-lg border bg-muted p-0.5 shadow-inner"
+              >
+                {(["matriz", "filial"] as const).map((value) => {
+                  const selected = tipo === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      aria-pressed={selected}
+                      disabled={!canEdit("numero")}
+                      onClick={() => setTipo(value)}
+                      className={cn(
+                        "rounded-md px-4 py-1.5 text-xs font-semibold uppercase tracking-wide transition-all",
+                        selected
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground",
+                        !canEdit("numero") && "cursor-not-allowed opacity-60"
+                      )}
+                    >
+                      {value === "matriz" ? "Matriz" : "Filial"}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="company-documento">CPF/CNPJ</Label>
@@ -349,6 +389,13 @@ export default function CompanyFormDialog({
               />
             </div>
           </div>
+
+          {tipo === "filial" && (
+            <p className="text-xs text-muted-foreground">
+              Filial pode usar o mesmo número da matriz. Preencha o número da
+              matriz à qual esta filial pertence.
+            </p>
+          )}
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="company-name">Nome da empresa</Label>

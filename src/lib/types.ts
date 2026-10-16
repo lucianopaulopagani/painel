@@ -52,6 +52,11 @@ export interface ManageUserPayload {
 export interface Company {
   id: string;
   numero: string | null;
+  /**
+   * Matriz ou Filial. O número é único entre matrizes; uma filial pode repetir
+   * o número da matriz.
+   */
+  tipo: string;
   name: string;
   /** CPF (11 dígitos) ou CNPJ (14 dígitos). */
   documento: string;

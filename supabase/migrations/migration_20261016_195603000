@@ -1,0 +1,9 @@
+alter table public.companies add column if not exists tipo text not null default 'matriz';
+comment on column public.companies.tipo is 'Matriz ou Filial: o número é único entre matrizes (as filiais podem repetir o número da matriz).';
+
+alter table public.companies drop constraint if exists companies_tipo_check;
+alter table public.companies add constraint companies_tipo_check check (tipo in ('matriz', 'filial'));
+
+create unique index if not exists companies_numero_matriz_key on public.companies (numero) where numero is not null and tipo = 'matriz';
+
+drop index if exists public.companies_numero_key;
