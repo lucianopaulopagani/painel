@@ -23,6 +23,7 @@ import PessoalDashboard from "./pessoal/PessoalDashboard";
 import EmpresasFiscalDashboard from "./pessoal/EmpresasFiscalDashboard";
 import DomesticasDashboard from "./pessoal/DomesticasDashboard";
 import PontoDashboard from "./pessoal/PontoDashboard";
+import ComplementoInssDashboard from "./pessoal/ComplementoInssDashboard";
 import ContabilDashboard from "./contabil/ContabilDashboard";
 import SocietarioDashboard from "./societario/SocietarioDashboard";
 import AlvaraLocalizacaoDashboard from "./societario/AlvaraLocalizacaoDashboard";
@@ -60,6 +61,7 @@ const DEPT_SUBMENUS: Record<DashboardKey, { key: string; label: string }[]> = {
     { key: "empresas-fiscal", label: "Empresas Fiscal" },
     { key: "domesticas", label: "Domésticas" },
     { key: "ponto", label: "Ponto" },
+    { key: "complemento-inss", label: "Complemento INSS" },
   ],
   societario: [
     { key: "certificado-digital", label: "Certificado digital" },
@@ -169,6 +171,8 @@ export default function GeneralDashboard() {
           <DomesticasDashboard />
         ) : active === "pessoal" && submenuKey === "ponto" ? (
           <PontoDashboard />
+        ) : active === "pessoal" && submenuKey === "complemento-inss" ? (
+          <ComplementoInssDashboard />
         ) : active === "contabil" && submenuKey === "balancete-balanco" ? (
           <ContabilDashboard />
         ) : active === "societario" && submenuKey === "certificado-digital" ? (

@@ -172,6 +172,11 @@ const SECTIONS: ManualSection[] = [
         detail:
           "O botão de lápis (Ações) na coluna Observações abre um diálogo para escrever o texto da empresa no mês exibido. O texto é levado para os meses seguintes até ser alterado.",
       },
+      {
+        label: "Dashboard do Complemento INSS",
+        detail:
+          "No Dashboard geral, o submenu 'Complemento INSS' mostra os cartões Enviado, Pendente e Total de empresas (com quantidade e porcentagem sobre o total) e os gráficos por responsável e por responsável e envio, considerando a coluna Envio do mês de referência.",
+      },
     ],
   },
 ];
