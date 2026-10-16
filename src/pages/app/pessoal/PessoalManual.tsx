@@ -155,7 +155,12 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Complemento INSS",
         detail:
-          "DARF (OK/Possui/Não Possui) e Envio (Enviado/Pendente/Desativado). Empresas desativadas vão para a seção no fim da tabela.",
+          "Nº, Empresa, Observações (botão de Ações), DARF (OK/Possui/Não Possui) e Envio (Enviado/Pendente/Desativado). Empresas desativadas vão para a seção no fim da tabela.",
+      },
+      {
+        label: "Observações (Ações)",
+        detail:
+          "O botão de lápis (Ações) na coluna Observações abre um diálogo para escrever o texto da empresa no mês exibido. O texto é levado para os meses seguintes até ser alterado.",
       },
     ],
   },

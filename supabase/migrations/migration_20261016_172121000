@@ -1,0 +1,2 @@
+alter table public.complemento_inss add column if not exists observacoes text;
+comment on column public.complemento_inss.observacoes is 'Observações do complemento INSS da empresa no mês de referência; o texto é levado para os meses seguintes até ser alterado.';

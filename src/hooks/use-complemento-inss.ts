@@ -64,6 +64,7 @@ export function useSaveComplementoInss(mes: string) {
           mes_referencia: mes,
           darf: record.darf ?? null,
           envio: record.envio ?? null,
+          observacoes: record.observacoes ?? null,
           created_at: "",
           updated_at: "",
         });

@@ -1,8 +1,18 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Pencil } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -57,9 +67,17 @@ export default function ComplementoInss() {
   const [busca, setBusca] = useState({
     numero: "",
     empresa: "",
+    observacoes: "",
     darf: "",
     envio: "",
   });
+  /* Diálogo do botão de Ações da coluna Observações. */
+  const [obsDialog, setObsDialog] = useState<{
+    companyId: string;
+    empresa: string;
+    numero: string;
+  } | null>(null);
+  const [obsText, setObsText] = useState("");
 
   const setBuscaField = (key: keyof typeof busca, value: string) => {
     setBusca((prev) => ({ ...prev, [key]: value }));
@@ -109,6 +127,22 @@ export default function ComplementoInss() {
   const isDesativada = (companyId: string): boolean =>
     effectiveEnvio(companyId) === "Desativado";
 
+  /**
+   * Observações efetivas: usa o registro do mês; se não existir, carrega as do
+   * mês anterior mais recente (levadas para os meses seguintes).
+   */
+  const effectiveObservacoes = (companyId: string): string | null => {
+    const current = recordByCompany.get(companyId);
+    if (current) return current.observacoes;
+    const prior = (allRecords ?? [])
+      .filter(
+        (record) =>
+          record.company_id === companyId && record.mes_referencia < mes
+      )
+      .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia));
+    return prior[0]?.observacoes ?? null;
+  };
+
   const filteredRows = rows.filter((company) => {
     const record = recordByCompany.get(company.id);
     const envio = effectiveEnvio(company.id) ?? "";
@@ -130,6 +164,7 @@ export default function ComplementoInss() {
     return (
       match(company.numero, busca.numero) &&
       match(company.name, busca.empresa) &&
+      match(effectiveObservacoes(company.id), busca.observacoes) &&
       selectOrBlank(record?.darf, busca.darf) &&
       selectOrBlank(envio, busca.envio)
     );
@@ -150,6 +185,8 @@ export default function ComplementoInss() {
         mes_referencia: mes,
         envio: effectiveEnvio(companyId) ?? null,
         darf: current?.darf ?? null,
+        // Mantém a observação levada do mês anterior ao salvar outros campos.
+        observacoes: effectiveObservacoes(companyId) ?? null,
         ...patch,
       } as unknown as ComplementoInssInput,
       {
@@ -235,6 +272,7 @@ export default function ComplementoInss() {
   const renderRow = (company: (typeof rows)[number]) => {
     const record = recordByCompany.get(company.id);
     const envio = effectiveEnvio(company.id) ?? "";
+    const observacoes = effectiveObservacoes(company.id) ?? "";
     return (
       <TableRow key={company.id}>
         <TableCell className={`${CELL} whitespace-nowrap font-medium`}>
@@ -244,6 +282,33 @@ export default function ComplementoInss() {
           <span className="block truncate font-medium" title={company.name}>
             {company.name}
           </span>
+        </TableCell>
+        <TableCell className={CELL}>
+          <div className="flex items-center gap-1">
+            <span
+              className="block h-7 flex-1 truncate py-1"
+              title={observacoes}
+            >
+              {observacoes || "—"}
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 shrink-0"
+              title="Ações — Observações"
+              onClick={() => {
+                setObsText(observacoes);
+                setObsDialog({
+                  companyId: company.id,
+                  empresa: company.name,
+                  numero: company.numero ?? "",
+                });
+              }}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </TableCell>
         <TableCell className={`${CELL} w-24`}>
           {renderSelectCell(
@@ -301,7 +366,7 @@ export default function ComplementoInss() {
 
       {!isLoading && !isError && (
         <div className="overflow-x-auto rounded-lg border">
-          <Table className="table-fixed min-w-[720px]">
+          <Table className="table-fixed min-w-[1000px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
                 <TableHead className={`${HEAD} w-14 align-bottom`}>
@@ -322,6 +387,17 @@ export default function ComplementoInss() {
                     className="h-6 w-full min-w-0 px-1 text-xs"
                   />
                 </TableHead>
+                <TableHead className={`${HEAD} w-72 align-bottom`}>
+                  <span className="mb-1 block">Observações</span>
+                  <Input
+                    value={busca.observacoes}
+                    onChange={(e) =>
+                      setBuscaField("observacoes", e.target.value)
+                    }
+                    placeholder="Filtrar"
+                    className="h-6 w-full min-w-0 px-1 text-xs"
+                  />
+                </TableHead>
                 {renderFilterSelect("darf", "DARF", COMPLEMENTO_INSS_DARF_OPTIONS)}
                 {renderFilterSelect("envio", "Envio", COMPLEMENTO_INSS_ENVIO_OPTIONS)}
               </TableRow>
@@ -331,7 +407,7 @@ export default function ComplementoInss() {
               {inactiveRows.length > 0 && (
                 <TableRow className="bg-muted/50">
                   <TableCell
-                    colSpan={4}
+                    colSpan={5}
                     className="px-2 py-1.5 text-xs font-semibold text-muted-foreground"
                   >
                     Empresas desativadas
@@ -342,7 +418,7 @@ export default function ComplementoInss() {
               {filteredRows.length === 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={4}
+                    colSpan={5}
                     className={`${CELL} py-8 text-center text-muted-foreground`}
                   >
                     {Object.values(busca).some(Boolean) && rows.length > 0
@@ -355,6 +431,54 @@ export default function ComplementoInss() {
           </Table>
         </div>
       )}
+
+      <Dialog
+        open={obsDialog !== null}
+        onOpenChange={(open) => {
+          if (!open) setObsDialog(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Observações</DialogTitle>
+            <DialogDescription>
+              {obsDialog?.numero ? `${obsDialog.numero} — ` : ""}
+              {obsDialog?.empresa} — {mes}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={obsText}
+            onChange={(event) => setObsText(event.target.value)}
+            placeholder="Escreva as observações desta empresa"
+            rows={5}
+            autoFocus
+          />
+          <p className="text-xs text-muted-foreground">
+            O texto é levado para os meses seguintes até ser alterado.
+          </p>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setObsDialog(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (!obsDialog) return;
+                save(obsDialog.companyId, {
+                  observacoes: obsText.trim() || null,
+                });
+                setObsDialog(null);
+              }}
+            >
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -3969,6 +3969,7 @@ export type Database = {
           envio: string | null
           id: string
           mes_referencia: string
+          observacoes: string | null
           updated_at: string
         }
         Insert: {
@@ -3978,6 +3979,7 @@ export type Database = {
           envio?: string | null
           id?: string
           mes_referencia: string
+          observacoes?: string | null
           updated_at?: string
         }
         Update: {
@@ -3987,6 +3989,7 @@ export type Database = {
           envio?: string | null
           id?: string
           mes_referencia?: string
+          observacoes?: string | null
           updated_at?: string
         }
         Relationships: [

@@ -242,6 +242,8 @@ export interface ComplementoInssRecord {
   mes_referencia: string;
   darf: string | null;
   envio: string | null;
+  /** Observações da empresa no mês (levadas para os meses seguintes). */
+  observacoes: string | null;
   created_at: string;
   updated_at: string;
 }
