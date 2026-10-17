@@ -13,11 +13,14 @@ import {
 
 const queryClient = new QueryClient();
 
+// Cada rota ganha a tela de erro amigável (substitui a padrão do React Router).
+const routes = routers.map((route) => ({
+  ...route,
+  errorElement: <RouteErrorBoundary />,
+}));
+
 const App = () => {
-  // Cada rota ganha a tela de erro amigável (substitui a padrão do React Router).
-  const router = createBrowserRouter(
-    routers.map((route) => ({ ...route, errorElement: <RouteErrorBoundary /> }))
-  );
+  const router = createBrowserRouter(routes);
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
