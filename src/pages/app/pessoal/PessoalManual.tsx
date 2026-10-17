@@ -127,14 +127,9 @@ const SECTIONS: ManualSection[] = [
           "Concluído (verde), Pendente (vermelho), Em Andamento (âmbar), Em Ajuste e Sem Movimento (tom neutro). Ao marcar Sem Movimento, a empresa sai da tabela principal e vai para a tabela 'Sem movimento' logo abaixo, e ali permanece nos meses seguintes até ser alterada.",
       },
       {
-        label: "Senha",
+        label: "Data Base e Senha",
         detail:
-          "A Senha fica fixada para os meses seguintes até ser alterada e é digitada pelo botão de lápis do cartão, que abre um diálogo — assim não é alterada por acidente.",
-      },
-      {
-        label: "Data Base",
-        detail:
-          "A Data Base (os 12 meses por extenso) fica fixada para os meses seguintes até ser alterada.",
+          "Data Base (lista dos 12 meses) e Senha ficam fixadas para os meses seguintes até serem alteradas. A Senha é digitada pelo botão de lápis da coluna, que abre um diálogo — assim não é alterada por acidente.",
       },
       {
         label: "Folha, DAE, Envio e Ponto",
@@ -142,19 +137,14 @@ const SECTIONS: ManualSection[] = [
           "Folha e DAE com OK (verde), Possui (vermelho) e Não Possui (azul); Envio e Ponto com Enviado (verde) e Pendente (vermelho).",
       },
       {
-        label: "Layout em cartões",
+        label: "Colunas, filtros e cabeçalho fixo",
         detail:
-          "Cada empresa aparece em um cartão com o número (com a tag de filial, quando houver), o nome, o CPF e as marcações do mês em listas suspensas coloridas: Data Base, Folha, DAE, Envio, Ponto e a Senha (editada pelo botão de lápis). O Status fica em uma pílula colorida no canto do cartão. Os cartões se ajustam em 1, 2 ou 3 colunas conforme a largura da tela, sem rolagem lateral.",
+          "Uma linha por empresa com todas as colunas na mesma linha (Status, Data Base, N, Nome, CPF, Senha, Folha, DAE, Envio e Ponto). Os filtros ficam no cabeçalho da tabela, que permanece visível ao rolar a lista para baixo.",
       },
       {
-        label: "Busca e filtros",
+        label: "Sem movimento",
         detail:
-          "Busca livre por número, nome ou CPF e o botão Filtros, que abre os filtros por Status, Data Base, Folha, DAE, Envio, Ponto e Senha (com a opção Em branco). O contador no botão mostra quantos filtros estão ativos e há a opção Limpar filtros.",
-      },
-      {
-        label: "Seção Sem movimento",
-        detail:
-          "As empresas com o status Sem Movimento saem da lista principal e ficam na seção Sem movimento, logo abaixo, com a contagem — e ali permanecem nos meses seguintes até o status ser alterado.",
+          "As empresas com o status Sem Movimento saem da lista principal e ficam na tabela Sem movimento, logo abaixo, com a contagem — e ali permanecem nos meses seguintes até o status ser alterado.",
       },
       {
         label: "Dashboard",
