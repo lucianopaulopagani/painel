@@ -100,7 +100,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Simples Nacional",
         detail:
-          "Selecionando 'Simples Nacional' no filtro de Tributação, é exibida a subtabela específica dessa tributação (Nº, UF, Empresa, CNPJ, Inscrição Estadual, Situação, DAS, Antecipação, ST, DIF ALIQ, DIF ALIQ C/ST, Guia, DESTDA, Envio/SN, Envio/ICMS, Observações e Ações), com filtro de UF em menu suspenso e colunas compactas.",
+          "Selecionando 'Simples Nacional' no filtro de Tributação, é exibida a subtabela específica dessa tributação (Nº, UF, Empresa, CNPJ, Inscrição Estadual, Situação, DAS, Antecipação, ST, DIF ALIQ, DIF ALIQ C/ST, Observações, Guia, DESTDA, Envio/SN, Envio/ICMS e Ações), com filtro de UF em menu suspenso e colunas compactas.",
       },
       {
         label: "Simples Nacional — valores em R$ e observações (Ações)",

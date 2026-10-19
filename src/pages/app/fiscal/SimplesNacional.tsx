@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Banknote, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -60,6 +60,9 @@ export const SIMPLES_NACIONAL_TRIBUTACAO = "Simples Nacional";
 const MONEY_FIELDS = MOVIMENTO_FISCAL_FIELDS.filter(
   (field) => field.type === "input"
 );
+
+/** A coluna Observações fica logo após este campo. */
+const OBS_AFTER_FIELD = "dif_aliq_st";
 
 const TONE: Record<string, string> = {
   OK: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
@@ -337,28 +340,34 @@ export function SimplesNacionalTable({
               {renderFilterInput("cnpj", "CNPJ", "w-24")}
               {renderFilterInput("ie", "Insc. Estadual", "w-20")}
               {renderFilterSelect("situacao", "Situação", SITUACAO_OPTIONS, "w-20")}
-              {MOVIMENTO_FISCAL_FIELDS.map((field) =>
-                field.type === "checkbox" ? (
-                  <TableHead
-                    key={field.key}
-                    className={`${HEAD} w-12 text-center align-bottom`}
-                  >
-                    <span className="mb-1 block whitespace-nowrap">
-                      {field.short}
-                    </span>
-                  </TableHead>
-                ) : field.type === "select" ? (
-                  renderFilterSelect(
-                    field.key,
-                    field.short,
-                    field.options ?? [],
-                    "w-16"
-                  )
-                ) : (
-                  renderFilterInput(field.key, field.short, "w-20")
-                )
-              )}
-              {renderFilterInput("observacoes", "Observações", "w-28")}
+              {MOVIMENTO_FISCAL_FIELDS.map((field) => {
+                const head =
+                  field.type === "checkbox" ? (
+                    <TableHead
+                      className={`${HEAD} w-12 text-center align-bottom`}
+                    >
+                      <span className="mb-1 block whitespace-nowrap">
+                        {field.short}
+                      </span>
+                    </TableHead>
+                  ) : field.type === "select" ? (
+                    renderFilterSelect(
+                      field.key,
+                      field.short,
+                      field.options ?? [],
+                      "w-16"
+                    )
+                  ) : (
+                    renderFilterInput(field.key, field.short, "w-20")
+                  );
+                return (
+                  <Fragment key={field.key}>
+                    {head}
+                    {field.key === OBS_AFTER_FIELD &&
+                      renderFilterInput("observacoes", "Observações", "w-28")}
+                  </Fragment>
+                );
+              })}
               <TableHead className={`${HEAD} w-14 text-center align-bottom`}>
                 <span className="mb-1 block whitespace-nowrap">Ações</span>
               </TableHead>
@@ -409,54 +418,57 @@ export function SimplesNacionalTable({
                     )}
                   </TableCell>
                   {MOVIMENTO_FISCAL_FIELDS.map((field) => (
-                    <TableCell
-                      key={field.key}
-                      className={`${CELL} ${
-                        field.type === "checkbox"
-                          ? "w-12 text-center"
-                          : field.type === "select"
-                            ? "w-16"
-                            : "w-20"
-                      }`}
-                    >
-                      {field.type === "checkbox" ? (
-                        <Checkbox
-                          checked={record?.[field.key] === true}
-                          onCheckedChange={(checked) => {
-                            save(company.id, {
-                              [field.key]: checked === true,
-                            });
-                          }}
-                        />
-                      ) : field.type === "input" ? (
-                        <span
-                          className="block truncate text-right tabular-nums"
-                          title={formatCurrencyField(
-                            (record?.[field.key] as string) ?? ""
-                          )}
-                        >
-                          {formatCurrencyField(
-                            (record?.[field.key] as string) ?? ""
-                          ) || "—"}
-                        </span>
-                      ) : (
-                        renderSelectCell(
-                          company.id,
-                          (record?.[field.key] as string) ?? "",
-                          field.options ?? [],
-                          field.key
-                        )
+                    <Fragment key={field.key}>
+                      <TableCell
+                        className={`${CELL} ${
+                          field.type === "checkbox"
+                            ? "w-12 text-center"
+                            : field.type === "select"
+                              ? "w-16"
+                              : "w-20"
+                        }`}
+                      >
+                        {field.type === "checkbox" ? (
+                          <Checkbox
+                            checked={record?.[field.key] === true}
+                            onCheckedChange={(checked) => {
+                              save(company.id, {
+                                [field.key]: checked === true,
+                              });
+                            }}
+                          />
+                        ) : field.type === "input" ? (
+                          <span
+                            className="block truncate text-right tabular-nums"
+                            title={formatCurrencyField(
+                              (record?.[field.key] as string) ?? ""
+                            )}
+                          >
+                            {formatCurrencyField(
+                              (record?.[field.key] as string) ?? ""
+                            ) || "—"}
+                          </span>
+                        ) : (
+                          renderSelectCell(
+                            company.id,
+                            (record?.[field.key] as string) ?? "",
+                            field.options ?? [],
+                            field.key
+                          )
+                        )}
+                      </TableCell>
+                      {field.key === OBS_AFTER_FIELD && (
+                        <TableCell className={`${CELL} w-28`}>
+                          <span
+                            className="block truncate"
+                            title={effectiveObservacoes(company.id) ?? ""}
+                          >
+                            {effectiveObservacoes(company.id) || "—"}
+                          </span>
+                        </TableCell>
                       )}
-                    </TableCell>
+                    </Fragment>
                   ))}
-                  <TableCell className={`${CELL} w-28`}>
-                    <span
-                      className="block truncate"
-                      title={effectiveObservacoes(company.id) ?? ""}
-                    >
-                      {effectiveObservacoes(company.id) || "—"}
-                    </span>
-                  </TableCell>
                   <TableCell className={`${CELL} w-14`}>
                     <div className="flex items-center justify-center gap-0.5">
                       <Button
