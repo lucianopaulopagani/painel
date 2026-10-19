@@ -363,14 +363,25 @@ export function SimplesNacionalTable({
                 return (
                   <Fragment key={field.key}>
                     {head}
-                    {field.key === OBS_AFTER_FIELD &&
-                      renderFilterInput("observacoes", "Observações", "w-28")}
+                    {field.key === OBS_AFTER_FIELD && (
+                      <Fragment>
+                        {renderFilterInput(
+                          "observacoes",
+                          "Observações",
+                          "w-28"
+                        )}
+                        <TableHead
+                          className={`${HEAD} w-14 text-center align-bottom`}
+                        >
+                          <span className="mb-1 block whitespace-nowrap">
+                            Ações
+                          </span>
+                        </TableHead>
+                      </Fragment>
+                    )}
                   </Fragment>
                 );
               })}
-              <TableHead className={`${HEAD} w-14 text-center align-bottom`}>
-                <span className="mb-1 block whitespace-nowrap">Ações</span>
-              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -458,48 +469,52 @@ export function SimplesNacionalTable({
                         )}
                       </TableCell>
                       {field.key === OBS_AFTER_FIELD && (
-                        <TableCell className={`${CELL} w-28`}>
-                          <span
-                            className="block truncate"
-                            title={effectiveObservacoes(company.id) ?? ""}
-                          >
-                            {effectiveObservacoes(company.id) || "—"}
-                          </span>
-                        </TableCell>
+                        <Fragment>
+                          <TableCell className={`${CELL} w-28`}>
+                            <span
+                              className="block truncate"
+                              title={effectiveObservacoes(company.id) ?? ""}
+                            >
+                              {effectiveObservacoes(company.id) || "—"}
+                            </span>
+                          </TableCell>
+                          <TableCell className={`${CELL} w-14`}>
+                            <div className="flex items-center justify-center gap-0.5">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 shrink-0"
+                                title="Ações — valores (R$)"
+                                onClick={() => openMoneyDialog(company, record)}
+                              >
+                                <Banknote className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 shrink-0"
+                                title="Ações — observações"
+                                onClick={() => {
+                                  setObsText(
+                                    effectiveObservacoes(company.id) ?? ""
+                                  );
+                                  setObsDialog({
+                                    companyId: company.id,
+                                    empresa: company.name,
+                                    numero: company.numero ?? "",
+                                  });
+                                }}
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </Fragment>
                       )}
                     </Fragment>
                   ))}
-                  <TableCell className={`${CELL} w-14`}>
-                    <div className="flex items-center justify-center gap-0.5">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 shrink-0"
-                        title="Ações — valores (R$)"
-                        onClick={() => openMoneyDialog(company, record)}
-                      >
-                        <Banknote className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 shrink-0"
-                        title="Ações — observações"
-                        onClick={() => {
-                          setObsText(effectiveObservacoes(company.id) ?? "");
-                          setObsDialog({
-                            companyId: company.id,
-                            empresa: company.name,
-                            numero: company.numero ?? "",
-                          });
-                        }}
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </TableCell>
                 </TableRow>
               );
             })}
