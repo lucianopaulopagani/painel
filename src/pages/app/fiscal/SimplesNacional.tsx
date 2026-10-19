@@ -64,6 +64,17 @@ const MONEY_FIELDS = MOVIMENTO_FISCAL_FIELDS.filter(
 /** A coluna Observações fica logo após este campo. */
 const OBS_AFTER_FIELD = "dif_aliq_st";
 
+/**
+ * Rótulos das opções de alguns campos (valor gravado → texto exibido). O DAS
+ * grava "OK-SM" e aparece como "SM" na tabela e no filtro.
+ */
+const OPTION_LABELS: Record<string, Record<string, string>> = {
+  das: { "OK-SM": "SM" },
+};
+
+const optionLabel = (key: string, value: string): string =>
+  OPTION_LABELS[key]?.[value] ?? value;
+
 const TONE: Record<string, string> = {
   OK: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
   "OK-SM":
@@ -275,7 +286,7 @@ export function SimplesNacionalTable({
         <SelectItem value="none">—</SelectItem>
         {options.map((option) => (
           <SelectItem key={option} value={option}>
-            {option}
+            {optionLabel(patchKey, option)}
           </SelectItem>
         ))}
       </SelectContent>
@@ -317,7 +328,7 @@ export function SimplesNacionalTable({
           <SelectItem value="branco">Em branco</SelectItem>
           {options.map((option) => (
             <SelectItem key={option} value={option}>
-              {option}
+              {optionLabel(key, option)}
             </SelectItem>
           ))}
         </SelectContent>

@@ -100,7 +100,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Simples Nacional",
         detail:
-          "Selecionando 'Simples Nacional' no filtro de Tributação, é exibida a subtabela específica dessa tributação (Nº, UF, Empresa, CNPJ, Inscrição Estadual, Situação, DAS, Antecipação, ST, DIF ALIQ, DIF ALIQ C/ST, Observações, Ações, Guia, DESTDA, Envio/SN e Envio/ICMS), com filtro de UF em menu suspenso e colunas compactas.",
+          "Selecionando 'Simples Nacional' no filtro de Tributação, é exibida a subtabela específica dessa tributação (Nº, UF, Empresa, CNPJ, Inscrição Estadual, Situação, DAS, Antecipação, ST, DIF ALIQ, DIF ALIQ C/ST, Observações, Ações, Guia, DESTDA, Envio/SN e Envio/ICMS), com filtro de UF em menu suspenso e colunas compactas. O DAS tem as opções OK e SM (o SM é gravado como OK-SM, o mesmo valor usado no restante do Movimento Fiscal).",
       },
       {
         label: "Simples Nacional — valores em R$ e observações (Ações)",
