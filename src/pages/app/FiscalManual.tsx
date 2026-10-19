@@ -100,7 +100,12 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Simples Nacional",
         detail:
-          "Selecionando 'Simples Nacional' no filtro de Tributação, é exibida a subtabela específica dessa tributação (Nº, UF, Empresa, CNPJ, Inscrição Estadual, Situação, DAS, Antecipação, ST, DIF ALIQ, DIF ALIQ C/ST, Guia, DESTDA, Envio/SN, Envio/ICMS e Observações), com filtro de UF em menu suspenso e colunas compactas.",
+          "Selecionando 'Simples Nacional' no filtro de Tributação, é exibida a subtabela específica dessa tributação (Nº, UF, Empresa, CNPJ, Inscrição Estadual, Situação, DAS, Antecipação, ST, DIF ALIQ, DIF ALIQ C/ST, Guia, DESTDA, Envio/SN, Envio/ICMS, Observações e Ações), com filtro de UF em menu suspenso e colunas compactas.",
+      },
+      {
+        label: "Simples Nacional — valores em R$ e observações (Ações)",
+        detail:
+          "Na subtabela do Simples Nacional, Antecipação, ST, DIF ALIQ e DIF ALIQ C/ST são exibidos em reais (R$), somente leitura na tabela, e são editados juntos pelo botão de Ações (ícone de cédula) da coluna Ações — o diálogo mostra os quatro campos com máscara de moeda: digite apenas os números e os centavos são preenchidos automaticamente (ex.: 123456 → R$ 1.234,56). A coluna Observações aparece como texto (truncado, com o conteúdo completo no tooltip) e é editada pelo botão de lápis, que abre um diálogo — o texto é levado para os meses seguintes até ser alterado.",
       },
       {
         label: "MEI",

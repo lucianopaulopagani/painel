@@ -1,4 +1,16 @@
 import { useState } from "react";
+import { Banknote, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -26,6 +38,11 @@ import {
   isSituacaoFinalizada,
 } from "@/lib/fiscal";
 import { CompanyNumber } from "@/components/company-number";
+import {
+  currencyToStorage,
+  formatCurrencyField,
+  maskCurrencyInput,
+} from "@/lib/currency";
 import { cn, formatCpfCnpj } from "@/lib/utils";
 import type {
   CompanyWithDepartments,
@@ -38,6 +55,11 @@ const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
 
 /** Tributação desta subtabela. */
 export const SIMPLES_NACIONAL_TRIBUTACAO = "Simples Nacional";
+
+/** Campos preenchidos em reais (editados juntos no diálogo de Ações). */
+const MONEY_FIELDS = MOVIMENTO_FISCAL_FIELDS.filter(
+  (field) => field.type === "input"
+);
 
 const TONE: Record<string, string> = {
   OK: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
@@ -80,6 +102,20 @@ export function SimplesNacionalTable({
       MOVIMENTO_FISCAL_FIELDS.map((field) => [field.key, ""])
     ),
   });
+  /* Diálogo dos valores em R$ (um botão de Ações para os quatro campos). */
+  const [moneyDialog, setMoneyDialog] = useState<{
+    companyId: string;
+    empresa: string;
+    numero: string;
+  } | null>(null);
+  const [moneyValues, setMoneyValues] = useState<Record<string, string>>({});
+  /* Diálogo das observações (texto). */
+  const [obsDialog, setObsDialog] = useState<{
+    companyId: string;
+    empresa: string;
+    numero: string;
+  } | null>(null);
+  const [obsText, setObsText] = useState("");
 
   const setBuscaField = (key: string, value: string) =>
     setBusca((prev) => ({ ...prev, [key]: value }));
@@ -172,6 +208,43 @@ export function SimplesNacionalTable({
       observacoes: effectiveObservacoes(companyId) ?? null,
       ...patch,
     } as unknown as MovementFiscalInput);
+  };
+
+  /** Abre o diálogo de Ações com os valores em R$ da empresa. */
+  const openMoneyDialog = (
+    company: CompanyWithDepartments,
+    record?: MovementFiscalRecord
+  ) => {
+    setMoneyValues(
+      Object.fromEntries(
+        MONEY_FIELDS.map((field) => [
+          field.key,
+          formatCurrencyField(
+            (record?.[field.key] as string | null | undefined) ?? ""
+          ),
+        ])
+      )
+    );
+    setMoneyDialog({
+      companyId: company.id,
+      empresa: company.name,
+      numero: company.numero ?? "",
+    });
+  };
+
+  /** Grava os quatro valores em R$ de uma vez. */
+  const saveMoneyValues = () => {
+    if (!moneyDialog) return;
+    save(
+      moneyDialog.companyId,
+      Object.fromEntries(
+        MONEY_FIELDS.map((field) => [
+          field.key,
+          currencyToStorage(moneyValues[field.key] ?? ""),
+        ])
+      )
+    );
+    setMoneyDialog(null);
   };
 
   const renderSelectCell = (
@@ -285,7 +358,10 @@ export function SimplesNacionalTable({
                   renderFilterInput(field.key, field.short, "w-20")
                 )
               )}
-              {renderFilterInput("observacoes", "Observações", "w-32")}
+              {renderFilterInput("observacoes", "Observações", "w-28")}
+              <TableHead className={`${HEAD} w-14 text-center align-bottom`}>
+                <span className="mb-1 block whitespace-nowrap">Ações</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -353,18 +429,16 @@ export function SimplesNacionalTable({
                           }}
                         />
                       ) : field.type === "input" ? (
-                        <Input
-                          key={`${company.id}:${mes}:${field.key}`}
-                          defaultValue={
+                        <span
+                          className="block truncate text-right tabular-nums"
+                          title={formatCurrencyField(
                             (record?.[field.key] as string) ?? ""
-                          }
-                          onBlur={(event) =>
-                            save(company.id, {
-                              [field.key]: event.target.value.trim() || null,
-                            })
-                          }
-                          className="h-7 w-full min-w-0 px-1 text-[11px]"
-                        />
+                          )}
+                        >
+                          {formatCurrencyField(
+                            (record?.[field.key] as string) ?? ""
+                          ) || "—"}
+                        </span>
                       ) : (
                         renderSelectCell(
                           company.id,
@@ -375,18 +449,44 @@ export function SimplesNacionalTable({
                       )}
                     </TableCell>
                   ))}
-                  <TableCell className={`${CELL} w-32`}>
-                    <Input
-                      key={`${company.id}:${mes}:obs`}
-                      defaultValue={effectiveObservacoes(company.id) ?? ""}
+                  <TableCell className={`${CELL} w-28`}>
+                    <span
+                      className="block truncate"
                       title={effectiveObservacoes(company.id) ?? ""}
-                      onBlur={(event) =>
-                        save(company.id, {
-                          observacoes: event.target.value.trim() || null,
-                        })
-                      }
-                      className="h-7 w-full min-w-0 px-1 text-[11px]"
-                    />
+                    >
+                      {effectiveObservacoes(company.id) || "—"}
+                    </span>
+                  </TableCell>
+                  <TableCell className={`${CELL} w-14`}>
+                    <div className="flex items-center justify-center gap-0.5">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 shrink-0"
+                        title="Ações — valores (R$)"
+                        onClick={() => openMoneyDialog(company, record)}
+                      >
+                        <Banknote className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 shrink-0"
+                        title="Ações — observações"
+                        onClick={() => {
+                          setObsText(effectiveObservacoes(company.id) ?? "");
+                          setObsDialog({
+                            companyId: company.id,
+                            empresa: company.name,
+                            numero: company.numero ?? "",
+                          });
+                        }}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               );
@@ -394,7 +494,7 @@ export function SimplesNacionalTable({
             {filteredRows.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={16}
+                  colSpan={17}
                   className={`${CELL} py-8 text-center text-muted-foreground`}
                 >
                   {rows.length > 0
@@ -406,6 +506,112 @@ export function SimplesNacionalTable({
           </TableBody>
         </Table>
       </div>
+
+      <Dialog
+        open={moneyDialog !== null}
+        onOpenChange={(open) => {
+          if (!open) setMoneyDialog(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Valores (R$)</DialogTitle>
+            <DialogDescription>
+              {moneyDialog?.numero ? `${moneyDialog.numero} — ` : ""}
+              {moneyDialog?.empresa} — {mes}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {MONEY_FIELDS.map((field) => (
+              <div key={field.key} className="flex flex-col gap-1.5">
+                <Label
+                  htmlFor={`money-${field.key}`}
+                  className="text-xs text-muted-foreground"
+                >
+                  {field.label}
+                </Label>
+                <Input
+                  id={`money-${field.key}`}
+                  inputMode="numeric"
+                  value={moneyValues[field.key] ?? ""}
+                  onChange={(event) =>
+                    setMoneyValues((prev) => ({
+                      ...prev,
+                      [field.key]: maskCurrencyInput(event.target.value),
+                    }))
+                  }
+                  placeholder="R$ 0,00"
+                  className="text-right tabular-nums"
+                />
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Digite apenas os números: os centavos são preenchidos
+            automaticamente (ex.: 123456 → R$ 1.234,56).
+          </p>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setMoneyDialog(null)}
+            >
+              Cancelar
+            </Button>
+            <Button type="button" onClick={saveMoneyValues}>
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={obsDialog !== null}
+        onOpenChange={(open) => {
+          if (!open) setObsDialog(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Observações</DialogTitle>
+            <DialogDescription>
+              {obsDialog?.numero ? `${obsDialog.numero} — ` : ""}
+              {obsDialog?.empresa} — {mes}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={obsText}
+            onChange={(event) => setObsText(event.target.value)}
+            placeholder="Escreva a observação desta empresa"
+            rows={5}
+            autoFocus
+          />
+          <p className="text-xs text-muted-foreground">
+            A observação é levada para os meses seguintes até ser alterada.
+          </p>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setObsDialog(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (!obsDialog) return;
+                save(obsDialog.companyId, {
+                  observacoes: obsText.trim() || null,
+                });
+                setObsDialog(null);
+              }}
+            >
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
