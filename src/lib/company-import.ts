@@ -260,7 +260,8 @@ export function validateCompanyImportRows(
   departments: Department[],
   users: ProfileWithDepartments[],
   submenus: DepartmentSubmenu[] = [],
-  existingNumbers: string[] = []
+  existingNumbers: string[] = [],
+  tributacoes: readonly string[] = [...TRIBUTACOES]
 ): CompanyImportValidation[] {
   // O número da empresa não pode repetir (na base nem dentro do arquivo).
   const baseNumbers = new Set(
@@ -298,7 +299,7 @@ export function validateCompanyImportRows(
     if (!row.uf) errors.push("UF obrigatória");
     if (
       row.tributacao &&
-      !TRIBUTACOES.some(
+      !tributacoes.some(
         (option) => option.toLowerCase() === row.tributacao.toLowerCase()
       )
     ) {

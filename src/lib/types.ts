@@ -7,6 +7,15 @@ export interface Department {
   created_at: string;
 }
 
+/** Regime de tributação cadastrado (usado no cadastro de empresas). */
+export interface Tributacao {
+  id: string;
+  nome: string;
+  /** Ordem de exibição (menor primeiro). */
+  ordem: number;
+  created_at: string;
+}
+
 export interface DepartmentRef {
   id: string;
   name: string;

@@ -3,6 +3,7 @@ import {
   Briefcase,
   Building2,
   LayoutDashboard,
+  Percent,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -13,6 +14,7 @@ export type AdminSection =
   | "users"
   | "departments"
   | "companies"
+  | "tributacoes"
   | "dashboards";
 
 const NAV_ITEMS: { key: AdminSection; label: string; icon: LucideIcon }[] = [
@@ -20,6 +22,7 @@ const NAV_ITEMS: { key: AdminSection; label: string; icon: LucideIcon }[] = [
   { key: "users", label: "Usuários", icon: Users },
   { key: "departments", label: "Departamentos", icon: Building2 },
   { key: "companies", label: "Empresas", icon: Briefcase },
+  { key: "tributacoes", label: "Tributações", icon: Percent },
   { key: "dashboards", label: "Dashboards", icon: BarChart3 },
 ];
 

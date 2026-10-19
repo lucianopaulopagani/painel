@@ -1,0 +1,311 @@
+import { useState, type FormEvent } from "react";
+import { Loader2, Pencil, Plus, Tags, Trash2 } from "lucide-react";
+import { toast } from "@/components/ui/sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useCompanies } from "@/hooks/use-companies";
+import {
+  useCreateTributacao,
+  useDeleteTributacao,
+  useTributacoes,
+  useUpdateTributacao,
+} from "@/hooks/use-tributacoes";
+import type { Tributacao } from "@/lib/types";
+
+const normalize = (value: string) => value.trim().toLocaleLowerCase("pt-BR");
+
+/**
+ * Cadastro de Tributações — lista usada no cadastro de empresas (e na
+ * importação). As empresas já cadastradas mantêm o texto da sua tributação.
+ */
+export default function TributacoesTab() {
+  const { data: tributacoes, isLoading, isError } = useTributacoes();
+  const { data: companies } = useCompanies();
+  const createMutation = useCreateTributacao();
+  const updateMutation = useUpdateTributacao();
+  const deleteMutation = useDeleteTributacao();
+
+  const [novoNome, setNovoNome] = useState("");
+  const [editing, setEditing] = useState<Tributacao | null>(null);
+  const [editingNome, setEditingNome] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Tributacao | null>(null);
+
+  /** Quantas empresas usam a tributação (para avisar antes de excluir). */
+  const usageOf = (nome: string): number =>
+    (companies ?? []).filter(
+      (company) => normalize(company.tributacao ?? "") === normalize(nome)
+    ).length;
+
+  const exists = (nome: string, ignoreId?: string): boolean =>
+    (tributacoes ?? []).some(
+      (item) => item.id !== ignoreId && normalize(item.nome) === normalize(nome)
+    );
+
+  const handleCreate = async (event: FormEvent) => {
+    event.preventDefault();
+    const nome = novoNome.trim();
+    if (!nome) {
+      toast.error("Informe o nome da tributação.");
+      return;
+    }
+    if (exists(nome)) {
+      toast.error(`A tributação "${nome}" já está cadastrada.`);
+      return;
+    }
+    try {
+      await createMutation.mutateAsync(nome);
+      setNovoNome("");
+      toast.success("Tributação cadastrada.");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao cadastrar tributação."
+      );
+    }
+  };
+
+  const handleRename = async () => {
+    if (!editing) return;
+    const nome = editingNome.trim();
+    if (!nome) {
+      toast.error("Informe o nome da tributação.");
+      return;
+    }
+    if (exists(nome, editing.id)) {
+      toast.error(`A tributação "${nome}" já está cadastrada.`);
+      return;
+    }
+    try {
+      await updateMutation.mutateAsync({ id: editing.id, nome });
+      setEditing(null);
+      toast.success("Tributação atualizada.");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao atualizar tributação."
+      );
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteMutation.mutateAsync(deleteTarget.id);
+      setDeleteTarget(null);
+      toast.success("Tributação excluída.");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao excluir tributação."
+      );
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Tags className="h-5 w-5 text-muted-foreground" />
+        <div>
+          <h2 className="text-lg font-semibold">Tributações</h2>
+          <p className="text-sm text-muted-foreground">
+            Regimes disponíveis no cadastro de empresas e na importação.
+          </p>
+        </div>
+      </div>
+
+      <form
+        onSubmit={handleCreate}
+        className="flex flex-col gap-3 rounded-xl border bg-card p-4 shadow-sm sm:flex-row sm:items-end"
+      >
+        <div className="flex flex-1 flex-col gap-1.5">
+          <Label htmlFor="nova-tributacao" className="text-xs text-muted-foreground">
+            Nova tributação
+          </Label>
+          <Input
+            id="nova-tributacao"
+            value={novoNome}
+            onChange={(event) => setNovoNome(event.target.value)}
+            placeholder="Ex.: Lucro Arbitrado"
+            className="h-9"
+          />
+        </div>
+        <Button
+          type="submit"
+          className="h-9 gap-2"
+          disabled={createMutation.isPending}
+        >
+          {createMutation.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Plus className="h-4 w-4" />
+          )}
+          Adicionar
+        </Button>
+      </form>
+
+      {isLoading && (
+        <div className="flex items-center justify-center py-10 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+        </div>
+      )}
+
+      {isError && (
+        <p className="py-10 text-center text-sm text-destructive">
+          Não foi possível carregar as tributações.
+        </p>
+      )}
+
+      {!isLoading && !isError && (
+        <div className="divide-y rounded-xl border bg-card shadow-sm">
+          {(tributacoes ?? []).length === 0 && (
+            <p className="p-6 text-center text-sm text-muted-foreground">
+              Nenhuma tributação cadastrada. Adicione a primeira acima.
+            </p>
+          )}
+
+          {(tributacoes ?? []).map((tributacao) => {
+            const usage = usageOf(tributacao.nome);
+            return (
+              <div
+                key={tributacao.id}
+                className="flex flex-wrap items-center justify-between gap-3 p-3 sm:px-4"
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="truncate text-sm font-medium">
+                    {tributacao.nome}
+                  </span>
+                  <Badge variant="secondary" className="tabular-nums">
+                    {usage} {usage === 1 ? "empresa" : "empresas"}
+                  </Badge>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    title="Renomear tributação"
+                    onClick={() => {
+                      setEditingNome(tributacao.nome);
+                      setEditing(tributacao);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:text-destructive"
+                    title={
+                      usage > 0
+                        ? `Não é possível excluir: ${usage} empresa(s) usam esta tributação.`
+                        : "Excluir tributação"
+                    }
+                    disabled={usage > 0}
+                    onClick={() => setDeleteTarget(tributacao)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <p className="text-xs text-muted-foreground">
+        Renomear uma tributação não altera as empresas já cadastradas — ajuste o
+        nome também no cadastro dessas empresas, se necessário.
+      </p>
+
+      {/* Renomear */}
+      <Dialog
+        open={editing !== null}
+        onOpenChange={(open) => {
+          if (!open) setEditing(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Renomear tributação</DialogTitle>
+            <DialogDescription>
+              O novo nome passa a aparecer no cadastro de empresas.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="tributacao-nome">Nome</Label>
+            <Input
+              id="tributacao-nome"
+              value={editingNome}
+              onChange={(event) => setEditingNome(event.target.value)}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditing(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleRename}
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending && (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              )}
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Excluir */}
+      <AlertDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir tributação</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir{" "}
+              <span className="font-medium">{deleteTarget?.nome}</span>? Ela
+              deixará de aparecer no cadastro de empresas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}

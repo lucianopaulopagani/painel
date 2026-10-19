@@ -24,6 +24,8 @@ import { useDepartments } from "@/hooks/use-departments";
 import { useUsers } from "@/hooks/use-users";
 import { useAllDepartmentSubmenus } from "@/hooks/use-department-submenus";
 import { useImportCompanies } from "@/hooks/use-companies";
+import { useTributacoes } from "@/hooks/use-tributacoes";
+import { TRIBUTACOES } from "@/lib/companies";
 import {
   buildCompanyImportTemplate,
   parseCompanyImportFile,
@@ -44,6 +46,7 @@ export default function CompanyImportDialog({
   const { data: users } = useUsers();
   const { data: allSubmenus } = useAllDepartmentSubmenus();
   const { data: companies } = useCompanies();
+  const { data: tributacoes } = useTributacoes();
   const importMutation = useImportCompanies();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [validations, setValidations] = useState<
@@ -81,7 +84,11 @@ export default function CompanyImportDialog({
           (companies ?? [])
             .filter((item) => item.tipo !== "filial")
             .map((item) => item.numero ?? "")
-            .filter(Boolean)
+            .filter(Boolean),
+          // Tributações cadastradas na administração.
+          (tributacoes ?? []).length > 0
+            ? (tributacoes ?? []).map((item) => item.nome)
+            : TRIBUTACOES
         )
       );
       if (rows.length === 0) {

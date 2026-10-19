@@ -1,0 +1,32 @@
+create table if not exists public.tributacoes (
+  id uuid primary key default gen_random_uuid(),
+  nome text not null,
+  ordem integer not null default 100,
+  created_at timestamptz not null default now()
+);
+
+create unique index if not exists tributacoes_nome_key on public.tributacoes (lower(nome));
+
+alter table public.tributacoes enable row level security;
+
+create policy tributacoes_read on public.tributacoes
+  for select to authenticated using (true);
+
+create policy tributacoes_admin_all on public.tributacoes
+  for all to authenticated using (is_admin()) with check (is_admin());
+
+insert into public.tributacoes (nome, ordem) values
+  ('Simples Nacional', 1),
+  ('Lucro Real', 2),
+  ('Lucro Presumido', 3),
+  ('MEI', 4),
+  ('Pessoa Física', 5),
+  ('Carne Leão', 6),
+  ('Empregada Doméstica', 7)
+on conflict (lower(nome)) do nothing;
+
+insert into public.tributacoes (nome, ordem)
+select distinct btrim(c.tributacao), 50
+from public.companies c
+where c.tributacao is not null and btrim(c.tributacao) <> ''
+on conflict (lower(nome)) do nothing;

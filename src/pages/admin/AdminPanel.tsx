@@ -10,13 +10,21 @@ import CompaniesTab from "./CompaniesTab";
 import DashboardsSection from "./DashboardsSection";
 import DepartmentsTab from "./DepartmentsTab";
 import UsersTab from "./UsersTab";
+import TributacoesTab from "./TributacoesTab";
 
 export default function AdminPanel() {
   const { profile } = useAuth();
   const isAdmin = profile?.role === "admin";
 
   const allowed: AdminSection[] = isAdmin
-    ? ["overview", "users", "departments", "companies", "dashboards"]
+    ? [
+        "overview",
+        "users",
+        "departments",
+        "companies",
+        "tributacoes",
+        "dashboards",
+      ]
     : ["companies"];
 
   const [section, setSection] = useState<AdminSection>(
@@ -47,6 +55,7 @@ export default function AdminPanel() {
             {section === "users" && <UsersTab />}
             {section === "departments" && <DepartmentsTab />}
             {section === "companies" && <CompaniesTab />}
+            {section === "tributacoes" && <TributacoesTab />}
             {section === "dashboards" && <DashboardsSection />}
           </div>
         </div>

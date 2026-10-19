@@ -27,6 +27,7 @@ import { useDepartments } from "@/hooks/use-departments";
 import { useMunicipios } from "@/hooks/use-municipios";
 import { useAuth } from "@/context/auth";
 import { MOTIVOS_INATIVACAO, TRIBUTACOES } from "@/lib/companies";
+import { useTributacoes } from "@/hooks/use-tributacoes";
 import { UFS } from "@/lib/ufs";
 import { formatCpfCnpj } from "@/lib/utils";
 import type { EmpresaPermissionKey } from "@/lib/empresas-permissions";
@@ -73,7 +74,14 @@ export default function CompanyBulkEditDialog({
   const { data: departments } = useDepartments();
   const { data: usersWithDepartments } = useAllUsersWithDepartments();
   const { data: allSubmenus } = useAllDepartmentSubmenus();
+  const { data: tributacoes } = useTributacoes();
   const { profile } = useAuth();
+
+  /** Tributações cadastradas na administração (com fallback para a lista fixa). */
+  const tributacaoOptions =
+    (tributacoes ?? []).length > 0
+      ? (tributacoes ?? []).map((item) => item.nome)
+      : [...TRIBUTACOES];
 
   const isAdmin = profile?.role === "admin";
   const myDepartmentIds = new Set(
@@ -353,7 +361,7 @@ export default function CompanyBulkEditDialog({
                     — (não alterar)
                   </SelectItem>
                   <SelectItem value={LIMPAR}>(em branco)</SelectItem>
-                  {TRIBUTACOES.map((option) => (
+                  {tributacaoOptions.map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}
                     </SelectItem>

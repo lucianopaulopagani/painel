@@ -28,6 +28,7 @@ import { useAllDepartmentSubmenus } from "@/hooks/use-department-submenus";
 import { useDepartments } from "@/hooks/use-departments";
 import { useAuth } from "@/context/auth";
 import { TRIBUTACOES, MOTIVOS_INATIVACAO } from "@/lib/companies";
+import { useTributacoes } from "@/hooks/use-tributacoes";
 import { UFS } from "@/lib/ufs";
 import type { EmpresaPermissionKey } from "@/lib/empresas-permissions";
 import { formatCpfCnpj, isValidCpfCnpj } from "@/lib/utils";
@@ -66,8 +67,15 @@ export default function CompanyFormDialog({
   const { data: departments } = useDepartments();
   const { data: usersWithDepartments } = useAllUsersWithDepartments();
   const { data: allSubmenus } = useAllDepartmentSubmenus();
+  const { data: tributacoes } = useTributacoes();
   const { profile } = useAuth();
   const isEditing = !!company;
+
+  /** Tributações cadastradas na administração (com fallback para a lista fixa). */
+  const tributacaoOptions =
+    (tributacoes ?? []).length > 0
+      ? (tributacoes ?? []).map((item) => item.nome)
+      : [...TRIBUTACOES];
 
   const isAdmin = profile?.role === "admin";
   const myDepartmentIds = new Set(
@@ -457,7 +465,7 @@ export default function CompanyFormDialog({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">—</SelectItem>
-                  {TRIBUTACOES.map((option) => (
+                  {tributacaoOptions.map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}
                     </SelectItem>
