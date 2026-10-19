@@ -65,11 +65,11 @@ const MEI_DAS_OPTIONS = [
 /** Coluna Envio: apenas OK. */
 const MEI_ENVIO_OPTIONS = [{ value: "OK", label: "OK" }] as const;
 
-/** Cores: OK, SM e Envio = finalizada (verde); FAZENDO = pendente (vermelho). */
+/** Cores: OK e Envio = finalizada (verde); SM = azul; FAZENDO = pendente. */
 const TONE: Record<string, string> = {
   OK: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
   "OK-SM":
-    "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+    "bg-status-info text-status-info-foreground hover:bg-status-info/90",
   FAZENDO:
     "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
 };

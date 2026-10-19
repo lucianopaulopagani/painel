@@ -32,16 +32,16 @@ import type { CompanyWithDepartments, MovimentoCarneLeaoInput } from "@/lib/type
 const CELL = "px-1 py-1 text-[11px]";
 const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
 
-/** Cores das opções (padrão dos demais módulos). */
+/** Cores das opções (padrão dos demais módulos; SM em azul). */
 const TONE: Record<string, string> = {
   OK: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
   "OK-SM":
-    "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+    "bg-status-info text-status-info-foreground hover:bg-status-info/90",
   "OK-ENT":
     "bg-status-warning text-status-warning-foreground hover:bg-status-warning/90",
   FAZENDO:
     "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
-  SM: "bg-primary/10 text-primary hover:bg-primary/15",
+  SM: "bg-status-info text-status-info-foreground hover:bg-status-info/90",
 };
 
 interface CarneLeaoTableProps {

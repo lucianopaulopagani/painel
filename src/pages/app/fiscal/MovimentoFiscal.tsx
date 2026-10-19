@@ -101,7 +101,7 @@ const HEAD =
 const OK_SM_TONE: Record<string, string> = {
   OK: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
   "OK-SM":
-    "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+    "bg-status-info text-status-info-foreground hover:bg-status-info/90",
 };
 
 export function MovimentoFiscal() {

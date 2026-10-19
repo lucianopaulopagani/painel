@@ -68,7 +68,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Cores das opções",
         detail:
-          "OK e OK-SM aparecem em verde (finalizada), OK-ENT em âmbar e FAZENDO em vermelho, seguindo o padrão dos departamentos.",
+          "OK aparece em verde (finalizada), OK-SM e SM em azul, OK-ENT em âmbar e FAZENDO em vermelho, seguindo o padrão dos departamentos.",
       },
       {
         label: "Observações (Obs.)",
