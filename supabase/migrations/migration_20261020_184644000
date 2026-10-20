@@ -1,0 +1,13 @@
+-- Leitura do Movimento Fiscal pelos membros do departamento dono da empresa,
+-- o mesmo critério já usado em companies_department_read e nos parcelamentos.
+-- A edição e a exclusão continuam restritas aos responsáveis da empresa.
+alter policy movimento_fiscal_member_read on public.movimento_fiscal
+  using (
+    exists (
+      select 1
+      from company_departments cd
+      join profile_departments pd on pd.department_id = cd.department_id
+      where cd.company_id = movimento_fiscal.company_id
+        and pd.profile_id = auth.uid()
+    )
+  );
