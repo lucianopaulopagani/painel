@@ -78,6 +78,7 @@ export interface CreateUserInput {
   role: Role;
   department_ids: string[];
   dashboard_access?: boolean;
+  dashboard_departments?: string[];
   empresas_access?: boolean;
   empresas_fields?: string[];
   empresas_criar?: boolean;
@@ -112,6 +113,7 @@ export interface UpdateUserInput {
   role?: Role;
   department_ids?: string[];
   dashboard_access?: boolean;
+  dashboard_departments?: string[];
   empresas_access?: boolean;
   empresas_fields?: string[];
   empresas_criar?: boolean;

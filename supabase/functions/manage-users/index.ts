@@ -31,6 +31,31 @@ const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
+/**
+ * Dashboards de departamento válidos (chaves gravadas em profiles).
+ * Deve acompanhar a lista de src/lib/dashboards.ts.
+ */
+const DASHBOARD_DEPARTMENTS = [
+  "fiscal",
+  "pessoal",
+  "societario",
+  "contabil",
+  "nota-fiscal",
+];
+
+/** Mantém apenas dashboards válidos e sem repetição. */
+function normalizeDashboardDepartments(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return Array.from(
+    new Set(
+      value.filter(
+        (item): item is string =>
+          typeof item === "string" && DASHBOARD_DEPARTMENTS.includes(item)
+      )
+    )
+  );
+}
+
 const VALID_ROLES = ["admin", "member"];
 
 // Normaliza a lista de departamentos recebida do frontend.
@@ -158,6 +183,7 @@ Deno.serve(async (req) => {
           role = "member",
           department_ids,
           dashboard_access = false,
+          dashboard_departments,
           empresas_access = false,
           empresas_fields,
           empresas_criar = false,
@@ -191,6 +217,9 @@ Deno.serve(async (req) => {
           full_name,
           role,
           dashboard_access: dashboard_access === true,
+          dashboard_departments: normalizeDashboardDepartments(
+            dashboard_departments
+          ),
           empresas_access: empresas_access === true,
           empresas_fields: normalizeEmpresasFields(empresas_fields),
           empresas_criar: empresas_criar === true,
@@ -222,6 +251,7 @@ Deno.serve(async (req) => {
           role,
           department_ids,
           dashboard_access,
+          dashboard_departments,
           empresas_access,
           empresas_fields,
           empresas_criar,
@@ -250,6 +280,10 @@ Deno.serve(async (req) => {
         if (email !== undefined) profileUpdate.email = email;
         if (dashboard_access !== undefined) {
           profileUpdate.dashboard_access = dashboard_access === true;
+        }
+        if (dashboard_departments !== undefined) {
+          profileUpdate.dashboard_departments =
+            normalizeDashboardDepartments(dashboard_departments);
         }
         if (empresas_access !== undefined) {
           profileUpdate.empresas_access = empresas_access === true;

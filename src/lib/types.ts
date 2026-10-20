@@ -27,6 +27,8 @@ export interface Profile {
   full_name: string;
   role: Role;
   dashboard_access: boolean;
+  /** Dashboards de departamento liberados (chaves de DEPARTMENT_DASHBOARDS). */
+  dashboard_departments: string[];
   empresas_access: boolean;
   empresas_fields: string[];
   empresas_criar: boolean;

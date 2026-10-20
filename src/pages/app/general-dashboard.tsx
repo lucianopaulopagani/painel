@@ -16,6 +16,7 @@ import {
   PESSOAL_DEPARTMENT_NAME,
   SOCIETARIO_DEPARTMENT_NAME,
 } from "@/lib/departments";
+import { DEPARTMENT_DASHBOARDS } from "@/lib/dashboards";
 import { cn } from "@/lib/utils";
 import FiscalMovimentoDashboard from "./fiscal/FiscalMovimentoDashboard";
 import ParcelamentosDashboard from "./fiscal/ParcelamentosDashboard";
@@ -30,25 +31,8 @@ import AlvaraLocalizacaoDashboard from "./societario/AlvaraLocalizacaoDashboard"
 import AlvaraSanitarioDashboard from "./societario/AlvaraSanitarioDashboard";
 import AlvaraBombeirosDashboard from "./societario/AlvaraBombeirosDashboard";
 
-/** Dashboards por departamento — novos dashboards entram nesta lista. */
-const DASHBOARDS = [
-  { key: "fiscal", label: "Fiscal" },
-  { key: "pessoal", label: "Pessoal" },
-  { key: "societario", label: "Societário" },
-  { key: "contabil", label: "Contábil" },
-  { key: "nota-fiscal", label: "Nota Fiscal" },
-] as const;
-
-type DashboardKey = (typeof DASHBOARDS)[number]["key"];
-
-/** Nome do departamento de cada dashboard (para filtrar por participação). */
-const DASHBOARD_DEPARTMENT: Record<DashboardKey, string> = {
-  fiscal: FISCAL_DEPARTMENT_NAME,
-  pessoal: PESSOAL_DEPARTMENT_NAME,
-  societario: SOCIETARIO_DEPARTMENT_NAME,
-  contabil: CONTABIL_DEPARTMENT_NAME,
-  "nota-fiscal": NOTA_FISCAL_DEPARTMENT_NAME,
-};
+/** Dashboards por departamento — lista canônica em @/lib/dashboards. */
+const DASHBOARDS = DEPARTMENT_DASHBOARDS;
 
 /** Submenus (visões) de cada dashboard por departamento. */
 const DEPT_SUBMENUS: Record<DashboardKey, { key: string; label: string }[]> = {
@@ -76,14 +60,12 @@ const DEPT_SUBMENUS: Record<DashboardKey, { key: string; label: string }[]> = {
 export default function GeneralDashboard() {
   const { profile } = useAuth();
   const isAdmin = profile?.role === "admin";
-  const userDeptNames = new Set(
-    (profile?.departments ?? []).map((department) => department.name)
-  );
+  // Dashboard liberado por usuário no cadastro (profiles.dashboard_departments).
+  const allowedDashboards = new Set(profile?.dashboard_departments ?? []);
 
-  // Dashboards visíveis: admin vê todos; senão, os departamentos do usuário.
+  // Dashboards visíveis: admin vê todos; os demais, os liberados no cadastro.
   const visibleDashboards = DASHBOARDS.filter(
-    (dashboard) =>
-      isAdmin || userDeptNames.has(DASHBOARD_DEPARTMENT[dashboard.key])
+    (dashboard) => isAdmin || allowedDashboards.has(dashboard.key)
   );
 
   const [activeDept, setActiveDept] = useState<DashboardKey | null>(null);
@@ -191,7 +173,8 @@ export default function GeneralDashboard() {
                 Sem dashboard disponível
               </CardTitle>
               <CardDescription>
-                Você não participa de nenhum departamento com dashboard.
+                Nenhum dashboard de departamento está liberado para o seu
+                usuário. Fale com o administrador para solicitar o acesso.
               </CardDescription>
             </CardHeader>
           </Card>

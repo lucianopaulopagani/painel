@@ -13,6 +13,7 @@ export interface RawProfileRow {
   full_name: string;
   role: Role;
   dashboard_access: boolean;
+  dashboard_departments?: string[] | null;
   empresas_access: boolean;
   empresas_fields: string[];
   empresas_criar: boolean;
@@ -37,6 +38,7 @@ export function toProfileWithDepartments(
     full_name: row.full_name,
     role: row.role,
     dashboard_access: row.dashboard_access,
+    dashboard_departments: row.dashboard_departments ?? [],
     empresas_access: row.empresas_access,
     empresas_fields: row.empresas_fields,
     empresas_criar: row.empresas_criar,

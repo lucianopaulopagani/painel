@@ -1,0 +1,19 @@
+-- Mantém o que cada usuário vê hoje: quem ainda estiver sem dashboards
+-- marcados recebe os dashboards dos departamentos dos quais participa.
+update public.profiles p
+set dashboard_departments = coalesce(s.keys, '{}'::text[])
+from (
+  select pd.profile_id,
+         array_agg(distinct case d.name
+           when 'Depart. Fiscal' then 'fiscal'
+           when 'Depart. Pessoal' then 'pessoal'
+           when 'Societário' then 'societario'
+           when 'Depart. Contábil' then 'contabil'
+           when 'Nota Fiscal' then 'nota-fiscal'
+         end) filter (where d.name in ('Depart. Fiscal', 'Depart. Pessoal', 'Societário', 'Depart. Contábil', 'Nota Fiscal')) as keys
+  from public.profile_departments pd
+  join public.departments d on d.id = pd.department_id
+  group by pd.profile_id
+) s
+where p.id = s.profile_id
+  and p.dashboard_departments = '{}'::text[];

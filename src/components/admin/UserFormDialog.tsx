@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DashboardAccessSection } from "@/components/admin/DashboardAccessSection";
+import type { DashboardKey } from "@/lib/dashboards";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -43,6 +45,9 @@ export default function UserFormDialog({
   const [role, setRole] = useState<Role>("member");
   const [departmentIds, setDepartmentIds] = useState<string[]>([]);
   const [dashboardAccess, setDashboardAccess] = useState(false);
+  const [dashboardDepartments, setDashboardDepartments] = useState<
+    DashboardKey[]
+  >([]);
   const [empresasAccess, setEmpresasAccess] = useState(false);
   const [empresasFields, setEmpresasFields] = useState<string[]>([]);
   const [empresasCriar, setEmpresasCriar] = useState(false);
@@ -62,6 +67,7 @@ export default function UserFormDialog({
       setRole("member");
       setDepartmentIds([]);
       setDashboardAccess(false);
+      setDashboardDepartments([]);
       setEmpresasAccess(false);
       setEmpresasFields([]);
       setEmpresasCriar(false);
@@ -89,6 +95,7 @@ export default function UserFormDialog({
         role,
         department_ids: departmentIds,
         dashboard_access: dashboardAccess,
+        dashboard_departments: dashboardDepartments,
         empresas_access: empresasAccess,
         empresas_fields: empresasFields,
         empresas_criar: empresasCriar,
@@ -189,6 +196,10 @@ export default function UserFormDialog({
               onCheckedChange={setDashboardAccess}
             />
           </div>
+          <DashboardAccessSection
+            value={dashboardDepartments}
+            onChange={setDashboardDepartments}
+          />
           <EmpresasPermissionSection
             access={empresasAccess}
             fields={empresasFields}

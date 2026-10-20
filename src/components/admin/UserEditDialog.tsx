@@ -24,6 +24,8 @@ import {
 import { DepartmentMultiSelect } from "@/components/admin/department-multi-select";
 import { AppAccessSection } from "@/components/admin/AppAccessSection";
 import { EmpresasPermissionSection } from "@/components/admin/EmpresasPermissionSection";
+import { DashboardAccessSection } from "@/components/admin/DashboardAccessSection";
+import type { DashboardKey } from "@/lib/dashboards";
 import { useUpdateUser } from "@/hooks/use-users";
 import { fileToDataUrl } from "@/hooks/use-own-profile";
 import { getInitials } from "@/lib/utils";
@@ -47,6 +49,9 @@ export default function UserEditDialog({
   const [role, setRole] = useState<Role>("member");
   const [departmentIds, setDepartmentIds] = useState<string[]>([]);
   const [dashboardAccess, setDashboardAccess] = useState(false);
+  const [dashboardDepartments, setDashboardDepartments] = useState<
+    DashboardKey[]
+  >([]);
   const [empresasAccess, setEmpresasAccess] = useState(false);
   const [empresasFields, setEmpresasFields] = useState<string[]>([]);
   const [empresasCriar, setEmpresasCriar] = useState(false);
@@ -67,6 +72,9 @@ export default function UserEditDialog({
       setRole(user.role);
       setDepartmentIds(user.departments.map((d) => d.id));
       setDashboardAccess(user.dashboard_access);
+      setDashboardDepartments(
+        (user.dashboard_departments ?? []) as DashboardKey[]
+      );
       setEmpresasAccess(user.empresas_access);
       setEmpresasFields(user.empresas_fields ?? []);
       setEmpresasCriar(user.empresas_criar);
@@ -111,6 +119,7 @@ export default function UserEditDialog({
         role,
         department_ids: departmentIds,
         dashboard_access: dashboardAccess,
+        dashboard_departments: dashboardDepartments,
         empresas_access: empresasAccess,
         empresas_fields: empresasFields,
         empresas_criar: empresasCriar,
@@ -240,6 +249,10 @@ export default function UserEditDialog({
               onCheckedChange={setDashboardAccess}
             />
           </div>
+          <DashboardAccessSection
+            value={dashboardDepartments}
+            onChange={setDashboardDepartments}
+          />
           <EmpresasPermissionSection
             access={empresasAccess}
             fields={empresasFields}

@@ -4774,6 +4774,7 @@ export type Database = {
           chat_admin: boolean
           created_at: string
           dashboard_access: boolean
+          dashboard_departments: string[]
           email: string
           empresas_access: boolean
           empresas_bulk: boolean
@@ -4792,6 +4793,7 @@ export type Database = {
           chat_admin?: boolean
           created_at?: string
           dashboard_access?: boolean
+          dashboard_departments?: string[]
           email: string
           empresas_access?: boolean
           empresas_bulk?: boolean
@@ -4810,6 +4812,7 @@ export type Database = {
           chat_admin?: boolean
           created_at?: string
           dashboard_access?: boolean
+          dashboard_departments?: string[]
           email?: string
           empresas_access?: boolean
           empresas_bulk?: boolean
