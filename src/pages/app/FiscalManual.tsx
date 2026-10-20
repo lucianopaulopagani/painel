@@ -130,7 +130,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Opções e cor de desabilitado",
         detail:
-          "Cada coluna de obrigação é uma lista suspensa com as opções OK (verde), SM (azul), X (âmbar), Dispensada (neutro), Pendências (vermelho) e Desabilitado — esta última destaca o campo com a cor roxa de desabilitado e segue para os próximos meses até ser alterada. OBS é texto livre, também levado para os meses seguintes.",
+          "Cada coluna de obrigação é uma lista suspensa com as opções OK (verde), SM (azul), X (âmbar), Dispensada (neutro), Pendências (vermelho) e Desabilitado — esta última destaca o campo com a cor roxa de desabilitado e segue para os próximos meses até ser alterada. A coluna OBS aparece como texto (truncado, com o conteúdo completo no tooltip) e é editada pelo botão de Ações (lápis), que abre um diálogo — o texto também é levado para os meses seguintes até ser alterado.",
       },
       {
         label: "Comentários nas células",

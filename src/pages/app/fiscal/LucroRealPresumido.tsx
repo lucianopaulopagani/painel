@@ -1,4 +1,15 @@
 import { useState } from "react";
+import { Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -88,6 +99,14 @@ export function LucroRealPresumidoTable({
   const setBuscaField = (key: string, value: string) => {
     setBusca((prev) => ({ ...prev, [key]: value }));
   };
+
+  /* Diálogo do botão de Ações da coluna OBS. */
+  const [obsDialog, setObsDialog] = useState<{
+    companyId: string;
+    empresa: string;
+    numero: string;
+  } | null>(null);
+  const [obsText, setObsText] = useState("");
 
   const { data: records } = useMovimentoFiscal(mes);
   const { data: allRecords } = useAllMovimentoFiscal();
@@ -469,18 +488,31 @@ export function LucroRealPresumidoTable({
                       }
                       onRemove={() => clearComentario(company.id, "observacoes")}
                     >
-                      <Input
-                        key={`${company.id}:${mes}:obs`}
-                        defaultValue={effectiveObservacoes(company.id) ?? ""}
-                        disabled={!canEdit}
-                        title={effectiveObservacoes(company.id) ?? ""}
-                        onBlur={(event) =>
-                          save(company.id, {
-                            observacoes: event.target.value.trim() || null,
-                          })
-                        }
-                        className="h-7 w-full min-w-0 px-1 text-[11px]"
-                      />
+                      <div className="flex items-center gap-1">
+                        <span
+                          className="block h-7 flex-1 truncate py-1"
+                          title={effectiveObservacoes(company.id) ?? ""}
+                        >
+                          {effectiveObservacoes(company.id) || "—"}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 shrink-0"
+                          title="Ações — observação"
+                          onClick={() => {
+                            setObsText(effectiveObservacoes(company.id) ?? "");
+                            setObsDialog({
+                              companyId: company.id,
+                              empresa: company.name,
+                              numero: company.numero ?? "",
+                            });
+                          }}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </CommentableCell>
                   </TableCell>
                 </TableRow>
@@ -501,6 +533,55 @@ export function LucroRealPresumidoTable({
           </TableBody>
         </Table>
       </div>
+
+      <Dialog
+        open={obsDialog !== null}
+        onOpenChange={(open) => {
+          if (!open) setObsDialog(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Observações</DialogTitle>
+            <DialogDescription>
+              {obsDialog?.numero ? `${obsDialog.numero} — ` : ""}
+              {obsDialog?.empresa} — {mes}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={obsText}
+            onChange={(event) => setObsText(event.target.value)}
+            placeholder="Escreva a observação desta empresa"
+            rows={5}
+            autoFocus
+          />
+          <p className="text-xs text-muted-foreground">
+            A observação é levada para os meses seguintes até ser alterada. Para
+            anotações por célula, use o botão direito na coluna desejada.
+          </p>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setObsDialog(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (!obsDialog) return;
+                save(obsDialog.companyId, {
+                  observacoes: obsText.trim() || null,
+                });
+                setObsDialog(null);
+              }}
+            >
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
