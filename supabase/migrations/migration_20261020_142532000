@@ -1,0 +1,3 @@
+insert into public.tributacoes (nome, ordem)
+values ('Simples Nacional/SM-Mensal', 8)
+on conflict (lower(nome)) do nothing;
