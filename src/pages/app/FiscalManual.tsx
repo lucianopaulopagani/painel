@@ -83,7 +83,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Filtros",
         detail:
-          "Filtro por Responsável (administrador) e por Tributação — este lista apenas os tipos realmente existentes nas empresas da lista (sem a opção 'Todas as tributação': a primeira tributação existente já vem selecionada) — além dos filtros por coluna no cabeçalho da tabela.",
+          "Filtro por Responsável (administrador) — com a lista dos responsáveis das empresas exibidas e a opção 'Sem responsável', que mostra as empresas do departamento Fiscal sem nenhum responsável informado no cadastro de empresas — e por Tributação, este lista apenas os tipos realmente existentes nas empresas da lista (sem a opção 'Todas as tributação': a primeira tributação existente já vem selecionada) — além dos filtros por coluna no cabeçalho da tabela.",
       },
     ],
   },

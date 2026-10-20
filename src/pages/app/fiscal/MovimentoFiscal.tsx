@@ -99,6 +99,9 @@ const CELL = "px-1 py-1 text-[11px]";
 const HEAD =
   "px-1 py-1.5 text-[11px] font-semibold text-foreground lowercase whitespace-nowrap";
 
+/** Opção do filtro de Responsável: empresas sem responsável no cadastro. */
+const SEM_RESPONSAVEL_FILTRO = "sem-responsavel";
+
 const OK_SM_TONE: Record<string, string> = {
   OK: "bg-status-success text-status-success-foreground hover:bg-status-success/90",
   "OK-SM":
@@ -162,9 +165,13 @@ export function MovimentoFiscal() {
   // Empresas após o filtro de responsável (o que o usuário vê).
   const responsavelFiltered = fiscalCompanies.filter((company) => {
     const responsibles = responsiblesOf(company);
-    // Admin vê todas (com filtro por responsável); os demais veem apenas as
-    // empresas em que são o responsável do subdepartamento.
+    // Admin vê todas (com filtro por responsável, incluindo "Sem responsável");
+    // os demais veem apenas as empresas em que são o responsável do
+    // subdepartamento.
     if (isAdmin) {
+      if (responsavelFiltro === SEM_RESPONSAVEL_FILTRO) {
+        return responsibles.length === 0;
+      }
       return (
         responsavelFiltro === "todos" ||
         responsibles.includes(responsavelFiltro)
@@ -454,6 +461,9 @@ export function MovimentoFiscal() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="todos">Todos os responsáveis</SelectItem>
+                <SelectItem value={SEM_RESPONSAVEL_FILTRO}>
+                  Sem responsável
+                </SelectItem>
                 {responsibleIds.map((id) => (
                   <SelectItem key={id} value={id}>
                     {userNameById.get(id) ?? "—"}
