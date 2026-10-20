@@ -43,31 +43,46 @@ import type {
 const CELL = "px-1 py-1 text-[11px]";
 const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
 
-/** Tributação desta subtabela. */
-export const SM_MENSAL_TRIBUTACAO = "Simples Nacional/SM-Mensal";
+/**
+ * Tributações que usam a tabela mensal simplificada (modelo das planilhas
+ * SM-Mensal e EMPREG PF): N, UF, Empresa, CNPJ, Inscrição Estadual (do cadastro
+ * de empresas), Situação e Observação.
+ */
+export const MOVIMENTO_SIMPLES_TRIBUTACOES = [
+  "Simples Nacional/SM-Mensal",
+  "Empregada Doméstica",
+  "Pessoa Física",
+] as const;
 
-/** Situação do SM-Mensal: apenas OK. */
-export const SM_MENSAL_SITUACAO_OPTIONS = ["OK"] as const;
+/** Situação desta tabela: apenas OK. */
+export const MOVIMENTO_SIMPLES_SITUACAO_OPTIONS = ["OK"] as const;
 
-interface SmMensalTableProps {
+interface MovimentoSimplesTableProps {
   /** Mês de referência do Movimento Fiscal. */
   mes: string;
+  /** Tributação exibida na tabela. */
+  tributacao: string;
   /**
    * Empresas já filtradas pelo Movimento Fiscal (departamento Fiscal, filtro de
-   * Responsável e mês). A subtabela apenas separa as desta tributação.
+   * Responsável e mês). A tabela apenas separa as da tributação exibida.
    */
   companies: CompanyWithDepartments[];
 }
 
 /**
- * Subtabela SM-Mensal (Simples Nacional/SM-Mensal) — exibida dentro do
- * Movimento Fiscal quando essa tributação é selecionada.
+ * Tabela mensal simplificada das tributações SM-Mensal (Simples Nacional/
+ * SM-Mensal), Empregada Doméstica e Pessoa Física — exibida dentro do
+ * Movimento Fiscal quando uma delas é selecionada no filtro de Tributação.
  *
- * Colunas: N, UF, Empresa, CNPJ, Inscrição Estadual (todas do cadastro de
+ * Colunas: N, UF, Empresa, CNPJ e Inscrição Estadual (todas do cadastro de
  * empresas), Situação (apenas OK) e Observação (texto, editado pelo botão de
  * Ações e levado para os meses seguintes).
  */
-export function SmMensalTable({ mes, companies }: SmMensalTableProps) {
+export function MovimentoSimplesTable({
+  mes,
+  tributacao,
+  companies,
+}: MovimentoSimplesTableProps) {
   const [busca, setBusca] = useState({
     numero: "",
     uf: "",
@@ -93,7 +108,7 @@ export function SmMensalTable({ mes, companies }: SmMensalTableProps) {
   const saveMutation = useSaveMovimentoFiscal(mes);
 
   const rows = companies
-    .filter((company) => company.tributacao === SM_MENSAL_TRIBUTACAO)
+    .filter((company) => company.tributacao === tributacao)
     .sort((a, b) => {
       if (!a.numero && !b.numero) return a.name.localeCompare(b.name, "pt-BR");
       if (!a.numero) return 1;
@@ -196,7 +211,7 @@ export function SmMensalTable({ mes, companies }: SmMensalTableProps) {
   return (
     <div className="space-y-2">
       <p className="text-sm font-medium">
-        SM-Mensal — empresas com tributação {SM_MENSAL_TRIBUTACAO}
+        {tributacao} — empresas do departamento Fiscal
       </p>
       <div className="overflow-x-auto rounded-lg border">
         <Table className="table-fixed min-w-[1180px]">
@@ -242,7 +257,7 @@ export function SmMensalTable({ mes, companies }: SmMensalTableProps) {
                   <SelectContent>
                     <SelectItem value="todos">Todos</SelectItem>
                     <SelectItem value="branco">Em branco</SelectItem>
-                    {SM_MENSAL_SITUACAO_OPTIONS.map((option) => (
+                    {MOVIMENTO_SIMPLES_SITUACAO_OPTIONS.map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>
@@ -303,7 +318,7 @@ export function SmMensalTable({ mes, companies }: SmMensalTableProps) {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">—</SelectItem>
-                        {SM_MENSAL_SITUACAO_OPTIONS.map((option) => (
+                        {MOVIMENTO_SIMPLES_SITUACAO_OPTIONS.map((option) => (
                           <SelectItem key={option} value={option}>
                             {option}
                           </SelectItem>
@@ -349,7 +364,7 @@ export function SmMensalTable({ mes, companies }: SmMensalTableProps) {
                 >
                   {rows.length > 0
                     ? "Nenhuma empresa encontrada com os filtros."
-                    : `Nenhuma empresa com tributação ${SM_MENSAL_TRIBUTACAO}. Defina essa tributação no cadastro de empresas para que ela apareça aqui.`}
+                    : `Nenhuma empresa com tributação ${tributacao}. Defina essa tributação no cadastro de empresas para que ela apareça aqui.`}
                 </TableCell>
               </TableRow>
             )}
@@ -408,4 +423,4 @@ export function SmMensalTable({ mes, companies }: SmMensalTableProps) {
   );
 }
 
-export default SmMensalTable;
+export default MovimentoSimplesTable;

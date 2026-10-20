@@ -55,7 +55,10 @@ import {
 import { isLucroTributacao } from "@/lib/fiscal-lucro-real";
 import { LucroRealPresumidoTable } from "./LucroRealPresumido";
 import { MEI_TRIBUTACAO, MeiTable } from "./Mei";
-import { SM_MENSAL_TRIBUTACAO, SmMensalTable } from "./SmMensal";
+import {
+  MOVIMENTO_SIMPLES_TRIBUTACOES,
+  MovimentoSimplesTable,
+} from "./MovimentoSimples";
 import {
   MOVIMENTO_FISCAL_FIELDS,
   SITUACAO_OPTIONS,
@@ -537,8 +540,14 @@ export function MovimentoFiscal() {
 
       {!isLoading &&
         !isError &&
-        tributacaoSelecionada === SM_MENSAL_TRIBUTACAO && (
-          <SmMensalTable mes={mes} companies={responsavelFiltered} />
+        (MOVIMENTO_SIMPLES_TRIBUTACOES as readonly string[]).includes(
+          tributacaoSelecionada
+        ) && (
+          <MovimentoSimplesTable
+            mes={mes}
+            tributacao={tributacaoSelecionada}
+            companies={responsavelFiltered}
+          />
         )}
 
       {!isLoading &&
@@ -546,7 +555,9 @@ export function MovimentoFiscal() {
         tributacaoSelecionada !== CARNE_LEAO_TRIBUTACAO &&
         tributacaoSelecionada !== SIMPLES_NACIONAL_TRIBUTACAO &&
         tributacaoSelecionada !== MEI_TRIBUTACAO &&
-        tributacaoSelecionada !== SM_MENSAL_TRIBUTACAO &&
+        !(MOVIMENTO_SIMPLES_TRIBUTACOES as readonly string[]).includes(
+          tributacaoSelecionada
+        ) &&
         !isLucroTributacao(tributacaoSelecionada) && (
         <div className="rounded-lg border">
           <Table className="table-fixed">

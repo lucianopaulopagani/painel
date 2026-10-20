@@ -113,9 +113,9 @@ const SECTIONS: ManualSection[] = [
           "Selecionando 'MEI' no filtro de Tributação, é exibida a subtabela enxuta dessa tributação, apenas com N, UF, Empresa, Situação, DAS, Envio e Observação (as demais colunas do Movimento Fiscal não se aplicam ao MEI). A Situação tem OK, FAZENDO e SM (o SM é gravado como OK-SM, o mesmo valor usado no restante do Movimento Fiscal); o DAS tem OK e SM; o Envio tem apenas OK. A coluna Observação é editada pelo botão de lápis (Ações), que abre um diálogo — o texto é levado para os meses seguintes até ser alterado. A Situação alimenta os dashboards do Movimento Fiscal: OK e SM contam como finalizada e FAZENDO como pendente.",
       },
       {
-        label: "SM-Mensal (Simples Nacional/SM-Mensal)",
+        label: "SM-Mensal (Simples Nacional/SM-Mensal), Empregada Doméstica e Pessoa Física",
         detail:
-          "Selecionando 'Simples Nacional/SM-Mensal' no filtro de Tributação, é exibida a tabela SM-Mensal, no modelo da planilha mensal: N, UF, Empresa, CNPJ e Inscrição Estadual (todos vindos do cadastro de empresas), a Situação — com a opção OK — e a Observação, em texto, aberta pelo botão de Ações (lápis) e levada para os meses seguintes até ser alterada. Os filtros ficam no cabeçalho de cada coluna.",
+          "Selecionando 'Simples Nacional/SM-Mensal', 'Empregada Doméstica' ou 'Pessoa Física' no filtro de Tributação, é exibida a tabela mensal simplificada, no modelo das planilhas mensais: N, UF, Empresa, CNPJ e Inscrição Estadual (todos vindos do cadastro de empresas), a Situação — com a opção OK — e a Observação, em texto, aberta pelo botão de Ações (lápis) e levada para os meses seguintes até ser alterada. Os filtros ficam no cabeçalho de cada coluna.",
       },
       {
         label: "Lucro Real e Lucro Presumido",
