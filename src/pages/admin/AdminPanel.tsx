@@ -11,6 +11,7 @@ import DashboardsSection from "./DashboardsSection";
 import DepartmentsTab from "./DepartmentsTab";
 import UsersTab from "./UsersTab";
 import TributacoesTab from "./TributacoesTab";
+import AcessoriasTab from "./AcessoriasTab";
 
 export default function AdminPanel() {
   const { profile } = useAuth();
@@ -23,6 +24,7 @@ export default function AdminPanel() {
         "departments",
         "companies",
         "tributacoes",
+        "acessorias",
         "dashboards",
       ]
     : ["companies"];
@@ -56,6 +58,7 @@ export default function AdminPanel() {
             {section === "departments" && <DepartmentsTab />}
             {section === "companies" && <CompaniesTab />}
             {section === "tributacoes" && <TributacoesTab />}
+            {section === "acessorias" && <AcessoriasTab />}
             {section === "dashboards" && <DashboardsSection />}
           </div>
         </div>

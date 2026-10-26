@@ -2,6 +2,7 @@ import {
   BarChart3,
   Briefcase,
   Building2,
+  CloudDownload,
   LayoutDashboard,
   Percent,
   Users,
@@ -15,6 +16,7 @@ export type AdminSection =
   | "departments"
   | "companies"
   | "tributacoes"
+  | "acessorias"
   | "dashboards";
 
 const NAV_ITEMS: { key: AdminSection; label: string; icon: LucideIcon }[] = [
@@ -23,6 +25,7 @@ const NAV_ITEMS: { key: AdminSection; label: string; icon: LucideIcon }[] = [
   { key: "departments", label: "Departamentos", icon: Building2 },
   { key: "companies", label: "Empresas", icon: Briefcase },
   { key: "tributacoes", label: "Tributações", icon: Percent },
+  { key: "acessorias", label: "Acessórias", icon: CloudDownload },
   { key: "dashboards", label: "Dashboards", icon: BarChart3 },
 ];
 
