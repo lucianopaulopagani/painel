@@ -24,6 +24,7 @@ import {
 import {
   invokeAcessorias,
   useAcessoriasImport,
+  type AcessoriasCompanyRow,
   type AcessoriasResult,
 } from "@/hooks/use-acessorias";
 import { formatCpfCnpj } from "@/lib/utils";
@@ -40,6 +41,8 @@ export default function AcessoriasTab() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [onlyNew, setOnlyNew] = useState(true);
+  /* Empresas escolhidas para importar (documentos = CNPJ/CPF). */
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const importMutation = useAcessoriasImport();
 
   const fetchPreview = async () => {
@@ -67,9 +70,10 @@ export default function AcessoriasTab() {
     }
   };
 
-  const handleImport = async () => {
+  const handleImport = async (documentos?: string[]) => {
     try {
-      const data = await importMutation.mutateAsync();
+      const data = await importMutation.mutateAsync(documentos);
+      setSelected(new Set());
       setResult(data);
       toast.success(
         data.criadas === 1
@@ -99,6 +103,39 @@ export default function AcessoriasTab() {
   const novas = (result?.empresas ?? []).filter(
     (empresa) => !empresa.existente && !empresa.problema
   ).length;
+
+  /** Só é possível escolher empresas novas e sem pendência. */
+  const selectable = (empresa: AcessoriasCompanyRow) =>
+    !empresa.existente && !empresa.problema;
+
+  const visibleSelectable = empresas.filter(selectable);
+  const allVisibleSelected =
+    visibleSelectable.length > 0 &&
+    visibleSelectable.every((empresa) => selected.has(empresa.documento));
+  const someVisibleSelected = visibleSelectable.some((empresa) =>
+    selected.has(empresa.documento)
+  );
+
+  const toggleSelected = (documento: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(documento)) next.delete(documento);
+      else next.add(documento);
+      return next;
+    });
+  };
+
+  /** Marca/desmarca todas as empresas visíveis com os filtros atuais. */
+  const toggleAllVisible = (checked: boolean) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      for (const empresa of visibleSelectable) {
+        if (checked) next.add(empresa.documento);
+        else next.delete(empresa.documento);
+      }
+      return next;
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -130,20 +167,40 @@ export default function AcessoriasTab() {
         </Button>
 
         {result && (
-          <Button
-            type="button"
-            className="h-9 gap-2"
-            onClick={handleImport}
-            disabled={novas === 0 || importMutation.isPending}
-          >
-            {importMutation.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Upload className="h-4 w-4" />
+          <>
+            <Button
+              type="button"
+              className="h-9 gap-2"
+              onClick={() => handleImport(Array.from(selected))}
+              disabled={selected.size === 0 || importMutation.isPending}
+            >
+              {importMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )}
+              Importar selecionada(s) ({selected.size})
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-9 gap-2"
+              onClick={() => handleImport()}
+              disabled={novas === 0 || importMutation.isPending}
+            >
+              Importar todas as novas ({novas})
+            </Button>
+            {selected.size > 0 && (
+              <Button
+                type="button"
+                variant="ghost"
+                className="h-9"
+                onClick={() => setSelected(new Set())}
+              >
+                Limpar seleção
+              </Button>
             )}
-            Importar {novas > 0 ? `${novas} ` : ""}
-            {novas === 1 ? "empresa nova" : "empresas novas"}
-          </Button>
+          </>
         )}
 
         <span className="ml-auto text-xs text-muted-foreground">
@@ -209,7 +266,7 @@ export default function AcessoriasTab() {
               Mostrar somente as novas
             </label>
             <span className="text-xs text-muted-foreground">
-              {empresas.length} linha(s)
+              {empresas.length} linha(s) · {selected.size} selecionada(s)
             </span>
           </div>
 
@@ -217,6 +274,22 @@ export default function AcessoriasTab() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted hover:bg-muted">
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={
+                        allVisibleSelected
+                          ? true
+                          : someVisibleSelected
+                            ? "indeterminate"
+                            : false
+                      }
+                      disabled={visibleSelectable.length === 0}
+                      onCheckedChange={(checked) =>
+                        toggleAllVisible(checked === true)
+                      }
+                      aria-label="Selecionar todas as empresas visíveis"
+                    />
+                  </TableHead>
                   <TableHead className="w-24">Situação</TableHead>
                   <TableHead>Razão social</TableHead>
                   <TableHead className="w-40">CNPJ/CPF</TableHead>
@@ -229,6 +302,16 @@ export default function AcessoriasTab() {
               <TableBody>
                 {empresas.map((empresa) => (
                   <TableRow key={empresa.documento || empresa.name}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selected.has(empresa.documento)}
+                        disabled={!selectable(empresa)}
+                        onCheckedChange={() =>
+                          toggleSelected(empresa.documento)
+                        }
+                        aria-label={`Selecionar ${empresa.name}`}
+                      />
+                    </TableCell>
                     <TableCell>
                       {empresa.problema ? (
                         <Badge
@@ -278,7 +361,7 @@ export default function AcessoriasTab() {
                 {empresas.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={7}
+                      colSpan={8}
                       className="py-8 text-center text-sm text-muted-foreground"
                     >
                       Nenhuma empresa para mostrar com os filtros atuais.

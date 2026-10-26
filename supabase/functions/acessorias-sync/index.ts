@@ -328,13 +328,19 @@ Deno.serve(async (req) => {
     );
   }
 
-  let payload: { action?: string } = {};
+  let payload: { action?: string; documentos?: unknown } = {};
   try {
     payload = await req.json();
   } catch {
     payload = {};
   }
   const action = payload.action ?? "preview";
+  // Documentos (CNPJ/CPF) escolhidos para importar; vazio = todas as novas.
+  const documentos = Array.isArray(payload.documentos)
+    ? (payload.documentos as unknown[])
+        .map((item) => onlyDigits(item))
+        .filter((item) => item.length === 11 || item.length === 14)
+    : [];
 
   if (action !== "preview" && action !== "import") {
     return json({ ok: false, error: "Ação inválida." }, 400);
@@ -362,7 +368,13 @@ Deno.serve(async (req) => {
     }
 
     // Importação: cria apenas as novas (nenhuma empresa existente é alterada).
-    const toInsert = novos.map((item) => ({
+    // Com uma lista de documentos, importa somente as empresas escolhidas.
+    const escolhidas =
+      documentos.length > 0
+        ? novos.filter((item) => documentos.includes(item.documento))
+        : novos;
+
+    const toInsert = escolhidas.map((item) => ({
       numero: null,
       tipo: "matriz",
       name: item.name,
@@ -395,6 +407,7 @@ Deno.serve(async (req) => {
       ok: true,
       action,
       total_acessorias: list.totalAcessorias,
+      selecionadas: escolhidas.length,
       criadas,
       existentes,
       com_problema: comProblema,

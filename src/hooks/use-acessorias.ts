@@ -51,13 +51,20 @@ async function readFunctionError(error: unknown): Promise<string | null> {
   }
 }
 
-/** Consulta (pré-visualização) ou importa as empresas do Acessórias. */
+/** Consulta (pré-visualização) ou importa as empresas do Acessórias.
+ *
+ * Em "import", a lista de documentos (CNPJ/CPF) limita a importação às empresas
+ * escolhidas; sem a lista, importa todas as novas.
+ */
 export async function invokeAcessorias(
-  action: "preview" | "import"
+  action: "preview" | "import",
+  options?: { documentos?: string[] }
 ): Promise<AcessoriasResult> {
   const { data, error } = await supabase.functions.invoke<
     AcessoriasResult & FunctionResponse
-  >("acessorias-sync", { body: { action } });
+  >("acessorias-sync", {
+    body: { action, documentos: options?.documentos ?? [] },
+  });
 
   if (error) {
     const message = await readFunctionError(error);
@@ -71,11 +78,12 @@ export async function invokeAcessorias(
   return data;
 }
 
-/** Importa as empresas novas e atualiza o cadastro na tela. */
+/** Importa as empresas escolhidas (ou todas as novas) e atualiza o cadastro. */
 export function useAcessoriasImport() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => invokeAcessorias("import"),
+    mutationFn: (documentos?: string[]) =>
+      invokeAcessorias("import", { documentos }),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: companiesKeys.all }),
   });
