@@ -7,6 +7,59 @@ export const tributacaoStatusKeys = {
   all: ["tributacao-status"] as const,
 };
 
+/** Cores disponíveis para os status (tons do design system). */
+export const STATUS_COLOR_OPTIONS = [
+  {
+    key: "success",
+    label: "Verde",
+    className:
+      "bg-status-success text-status-success-foreground hover:bg-status-success/90",
+    swatch: "bg-status-success",
+  },
+  {
+    key: "info",
+    label: "Azul",
+    className:
+      "bg-status-info text-status-info-foreground hover:bg-status-info/90",
+    swatch: "bg-status-info",
+  },
+  {
+    key: "warning",
+    label: "Âmbar",
+    className:
+      "bg-status-warning text-status-warning-foreground hover:bg-status-warning/90",
+    swatch: "bg-status-warning",
+  },
+  {
+    key: "danger",
+    label: "Vermelho",
+    className:
+      "bg-status-danger text-status-danger-foreground hover:bg-status-danger/90",
+    swatch: "bg-status-danger",
+  },
+  {
+    key: "neutral",
+    label: "Cinza",
+    className: "bg-muted text-muted-foreground hover:bg-muted/80",
+    swatch: "bg-muted",
+  },
+  {
+    key: "disabled",
+    label: "Roxo",
+    className:
+      "bg-status-disabled text-status-disabled-foreground hover:bg-status-disabled/90",
+    swatch: "bg-status-disabled",
+  },
+] as const;
+
+/** Classe Tailwind (fundo + texto) da cor do status. */
+export function statusColorClass(cor: string | null | undefined): string {
+  return (
+    STATUS_COLOR_OPTIONS.find((option) => option.key === cor)?.className ??
+    "bg-muted text-muted-foreground hover:bg-muted/80"
+  );
+}
+
 /** Opções de Status cadastradas para cada tributação. */
 export function useTributacaoStatus() {
   return useQuery({
@@ -54,19 +107,53 @@ export function useStatusOptions() {
   };
 }
 
+/**
+ * Classe de cor cadastrada para um status da tributação informada
+ * (undefined quando o status não está cadastrado — a tabela usa o tom padrão).
+ */
+export function useStatusTone() {
+  const { data: tributacoes } = useTributacoes();
+  const { data: statuses } = useTributacaoStatus();
+
+  const nameById = new Map(
+    (tributacoes ?? []).map((tributacao) => [tributacao.id, tributacao.nome])
+  );
+  const toneByKey = new Map<string, string>();
+  for (const status of statuses ?? []) {
+    const nome = nameById.get(status.tributacao_id);
+    if (!nome) continue;
+    toneByKey.set(
+      `${nome}\u0000${status.nome.trim().toUpperCase()}`,
+      statusColorClass(status.cor)
+    );
+  }
+
+  return (
+    tributacao: string | null | undefined,
+    value: string | null | undefined
+  ): string | undefined => {
+    if (!tributacao || !value) return undefined;
+    return toneByKey.get(
+      `${tributacao}\u0000${value.trim().toUpperCase()}`
+    );
+  };
+}
+
 export function useCreateTributacaoStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
       tributacao_id,
       nome,
+      cor,
     }: {
       tributacao_id: string;
       nome: string;
+      cor?: string;
     }) => {
       const { error } = await supabase
         .from("tributacao_status")
-        .insert({ tributacao_id, nome: nome.trim() });
+        .insert({ tributacao_id, nome: nome.trim(), cor: cor ?? "neutral" });
       if (error) throw error;
     },
     onSuccess: () =>
@@ -77,10 +164,21 @@ export function useCreateTributacaoStatus() {
 export function useUpdateTributacaoStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, nome }: { id: string; nome: string }) => {
+    mutationFn: async ({
+      id,
+      nome,
+      cor,
+    }: {
+      id: string;
+      nome?: string;
+      cor?: string;
+    }) => {
+      const patch: { nome?: string; cor?: string } = {};
+      if (nome !== undefined) patch.nome = nome.trim();
+      if (cor !== undefined) patch.cor = cor;
       const { error } = await supabase
         .from("tributacao_status")
-        .update({ nome: nome.trim() })
+        .update(patch)
         .eq("id", id);
       if (error) throw error;
     },

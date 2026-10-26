@@ -4,11 +4,20 @@ import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  STATUS_COLOR_OPTIONS,
   useCreateTributacaoStatus,
   useDeleteTributacaoStatus,
   useTributacaoStatus,
   useUpdateTributacaoStatus,
 } from "@/hooks/use-tributacao-status";
+import { cn } from "@/lib/utils";
 import type { Tributacao, TributacaoStatus } from "@/lib/types";
 
 interface TributacaoStatusEditorProps {
@@ -17,10 +26,14 @@ interface TributacaoStatusEditorProps {
 
 const normalize = (value: string) => value.trim().toLocaleLowerCase("pt-BR");
 
+const swatchClass = (cor: string | null | undefined): string =>
+  STATUS_COLOR_OPTIONS.find((option) => option.key === cor)?.swatch ??
+  "bg-muted";
+
 /**
  * Editor dos Status de uma tributação — são as opções que aparecem na coluna
- * Status das tabelas do Movimento Fiscal. Alterar aqui não muda os lançamentos
- * já gravados; serve para os próximos meses.
+ * Status das tabelas do Movimento Fiscal, com a cor de cada uma. Alterar aqui
+ * não muda os lançamentos já gravados; serve para os próximos meses.
  */
 export function TributacaoStatusEditor({
   tributacao,
@@ -31,6 +44,7 @@ export function TributacaoStatusEditor({
   const deleteMutation = useDeleteTributacaoStatus();
 
   const [novo, setNovo] = useState("");
+  const [novaCor, setNovaCor] = useState<string>("neutral");
   /** Texto em edição por status (antes de salvar). */
   const [drafts, setDrafts] = useState<Record<string, string>>({});
 
@@ -38,24 +52,41 @@ export function TributacaoStatusEditor({
     (status) => status.tributacao_id === tributacao.id
   );
 
-  const save = async (status: TributacaoStatus) => {
+  const saveName = async (status: TributacaoStatus) => {
     const nome = (drafts[status.id] ?? status.nome).trim();
-    if (!nome || nome === status.nome) return;
-    if (list.some((item) => item.id !== status.id && normalize(item.nome) === normalize(nome))) {
-      toast.error(`O status "${nome}" já está cadastrado nesta tributação.`);
-      return;
-    }
-    try {
-      await updateMutation.mutateAsync({ id: status.id, nome });
+    if (!nome || nome === status.nome) {
       setDrafts((prev) => {
         const next = { ...prev };
         delete next[status.id];
         return next;
       });
+      return;
+    }
+    if (
+      list.some(
+        (item) => item.id !== status.id && normalize(item.nome) === normalize(nome)
+      )
+    ) {
+      toast.error(`O status "${nome}" já está cadastrado nesta tributação.`);
+      return;
+    }
+    try {
+      await updateMutation.mutateAsync({ id: status.id, nome });
       toast.success("Status atualizado.");
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Erro ao atualizar o status."
+      );
+    }
+  };
+
+  const saveColor = async (status: TributacaoStatus, cor: string) => {
+    try {
+      await updateMutation.mutateAsync({ id: status.id, cor });
+      toast.success("Cor do status atualizada.");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao atualizar a cor."
       );
     }
   };
@@ -72,8 +103,13 @@ export function TributacaoStatusEditor({
       return;
     }
     try {
-      await createMutation.mutateAsync({ tributacao_id: tributacao.id, nome });
+      await createMutation.mutateAsync({
+        tributacao_id: tributacao.id,
+        nome,
+        cor: novaCor,
+      });
       setNovo("");
+      setNovaCor("neutral");
       toast.success("Status incluído.");
     } catch (err) {
       toast.error(
@@ -93,19 +129,54 @@ export function TributacaoStatusEditor({
     }
   };
 
+  const renderColorSelect = (
+    value: string,
+    onChange: (cor: string) => void,
+    id?: string
+  ) => (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger id={id} className="h-8 w-36 text-xs">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {STATUS_COLOR_OPTIONS.map((option) => (
+          <SelectItem key={option.key} value={option.key}>
+            <span className="flex items-center gap-2">
+              <span
+                className={cn("h-3 w-3 rounded-full", option.swatch)}
+                aria-hidden="true"
+              />
+              {option.label}
+            </span>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
   return (
-    <div className="flex flex-col gap-2 border-t bg-muted/40 px-3 py-3 sm:px-4">
+    <div className="flex flex-col gap-3 border-t bg-muted/40 px-3 py-3 sm:px-4">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-        Status disponíveis na tabela do Movimento Fiscal
+        Status desta tributação (nome e cor na tabela do Movimento Fiscal)
       </p>
 
-      <div className="flex flex-wrap items-center gap-2">
-        {isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+      <div className="flex flex-col gap-1.5">
+        {isLoading && (
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        )}
+
         {list.map((status) => (
           <div
             key={status.id}
-            className="flex items-center gap-1 rounded-lg border bg-card pl-2 pr-1 shadow-sm"
+            className="flex flex-wrap items-center gap-2 rounded-lg border bg-card p-2 shadow-sm"
           >
+            <span
+              className={cn(
+                "h-6 w-1.5 shrink-0 rounded-full",
+                swatchClass(status.cor)
+              )}
+              aria-hidden="true"
+            />
             <Input
               value={drafts[status.id] ?? status.nome}
               onChange={(event) =>
@@ -114,11 +185,11 @@ export function TributacaoStatusEditor({
                   [status.id]: event.target.value,
                 }))
               }
-              onBlur={() => void save(status)}
+              onBlur={() => void saveName(status)}
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
                   event.preventDefault();
-                  void save(status);
+                  void saveName(status);
                 }
                 if (event.key === "Escape") {
                   setDrafts((prev) => {
@@ -128,21 +199,23 @@ export function TributacaoStatusEditor({
                   });
                 }
               }}
-              aria-label={`Status ${status.nome}`}
-              className="h-7 w-32 border-0 bg-transparent px-1 text-xs font-medium shadow-none focus-visible:ring-0"
+              aria-label={`Nome do status ${status.nome}`}
+              className="h-8 min-w-40 flex-1"
             />
+            {renderColorSelect(status.cor, (cor) => void saveColor(status, cor))}
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-destructive hover:text-destructive"
+              className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
               title="Excluir status"
               onClick={() => void remove(status)}
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         ))}
+
         {!isLoading && list.length === 0 && (
           <span className="text-xs text-muted-foreground">
             Nenhum status cadastrado — a tabela usa a lista padrão.
@@ -150,13 +223,17 @@ export function TributacaoStatusEditor({
         )}
       </div>
 
-      <form onSubmit={add} className="flex flex-wrap items-center gap-2">
+      <form
+        onSubmit={add}
+        className="flex flex-wrap items-center gap-2 border-t pt-3"
+      >
         <Input
           value={novo}
           onChange={(event) => setNovo(event.target.value)}
           placeholder="Novo status (ex.: EM ANÁLISE)"
           className="h-8 w-56 rounded-lg"
         />
+        {renderColorSelect(novaCor, setNovaCor, "novo-status-cor")}
         <Button
           type="submit"
           size="sm"
@@ -171,7 +248,8 @@ export function TributacaoStatusEditor({
           Incluir
         </Button>
         <span className="text-xs text-muted-foreground">
-          Clique no status para renomear e dê Enter/ saia do campo para salvar.
+          Renomeie no campo de texto (Enter ou sair para salvar) e escolha a cor
+          ao lado.
         </span>
       </form>
     </div>

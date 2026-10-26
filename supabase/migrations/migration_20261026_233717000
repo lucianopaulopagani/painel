@@ -1,0 +1,15 @@
+alter table public.tributacao_status
+  add column if not exists cor text not null default 'neutral';
+
+alter table public.tributacao_status drop constraint if exists tributacao_status_cor_check;
+alter table public.tributacao_status add constraint tributacao_status_cor_check
+  check (cor in ('success', 'info', 'warning', 'danger', 'neutral', 'disabled'));
+
+comment on column public.tributacao_status.cor is 'Cor do status nas tabelas: success (verde), info (azul), warning (âmbar), danger (vermelho), neutral (cinza), disabled (roxo).';
+
+-- Cores atuais dos status já usados nas tabelas.
+update public.tributacao_status set cor = 'success' where lower(nome) = 'ok' and cor = 'neutral';
+update public.tributacao_status set cor = 'info' where lower(nome) = 'ok-sm' and cor = 'neutral';
+update public.tributacao_status set cor = 'warning' where lower(nome) = 'ok-ent' and cor = 'neutral';
+update public.tributacao_status set cor = 'danger' where lower(nome) = 'fazendo' and cor = 'neutral';
+update public.tributacao_status set cor = 'info' where lower(nome) = 'sm' and cor = 'neutral';

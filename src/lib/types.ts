@@ -21,6 +21,8 @@ export interface TributacaoStatus {
   id: string;
   tributacao_id: string;
   nome: string;
+  /** Cor do status nas tabelas (success, info, warning, danger, neutral, disabled). */
+  cor: string;
   ordem: number;
   created_at: string;
 }

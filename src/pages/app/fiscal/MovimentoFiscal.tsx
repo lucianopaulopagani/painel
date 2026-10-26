@@ -52,7 +52,10 @@ import {
   SIMPLES_NACIONAL_TRIBUTACAO,
   SimplesNacionalTable,
 } from "./SimplesNacional";
-import { useStatusOptions } from "@/hooks/use-tributacao-status";
+import {
+  useStatusOptions,
+  useStatusTone,
+} from "@/hooks/use-tributacao-status";
 import { isLucroTributacao } from "@/lib/fiscal-lucro-real";
 import { LucroRealPresumidoTable } from "./LucroRealPresumido";
 import { MEI_TRIBUTACAO, MeiTable } from "./Mei";
@@ -150,6 +153,7 @@ export function MovimentoFiscal() {
 
   /** Status cadastrados para a tributação selecionada (com fallback). */
   const resolveStatusOptions = useStatusOptions();
+  const resolveStatusTone = useStatusTone();
 
   /** Subdepartamento que define as empresas e os responsáveis do módulo. */
   const SUBMENU = "Movimento Fiscal";
@@ -206,6 +210,10 @@ export function MovimentoFiscal() {
     tributacaoSelecionada,
     SITUACAO_OPTIONS
   );
+
+  /** Cor cadastrada do status (cai no tom padrão quando não houver). */
+  const situacaoTone = (value: string) =>
+    resolveStatusTone(tributacaoSelecionada, value) ?? SITUACAO_TONE[value];
 
   const rows = responsavelFiltered
     .filter(
@@ -739,7 +747,7 @@ export function MovimentoFiscal() {
                           <span
                             className={cn(
                               "inline-block rounded px-1.5 py-0.5",
-                              SITUACAO_TONE[situacao]
+                              situacaoTone(situacao)
                             )}
                           >
                             {situacao || "—"}
@@ -756,7 +764,7 @@ export function MovimentoFiscal() {
                             <SelectTrigger
                               className={cn(
                                 "h-7 w-full min-w-0 px-1 text-[11px]",
-                                SITUACAO_TONE[situacao]
+                                situacaoTone(situacao)
                               )}
                             >
                               <SelectValue placeholder="—" />

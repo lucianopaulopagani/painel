@@ -45,7 +45,10 @@ import {
   type LucroFieldDef,
   type LucroFieldKey,
 } from "@/lib/fiscal-lucro-real";
-import { useStatusOptions } from "@/hooks/use-tributacao-status";
+import {
+  useStatusOptions,
+  useStatusTone,
+} from "@/hooks/use-tributacao-status";
 import { cn } from "@/lib/utils";
 import { CompanyNumber } from "@/components/company-number";
 import type { CompanyWithDepartments, MovementFiscalInput } from "@/lib/types";
@@ -111,6 +114,7 @@ export function LucroRealPresumidoTable({
 
   /** Status cadastrados para esta tributação (com fallback). */
   const resolveStatusOptions = useStatusOptions();
+  const resolveStatusTone = useStatusTone();
   const situacaoOptions = resolveStatusOptions(tributacao, SITUACAO_OPTIONS);
 
   const { data: records } = useMovimentoFiscal(mes);
@@ -310,7 +314,7 @@ export function LucroRealPresumidoTable({
         <span
           className={cn(
             "inline-block w-full truncate rounded px-1 py-0.5 text-center",
-            SITUACAO_TONE[value]
+            resolveStatusTone(tributacao, value) ?? SITUACAO_TONE[value]
           )}
         >
           {value || "—"}
@@ -325,7 +329,7 @@ export function LucroRealPresumidoTable({
         }}
       >
         <SelectTrigger
-          className={cn("h-7 w-full min-w-0 px-1 text-[11px]", SITUACAO_TONE[value])}
+          className={cn("h-7 w-full min-w-0 px-1 text-[11px]", resolveStatusTone(tributacao, value) ?? SITUACAO_TONE[value])}
         >
           <SelectValue placeholder="—" />
         </SelectTrigger>

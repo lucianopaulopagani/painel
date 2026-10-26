@@ -34,7 +34,10 @@ import {
 import { cn } from "@/lib/utils";
 import { SITUACAO_TONE } from "@/lib/fiscal";
 import { CompanyNumber } from "@/components/company-number";
-import { useStatusOptions } from "@/hooks/use-tributacao-status";
+import {
+  useStatusOptions,
+  useStatusTone,
+} from "@/hooks/use-tributacao-status";
 import type {
   CompanyWithDepartments,
   MovementFiscalInput,
@@ -118,6 +121,7 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
 
   /** Status cadastrados para o MEI (com fallback). */
   const resolveStatusOptions = useStatusOptions();
+  const resolveStatusTone = useStatusTone();
   const situacaoOptions = resolveStatusOptions(
     MEI_TRIBUTACAO,
     MEI_SITUACAO_VALUES
@@ -361,7 +365,8 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                       <SelectTrigger
                         className={cn(
                           "h-7 w-full min-w-0 px-1 text-[11px] font-semibold",
-                          TONE[situacao]
+                          resolveStatusTone(MEI_TRIBUTACAO, situacao) ??
+                            TONE[situacao]
                         )}
                       >
                         <SelectValue placeholder="—" />

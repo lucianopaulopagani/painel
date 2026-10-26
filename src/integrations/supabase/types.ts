@@ -4828,6 +4828,7 @@ export type Database = {
       }
       tributacao_status: {
         Row: {
+          cor: string
           created_at: string
           id: string
           nome: string
@@ -4835,6 +4836,7 @@ export type Database = {
           tributacao_id: string
         }
         Insert: {
+          cor?: string
           created_at?: string
           id?: string
           nome: string
@@ -4842,6 +4844,7 @@ export type Database = {
           tributacao_id: string
         }
         Update: {
+          cor?: string
           created_at?: string
           id?: string
           nome?: string

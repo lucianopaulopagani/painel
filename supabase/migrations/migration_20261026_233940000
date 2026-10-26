@@ -1,0 +1,3 @@
+update public.tributacao_status
+set cor = 'success'
+where lower(nome) in ('concluído', 'concluido') and cor = 'neutral';

@@ -33,7 +33,10 @@ import {
 } from "@/hooks/use-movimento-fiscal";
 import { SITUACAO_TONE } from "@/lib/fiscal";
 import { cn, formatCpfCnpj } from "@/lib/utils";
-import { useStatusOptions } from "@/hooks/use-tributacao-status";
+import {
+  useStatusOptions,
+  useStatusTone,
+} from "@/hooks/use-tributacao-status";
 import { CompanyNumber } from "@/components/company-number";
 import type {
   CompanyWithDepartments,
@@ -106,6 +109,7 @@ export function MovimentoSimplesTable({
 
   /** Status cadastrados para esta tributação (com fallback "OK"). */
   const resolveStatusOptions = useStatusOptions();
+  const resolveStatusTone = useStatusTone();
   const situacaoOptions = resolveStatusOptions(
     tributacao,
     MOVIMENTO_SIMPLES_SITUACAO_OPTIONS
@@ -319,7 +323,8 @@ export function MovimentoSimplesTable({
                       <SelectTrigger
                         className={cn(
                           "h-7 w-full min-w-0 px-1 text-[11px] font-semibold",
-                          SITUACAO_TONE[situacao]
+                          resolveStatusTone(tributacao, situacao) ??
+                            SITUACAO_TONE[situacao]
                         )}
                       >
                         <SelectValue placeholder="—" />

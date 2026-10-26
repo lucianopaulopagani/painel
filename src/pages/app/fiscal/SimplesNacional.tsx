@@ -43,7 +43,10 @@ import {
   formatCurrencyField,
   maskCurrencyInput,
 } from "@/lib/currency";
-import { useStatusOptions } from "@/hooks/use-tributacao-status";
+import {
+  useStatusOptions,
+  useStatusTone,
+} from "@/hooks/use-tributacao-status";
 import { cn, formatCpfCnpj } from "@/lib/utils";
 import type {
   CompanyWithDepartments,
@@ -137,6 +140,7 @@ export function SimplesNacionalTable({
 
   /** Status cadastrados para esta tributação (com fallback). */
   const resolveStatusOptions = useStatusOptions();
+  const resolveStatusTone = useStatusTone();
   const situacaoOptions = resolveStatusOptions(
     SIMPLES_NACIONAL_TRIBUTACAO,
     SITUACAO_OPTIONS
@@ -273,7 +277,8 @@ export function SimplesNacionalTable({
     companyId: string,
     value: string,
     options: readonly string[],
-    patchKey: string
+    patchKey: string,
+    toneOverride?: string
   ) => {
     return (
     <Select
@@ -285,7 +290,7 @@ export function SimplesNacionalTable({
       <SelectTrigger
         className={cn(
           "h-7 w-full min-w-0 px-1 text-[11px] font-semibold",
-          TONE[value]
+          toneOverride ?? TONE[value]
         )}
       >
         <SelectValue placeholder="—" />
@@ -444,7 +449,11 @@ export function SimplesNacionalTable({
                       company.id,
                       record?.situacao ?? "",
                       situacaoOptions,
-                      "situacao"
+                      "situacao",
+                      resolveStatusTone(
+                        SIMPLES_NACIONAL_TRIBUTACAO,
+                        record?.situacao ?? ""
+                      ) ?? TONE[record?.situacao ?? ""]
                     )}
                   </TableCell>
                   {MOVIMENTO_FISCAL_FIELDS.map((field) => (

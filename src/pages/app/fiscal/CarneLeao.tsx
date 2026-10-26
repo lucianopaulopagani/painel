@@ -25,7 +25,10 @@ import {
   CARNE_LEAO_TOMADOS_OPTIONS,
   CARNE_LEAO_TRIBUTACAO,
 } from "@/lib/carne-leao";
-import { useStatusOptions } from "@/hooks/use-tributacao-status";
+import {
+  useStatusOptions,
+  useStatusTone,
+} from "@/hooks/use-tributacao-status";
 import { CompanyNumber } from "@/components/company-number";
 import { cn, formatCpfCnpj } from "@/lib/utils";
 import type { CompanyWithDepartments, MovimentoCarneLeaoInput } from "@/lib/types";
@@ -80,6 +83,7 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
 
   /** Status cadastrados para o Carne Leão (com fallback). */
   const resolveStatusOptions = useStatusOptions();
+  const resolveStatusTone = useStatusTone();
   const situacaoOptions = resolveStatusOptions(
     CARNE_LEAO_TRIBUTACAO,
     CARNE_LEAO_SITUACAO_OPTIONS
@@ -170,7 +174,8 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
     companyId: string,
     value: string,
     options: readonly string[],
-    patchKey: string
+    patchKey: string,
+    toneOverride?: string
   ) => {
     return (
     <Select
@@ -182,7 +187,7 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
       <SelectTrigger
         className={cn(
           "h-7 w-full min-w-0 px-1 text-xs font-semibold",
-          TONE[value]
+          toneOverride ?? TONE[value]
         )}
       >
         <SelectValue placeholder="—" />
@@ -310,7 +315,11 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
                       company.id,
                       record?.situacao ?? "",
                       situacaoOptions,
-                      "situacao"
+                      "situacao",
+                      resolveStatusTone(
+                        CARNE_LEAO_TRIBUTACAO,
+                        record?.situacao ?? ""
+                      ) ?? TONE[record?.situacao ?? ""]
                     )}
                   </TableCell>
                   <TableCell className={`${CELL} w-24`}>
