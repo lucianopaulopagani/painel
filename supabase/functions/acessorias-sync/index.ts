@@ -44,6 +44,8 @@ interface CompanyToImport {
   numero: string | null;
   documento: string;
   name: string;
+  /** Nome fantasia (ajuda na busca). */
+  fantasia: string | null;
   uf: string;
   inscricao_estadual: string | null;
   municipio: string | null;
@@ -292,6 +294,7 @@ async function buildImportList(): Promise<{
       numero,
       documento,
       name,
+      fantasia: String(company.Fantasia ?? "").trim() || null,
       uf,
       inscricao_estadual: stateRegistration(company, uf),
       municipio: municipioOf(company),

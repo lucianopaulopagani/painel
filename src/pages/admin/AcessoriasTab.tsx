@@ -29,6 +29,15 @@ import {
 } from "@/hooks/use-acessorias";
 import { formatCpfCnpj } from "@/lib/utils";
 
+/** Compara textos ignorando acentos, maiúsculas e espaços nas pontas. */
+function normalizeText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("pt-BR")
+    .trim();
+}
+
 /**
  * Integração com o sistema Acessórias — consulta as empresas cadastradas lá e
  * cria aqui apenas as que ainda não existem (comparação pelo CNPJ/CPF).
@@ -90,15 +99,28 @@ export default function AcessoriasTab() {
     }
   };
 
-  const empresas = (result?.empresas ?? []).filter((empresa) => {
-    if (onlyNew && (empresa.existente || empresa.problema)) return false;
-    if (!query.trim()) return true;
-    const text = query.trim().toLocaleLowerCase("pt-BR");
+  // Busca por razão social, CNPJ/CPF ou número, ignorando acentos e caixa.
+  const term = normalizeText(query);
+  const matched = (result?.empresas ?? []).filter((empresa) => {
+    if (!term) return true;
+    const digits = term.replace(/\D/g, "");
     return (
-      empresa.name.toLocaleLowerCase("pt-BR").includes(text) ||
-      empresa.documento.includes(text.replace(/\D/g, ""))
+      normalizeText(empresa.name).includes(term) ||
+      normalizeText(empresa.fantasia ?? "").includes(term) ||
+      (digits.length > 0 &&
+        (empresa.documento.includes(digits) ||
+          (empresa.numero ?? "").includes(digits)))
     );
   });
+
+  const empresas = onlyNew
+    ? matched.filter((empresa) => !empresa.existente && !empresa.problema)
+    : matched;
+
+  /** Correspondências escondidas pelo filtro "somente as novas". */
+  const hiddenByFilter = onlyNew
+    ? matched.filter((empresa) => empresa.existente || empresa.problema).length
+    : 0;
 
   const novas = (result?.empresas ?? []).filter(
     (empresa) => !empresa.existente && !empresa.problema
@@ -268,6 +290,20 @@ export default function AcessoriasTab() {
             <span className="text-xs text-muted-foreground">
               {empresas.length} linha(s) · {selected.size} selecionada(s)
             </span>
+            {hiddenByFilter > 0 && (
+              <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                {hiddenByFilter} resultado(s) também correspondem à busca e não
+                aparecem por não serem novas
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => setOnlyNew(false)}
+                >
+                  Mostrar também
+                </Button>
+              </span>
+            )}
           </div>
 
           <div className="overflow-x-auto rounded-xl border">
@@ -368,7 +404,13 @@ export default function AcessoriasTab() {
                       colSpan={9}
                       className="py-8 text-center text-sm text-muted-foreground"
                     >
-                      Nenhuma empresa para mostrar com os filtros atuais.
+                      {query.trim()
+                        ? `Nenhuma empresa encontrada para "${query.trim()}".${
+                            onlyNew
+                              ? " As empresas já cadastradas aqui não aparecem com o filtro \"somente as novas\"."
+                              : ""
+                          }`
+                        : "Nenhuma empresa para mostrar com os filtros atuais."}
                     </TableCell>
                   </TableRow>
                 )}

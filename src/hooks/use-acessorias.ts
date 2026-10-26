@@ -8,6 +8,8 @@ export interface AcessoriasCompanyRow {
   numero: string | null;
   documento: string;
   name: string;
+  /** Nome fantasia (ajuda na busca). */
+  fantasia: string | null;
   uf: string;
   inscricao_estadual: string | null;
   municipio: string | null;
