@@ -266,7 +266,7 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
               </TableHead>
               {renderFilterInput("empresa", "Empresa", "w-48")}
               {renderFilterInput("cpf", "CPF", "w-28")}
-              {renderFilterSelect("situacao", "Situação", CARNE_LEAO_SITUACAO_OPTIONS, "w-28")}
+              {renderFilterSelect("situacao", "Status", CARNE_LEAO_SITUACAO_OPTIONS, "w-28")}
               {renderFilterSelect("prestados", "Prestados", CARNE_LEAO_PRESTADOS_OPTIONS)}
               {renderFilterSelect("tomados", "Tomados", CARNE_LEAO_TOMADOS_OPTIONS)}
               {renderFilterSelect("iss", "ISS Fixo", CARNE_LEAO_ISS_OPTIONS)}

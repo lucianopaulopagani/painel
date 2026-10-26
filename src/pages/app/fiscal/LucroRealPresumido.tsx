@@ -410,7 +410,7 @@ export function LucroRealPresumidoTable({
               {renderFilterInput("empresa", "Empresas", "w-56")}
               {renderFilterSelect("uf", "UF", "w-12", ufOptions)}
               <TableHead className={`${HEAD} w-24 align-bottom`}>
-                <span className="mb-1 block whitespace-nowrap">Situação</span>
+                <span className="mb-1 block whitespace-nowrap">Status</span>
                 <Select
                   value={busca.situacao === "" ? "todos" : busca.situacao}
                   onValueChange={(value) =>

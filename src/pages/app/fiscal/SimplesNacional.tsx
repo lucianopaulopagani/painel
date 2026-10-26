@@ -350,7 +350,7 @@ export function SimplesNacionalTable({
               {renderFilterInput("empresa", "Empresa", "w-36")}
               {renderFilterInput("cnpj", "CNPJ", "w-24")}
               {renderFilterInput("ie", "Insc. Estadual", "w-20")}
-              {renderFilterSelect("situacao", "Situação", SITUACAO_OPTIONS, "w-20")}
+              {renderFilterSelect("situacao", "Status", SITUACAO_OPTIONS, "w-20")}
               {MOVIMENTO_FISCAL_FIELDS.map((field) => {
                 const head =
                   field.type === "checkbox" ? (

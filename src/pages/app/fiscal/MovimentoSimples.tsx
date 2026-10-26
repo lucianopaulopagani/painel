@@ -244,7 +244,7 @@ export function MovimentoSimplesTable({
               {renderFilterInput("cnpj", "CNPJ", "w-32")}
               {renderFilterInput("ie", "Insc. Estadual", "w-32")}
               <TableHead className={`${HEAD} w-24 align-bottom`}>
-                <span className="mb-1 block whitespace-nowrap">Situação</span>
+                <span className="mb-1 block whitespace-nowrap">Status</span>
                 <Select
                   value={busca.situacao === "" ? "todos" : busca.situacao}
                   onValueChange={(value) =>

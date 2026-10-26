@@ -605,7 +605,7 @@ export function MovimentoFiscal() {
                 </TableHead>
                 <TableHead className="w-20 px-1 py-1 align-bottom">
                   <span className="mb-1 block text-[11px] font-semibold lowercase text-foreground">
-                    situação
+                    status
                   </span>
                   <Select
                     value={busca.situacao === "" ? "todos" : busca.situacao}

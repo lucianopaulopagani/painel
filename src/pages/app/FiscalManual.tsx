@@ -31,7 +31,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Cartões",
         detail:
-          "Finalizadas, Pendentes e Total de empresas, cada um com a quantidade e a porcentagem abaixo. Considera a coluna Situação: OK e OK-SM contam como finalizadas; as demais como pendentes — em todas as tributações.",
+          "Finalizadas, Pendentes e Total de empresas, cada um com a quantidade e a porcentagem abaixo. Considera a coluna Status: OK e OK-SM contam como finalizadas; as demais como pendentes — em todas as tributações.",
       },
       {
         label: "Gráfico por responsável",
@@ -63,7 +63,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Colunas e marcações",
         detail:
-          "Situação e obrigações (DAS, Antecipação, ST, DIF ALIQ, DIF ALIQ C/ST, Guia, DESTDA, Envio/SN, Envio/ICMS) e Obs. Situação tem menu suspenso; DAS/Guia/DESTDA/Envio têm marcações OK/OK-SM; alguns campos são de digitação.",
+          "Status e obrigações (DAS, Antecipação, ST, DIF ALIQ, DIF ALIQ C/ST, Guia, DESTDA, Envio/SN, Envio/ICMS) e Obs. Status tem menu suspenso; DAS/Guia/DESTDA/Envio têm marcações OK/OK-SM; alguns campos são de digitação.",
       },
       {
         label: "Cores das opções",
@@ -100,7 +100,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Simples Nacional",
         detail:
-          "Selecionando 'Simples Nacional' no filtro de Tributação, é exibida a subtabela específica dessa tributação (Nº, UF, Empresa, CNPJ, Inscrição Estadual, Situação, DAS, Antecipação, ST, DIF ALIQ, DIF ALIQ C/ST, Observações, Ações, Guia, DESTDA, Envio/SN e Envio/ICMS), com filtro de UF em menu suspenso e colunas compactas. O DAS tem as opções OK e SM (o SM é gravado como OK-SM, o mesmo valor usado no restante do Movimento Fiscal).",
+          "Selecionando 'Simples Nacional' no filtro de Tributação, é exibida a subtabela específica dessa tributação (Nº, UF, Empresa, CNPJ, Inscrição Estadual, Status, DAS, Antecipação, ST, DIF ALIQ, DIF ALIQ C/ST, Observações, Ações, Guia, DESTDA, Envio/SN e Envio/ICMS), com filtro de UF em menu suspenso e colunas compactas. O DAS tem as opções OK e SM (o SM é gravado como OK-SM, o mesmo valor usado no restante do Movimento Fiscal).",
       },
       {
         label: "Simples Nacional — valores em R$ e observações (Ações)",
@@ -110,22 +110,22 @@ const SECTIONS: ManualSection[] = [
       {
         label: "MEI",
         detail:
-          "Selecionando 'MEI' no filtro de Tributação, é exibida a subtabela enxuta dessa tributação, apenas com N, UF, Empresa, Situação, DAS, Envio e Observação (as demais colunas do Movimento Fiscal não se aplicam ao MEI). A Situação tem OK, FAZENDO e SM (o SM é gravado como OK-SM, o mesmo valor usado no restante do Movimento Fiscal); o DAS tem OK e SM; o Envio tem apenas OK. A coluna Observação é editada pelo botão de lápis (Ações), que abre um diálogo — o texto é levado para os meses seguintes até ser alterado. A Situação alimenta os dashboards do Movimento Fiscal: OK e SM contam como finalizada e FAZENDO como pendente.",
+          "Selecionando 'MEI' no filtro de Tributação, é exibida a subtabela enxuta dessa tributação, apenas com N, UF, Empresa, Status, DAS, Envio e Observação (as demais colunas do Movimento Fiscal não se aplicam ao MEI). O Status tem OK, FAZENDO e SM (o SM é gravado como OK-SM, o mesmo valor usado no restante do Movimento Fiscal); o DAS tem OK e SM; o Envio tem apenas OK. A coluna Observação é editada pelo botão de lápis (Ações), que abre um diálogo — o texto é levado para os meses seguintes até ser alterado. O Status alimenta os dashboards do Movimento Fiscal: OK e SM contam como finalizada e FAZENDO como pendente.",
       },
       {
         label: "SM-Mensal (Simples Nacional/SM-Mensal), Empregada Doméstica e Pessoa Física",
         detail:
-          "Selecionando 'Simples Nacional/SM-Mensal', 'Empregada Doméstica' ou 'Pessoa Física' no filtro de Tributação, é exibida a tabela mensal simplificada, no modelo das planilhas mensais: N, UF, Empresa, CNPJ e Inscrição Estadual (todos vindos do cadastro de empresas), a Situação — com a opção OK — e a Observação, em texto, aberta pelo botão de Ações (lápis) e levada para os meses seguintes até ser alterada. Os filtros ficam no cabeçalho de cada coluna.",
+          "Selecionando 'Simples Nacional/SM-Mensal', 'Empregada Doméstica' ou 'Pessoa Física' no filtro de Tributação, é exibida a tabela mensal simplificada, no modelo das planilhas mensais: N, UF, Empresa, CNPJ e Inscrição Estadual (todos vindos do cadastro de empresas), o Status — com a opção OK — e a Observação, em texto, aberta pelo botão de Ações (lápis) e levada para os meses seguintes até ser alterada. Os filtros ficam no cabeçalho de cada coluna.",
       },
       {
         label: "Lucro Real e Lucro Presumido",
         detail:
-          "Selecionando 'Lucro Real' ou 'Lucro Presumido' no filtro de Tributação, é exibida a tabela do modelo das empresas normais: N, Empresas e UF (do cadastro de empresas com essa tributação), a Situação (mesmos campos do Simples Nacional: OK, OK-ENT, OK-SM e FAZENDO), as obrigações ISSQN, DIME/GIA PR, DAPI, GIA RS, DRCST, SPED FISCAL, SPED CONTR, REINF, DIRBI, MIT e OBS — com filtro de UF em menu suspenso listando apenas as UFs das empresas exibidas.",
+          "Selecionando 'Lucro Real' ou 'Lucro Presumido' no filtro de Tributação, é exibida a tabela do modelo das empresas normais: N, Empresas e UF (do cadastro de empresas com essa tributação), o Status (mesmos campos do Simples Nacional: OK, OK-ENT, OK-SM e FAZENDO), as obrigações ISSQN, DIME/GIA PR, DAPI, GIA RS, DRCST, SPED FISCAL, SPED CONTR, REINF, DIRBI, MIT e OBS — com filtro de UF em menu suspenso listando apenas as UFs das empresas exibidas.",
       },
       {
-        label: "Situação e dashboard",
+        label: "Status e dashboard",
         detail:
-          "A Situação da tabela alimenta o Dashboard do Fiscal com os mesmos parâmetros do Simples Nacional: OK e OK-SM contam como finalizadas e o restante como pendente (incluindo em branco).",
+          "O Status da tabela alimenta o Dashboard do Fiscal com os mesmos parâmetros do Simples Nacional: OK e OK-SM contam como finalizadas e o restante como pendente (incluindo em branco).",
       },
       {
         label: "Opções e cor de desabilitado",
@@ -162,7 +162,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Colunas",
         detail:
-          "N, UF, Empresa, CPF, Situação (OK/FAZENDO/OK-ENT/OK-SM), Prestados e Tomados (OK/SM), ISS Fixo, Carne Leão e Envio/Guia (OK/OK-SM) e Observações (texto).",
+          "N, UF, Empresa, CPF, Status (OK/FAZENDO/OK-ENT/OK-SM), Prestados e Tomados (OK/SM), ISS Fixo, Carne Leão e Envio/Guia (OK/OK-SM) e Observações (texto).",
       },
       {
         label: "Cores",

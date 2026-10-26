@@ -246,7 +246,7 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
               </TableHead>
               {renderFilterInput("empresa", "Empresa", "w-[22rem]")}
               <TableHead className={`${HEAD} w-24 align-bottom`}>
-                <span className="mb-1 block whitespace-nowrap">Situação</span>
+                <span className="mb-1 block whitespace-nowrap">Status</span>
                 <Select
                   value={busca.situacao === "" ? "todos" : busca.situacao}
                   onValueChange={(value) =>
