@@ -204,8 +204,8 @@ export default function AcessoriasTab() {
         )}
 
         <span className="ml-auto text-xs text-muted-foreground">
-          CNPJ/CPF, Razão Social, UF, Inscrição Estadual, Tributação e situação
-          (Ativa/Inativa) — o Número fica em branco nos importados.
+          Número (ID do Acessórias), CNPJ/CPF, Razão Social, UF, Inscrição
+          Estadual, Tributação e situação (Ativa/Inativa).
         </span>
       </div>
 
@@ -291,6 +291,7 @@ export default function AcessoriasTab() {
                     />
                   </TableHead>
                   <TableHead className="w-24">Situação</TableHead>
+                  <TableHead className="w-16">Nº</TableHead>
                   <TableHead>Razão social</TableHead>
                   <TableHead className="w-40">CNPJ/CPF</TableHead>
                   <TableHead className="w-14">UF</TableHead>
@@ -328,6 +329,9 @@ export default function AcessoriasTab() {
                         </Badge>
                       )}
                     </TableCell>
+                    <TableCell className="whitespace-nowrap tabular-nums">
+                      {empresa.numero || "—"}
+                    </TableCell>
                     <TableCell className="max-w-80">
                       <span className="block truncate" title={empresa.name}>
                         {empresa.name || "—"}
@@ -361,7 +365,7 @@ export default function AcessoriasTab() {
                 {empresas.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={8}
+                      colSpan={9}
                       className="py-8 text-center text-sm text-muted-foreground"
                     >
                       Nenhuma empresa para mostrar com os filtros atuais.
@@ -373,10 +377,11 @@ export default function AcessoriasTab() {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            As empresas importadas entram como Matriz, sem número e sem vínculo
-            de departamento/responsável (isso continua sendo feito no cadastro
-            de empresas). Empresas com pendência (CNPJ/CPF ou UF ausente no
-            Acessórias) não são importadas.
+            As empresas importadas entram como Matriz, com o Número do
+            Acessórias e sem vínculo de departamento/responsável (isso continua
+            sendo feito no cadastro de empresas). Empresas com pendência
+            (CNPJ/CPF ou UF ausente no Acessórias, ou número já usado por outra
+            matriz daqui) não são importadas.
           </p>
         </>
       )}

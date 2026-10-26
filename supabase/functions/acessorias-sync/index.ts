@@ -40,6 +40,8 @@ interface AcessoriasCompany {
 }
 
 interface CompanyToImport {
+  /** Número da empresa (ID no Acessórias). */
+  numero: string | null;
   documento: string;
   name: string;
   uf: string;
@@ -241,13 +243,20 @@ async function buildImportList(): Promise<{
 
   const [{ data: companiesRows }, { data: tributacoesRows }, acessorias] =
     await Promise.all([
-      admin.from("companies").select("documento"),
+      admin.from("companies").select("documento, numero, tipo"),
       admin.from("tributacoes").select("nome").order("ordem").order("nome"),
       fetchAcessoriasCompanies(token),
     ]);
 
   const existing = new Set(
     (companiesRows ?? []).map((row) => onlyDigits(row.documento))
+  );
+  // O número é único entre matrizes — evita conflito na importação.
+  const usedNumbers = new Set(
+    (companiesRows ?? [])
+      .filter((row) => row.tipo !== "filial")
+      .map((row) => String(row.numero ?? "").trim())
+      .filter(Boolean)
   );
   const registered = (tributacoesRows ?? [])
     .map((row) => String(row.nome ?? "").trim())
@@ -258,6 +267,7 @@ async function buildImportList(): Promise<{
 
   for (const company of acessorias.companies) {
     const documento = onlyDigits(company.Identificador);
+    const numero = String(company.ID ?? "").trim() || null;
     const name = String(company.Razao ?? company.Fantasia ?? "").trim();
     const uf = String(company.UF ?? "").trim().toUpperCase().slice(0, 2);
     const ativa = isAtiva(company);
@@ -271,11 +281,15 @@ async function buildImportList(): Promise<{
       problema = "UF ausente";
     } else if (seen.has(documento)) {
       problema = "CNPJ/CPF repetido no Acessórias";
+    } else if (numero && usedNumbers.has(numero)) {
+      problema = `Número ${numero} já cadastrado em outra empresa (matriz)`;
     }
 
     if (documento) seen.add(documento);
+    if (numero) usedNumbers.add(numero);
 
     items.push({
+      numero,
       documento,
       name,
       uf,
@@ -375,7 +389,7 @@ Deno.serve(async (req) => {
         : novos;
 
     const toInsert = escolhidas.map((item) => ({
-      numero: null,
+      numero: item.numero,
       tipo: "matriz",
       name: item.name,
       documento: item.documento,
@@ -396,11 +410,24 @@ Deno.serve(async (req) => {
         .from("companies")
         .insert(chunk)
         .select("id");
-      if (error) {
-        insertErrors.push(error.message);
+      if (!error) {
+        criadas += data?.length ?? 0;
         continue;
       }
-      criadas += data?.length ?? 0;
+      // Um registro problemático não pode derrubar o lote: grava um a um.
+      insertErrors.push(error.message);
+      for (const row of chunk) {
+        const single = await admin
+          .from("companies")
+          .insert(row)
+          .select("id")
+          .maybeSingle();
+        if (single.error) {
+          insertErrors.push(`${row.name}: ${single.error.message}`);
+        } else {
+          criadas += 1;
+        }
+      }
     }
 
     return json({

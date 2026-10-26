@@ -4,6 +4,8 @@ import { companiesKeys } from "@/hooks/use-companies";
 
 /** Empresa do Acessórias já comparada com o cadastro local. */
 export interface AcessoriasCompanyRow {
+  /** Número da empresa (ID no Acessórias). */
+  numero: string | null;
   documento: string;
   name: string;
   uf: string;
