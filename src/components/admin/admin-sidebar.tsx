@@ -45,7 +45,7 @@ const NAV_ITEMS: NavItem[] = [
     icon: Briefcase,
     // Submenus do cadastro de empresas.
     children: [
-      { key: "acessorias", label: "Acessórias", icon: CloudDownload },
+      { key: "acessorias", label: "Integrações", icon: CloudDownload },
       { key: "tributacoes", label: "Tributações", icon: Percent },
     ],
   },

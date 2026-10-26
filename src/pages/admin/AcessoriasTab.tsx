@@ -165,10 +165,10 @@ export default function AcessoriasTab() {
       <div className="flex items-center gap-2">
         <CloudDownload className="h-5 w-5 text-muted-foreground" />
         <div>
-          <h2 className="text-lg font-semibold">Acessórias</h2>
+          <h2 className="text-lg font-semibold">Integrações</h2>
           <p className="text-sm text-muted-foreground">
-            Traz do sistema Acessórias as empresas que ainda não estão no
-            cadastro. Nenhuma empresa existente é alterada.
+            Acessórias — importe para o cadastro as empresas que ainda não
+            estão aqui. Nenhuma empresa existente é alterada.
           </p>
         </div>
       </div>
