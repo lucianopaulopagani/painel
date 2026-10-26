@@ -77,6 +77,39 @@ export function useTributacaoStatus() {
 }
 
 /**
+ * Opções das colunas de menu suspenso por tributação e coluna (campo).
+ * A função devolve a lista cadastrada ou, quando não há nenhuma, a lista padrão
+ * da tabela do Movimento Fiscal.
+ */
+export function useFieldOptions() {
+  const { data: tributacoes } = useTributacoes();
+  const { data: statuses } = useTributacaoStatus();
+
+  const nameById = new Map(
+    (tributacoes ?? []).map((tributacao) => [tributacao.id, tributacao.nome])
+  );
+  const byKey = new Map<string, string[]>();
+  for (const status of statuses ?? []) {
+    const nome = nameById.get(status.tributacao_id);
+    if (!nome) continue;
+    const key = `${nome}\u0000${status.campo}`;
+    const list = byKey.get(key) ?? [];
+    list.push(status.nome);
+    byKey.set(key, list);
+  }
+
+  return (
+    tributacao: string | null | undefined,
+    campo: string,
+    fallback: readonly string[]
+  ): readonly string[] => {
+    if (!tributacao) return fallback;
+    const options = byKey.get(`${tributacao}\u0000${campo}`);
+    return options && options.length > 0 ? options : fallback;
+  };
+}
+
+/**
  * Opções de Status por nome de tributação (ordem de cadastro).
  * A função devolve a lista cadastrada ou, quando não há nenhuma, a lista padrão
  * da tabela do Movimento Fiscal.
@@ -104,6 +137,39 @@ export function useStatusOptions() {
     if (!tributacao) return fallback;
     const options = byTributacao.get(tributacao);
     return options && options.length > 0 ? options : fallback;
+  };
+}
+
+/**
+ * Classe de cor cadastrada para uma opção de uma coluna (campo) da tributação
+ * informada (undefined quando não há cadastro — a tabela usa o tom padrão).
+ */
+export function useFieldTone() {
+  const { data: tributacoes } = useTributacoes();
+  const { data: statuses } = useTributacaoStatus();
+
+  const nameById = new Map(
+    (tributacoes ?? []).map((tributacao) => [tributacao.id, tributacao.nome])
+  );
+  const toneByKey = new Map<string, string>();
+  for (const status of statuses ?? []) {
+    const nome = nameById.get(status.tributacao_id);
+    if (!nome) continue;
+    toneByKey.set(
+      `${nome}\u0000${status.campo}\u0000${status.nome.trim().toUpperCase()}`,
+      statusColorClass(status.cor)
+    );
+  }
+
+  return (
+    tributacao: string | null | undefined,
+    campo: string,
+    value: string | null | undefined
+  ): string | undefined => {
+    if (!tributacao || !value) return undefined;
+    return toneByKey.get(
+      `${tributacao}\u0000${campo}\u0000${value.trim().toUpperCase()}`
+    );
   };
 }
 
@@ -144,16 +210,23 @@ export function useCreateTributacaoStatus() {
   return useMutation({
     mutationFn: async ({
       tributacao_id,
+      campo = "situacao",
       nome,
       cor,
     }: {
       tributacao_id: string;
+      campo?: string;
       nome: string;
       cor?: string;
     }) => {
       const { error } = await supabase
         .from("tributacao_status")
-        .insert({ tributacao_id, nome: nome.trim(), cor: cor ?? "neutral" });
+        .insert({
+          tributacao_id,
+          campo,
+          nome: nome.trim(),
+          cor: cor ?? "neutral",
+        });
       if (error) throw error;
     },
     onSuccess: () =>

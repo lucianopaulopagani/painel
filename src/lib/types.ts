@@ -20,6 +20,8 @@ export interface Tributacao {
 export interface TributacaoStatus {
   id: string;
   tributacao_id: string;
+  /** Coluna de menu suspenso da tabela (ex.: situacao, das, issqn). */
+  campo: string;
   nome: string;
   /** Cor do status nas tabelas (success, info, warning, danger, neutral, disabled). */
   cor: string;

@@ -37,7 +37,7 @@ import {
   useTributacoes,
   useUpdateTributacao,
 } from "@/hooks/use-tributacoes";
-import { TributacaoStatusEditor } from "@/components/admin/TributacaoStatusEditor";
+import { TributacaoOptionsEditor } from "@/components/admin/TributacaoOpcoesEditor";
 import { cn } from "@/lib/utils";
 import type { Tributacao } from "@/lib/types";
 
@@ -214,8 +214,8 @@ export default function TributacoesTab() {
                     size="icon"
                     title={
                       expandedStatus[tributacao.id]
-                        ? "Ocultar status"
-                        : "Ver/editar status desta tributação"
+                        ? "Ocultar opções"
+                        : "Ver/editar opções das colunas (status e menus suspensos)"
                     }
                     aria-expanded={expandedStatus[tributacao.id] === true}
                     onClick={() =>
@@ -262,7 +262,7 @@ export default function TributacoesTab() {
                 </div>
               </div>
               {expandedStatus[tributacao.id] && (
-                <TributacaoStatusEditor tributacao={tributacao} />
+                <TributacaoOptionsEditor tributacao={tributacao} />
               )}
               </div>
             );

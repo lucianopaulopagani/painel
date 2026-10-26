@@ -53,6 +53,8 @@ import {
   SimplesNacionalTable,
 } from "./SimplesNacional";
 import {
+  useFieldOptions,
+  useFieldTone,
   useStatusOptions,
   useStatusTone,
 } from "@/hooks/use-tributacao-status";
@@ -154,6 +156,8 @@ export function MovimentoFiscal() {
   /** Status cadastrados para a tributação selecionada (com fallback). */
   const resolveStatusOptions = useStatusOptions();
   const resolveStatusTone = useStatusTone();
+  const resolveFieldOptions = useFieldOptions();
+  const resolveFieldTone = useFieldTone();
 
   /** Subdepartamento que define as empresas e os responsáveis do módulo. */
   const SUBMENU = "Movimento Fiscal";
@@ -676,7 +680,11 @@ export function MovimentoFiscal() {
                         <SelectContent>
                           <SelectItem value="todos">Todos</SelectItem>
                           <SelectItem value="branco">Em branco</SelectItem>
-                          {field.options?.map((option) => (
+                          {resolveFieldOptions(
+                            tributacaoSelecionada,
+                            field.key,
+                            field.options ?? []
+                          ).map((option) => (
                             <SelectItem key={option} value={option}>
                               {option}
                             </SelectItem>
@@ -795,7 +803,14 @@ export function MovimentoFiscal() {
                               <span
                                 className={cn(
                                   "inline-block truncate rounded px-1.5 py-0.5",
-                                  OK_SM_TONE[(record?.[field.key] as string) ?? ""]
+                                  resolveFieldTone(
+                                    tributacaoSelecionada,
+                                    field.key,
+                                    (record?.[field.key] as string) ?? ""
+                                  ) ??
+                                    OK_SM_TONE[
+                                      (record?.[field.key] as string) ?? ""
+                                    ]
                                 )}
                               >
                                 {(record?.[field.key] as string) || "—"}
@@ -841,14 +856,25 @@ export function MovimentoFiscal() {
                               <SelectTrigger
                                 className={cn(
                                   "h-7 w-full min-w-0 px-1 text-[11px]",
-                                  OK_SM_TONE[(record?.[field.key] as string) ?? ""]
+                                  resolveFieldTone(
+                                    tributacaoSelecionada,
+                                    field.key,
+                                    (record?.[field.key] as string) ?? ""
+                                  ) ??
+                                    OK_SM_TONE[
+                                      (record?.[field.key] as string) ?? ""
+                                    ]
                                 )}
                               >
                                 <SelectValue placeholder="—" />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="none">—</SelectItem>
-                                {field.options?.map((option) => (
+                                {resolveFieldOptions(
+                                  tributacaoSelecionada,
+                                  field.key,
+                                  field.options ?? []
+                                ).map((option) => (
                                   <SelectItem key={option} value={option}>
                                     {option}
                                   </SelectItem>

@@ -35,6 +35,8 @@ import { cn } from "@/lib/utils";
 import { SITUACAO_TONE } from "@/lib/fiscal";
 import { CompanyNumber } from "@/components/company-number";
 import {
+  useFieldOptions,
+  useFieldTone,
   useStatusOptions,
   useStatusTone,
 } from "@/hooks/use-tributacao-status";
@@ -62,14 +64,13 @@ const MEI_STATUS_LABELS: Record<string, string> = { "OK-SM": "SM" };
 const meiStatusLabel = (value: string): string =>
   MEI_STATUS_LABELS[value] ?? value;
 
-/** Coluna DAS: OK e SM (SM gravado como "OK-SM"). */
-const MEI_DAS_OPTIONS = [
-  { value: "OK", label: "OK" },
-  { value: "OK-SM", label: "SM" },
-] as const;
+/** Colunas DAS e Envio: valores padrão quando não há cadastro. */
+const MEI_DAS_VALUES = ["OK", "OK-SM"] as const;
+const MEI_ENVIO_VALUES = ["OK"] as const;
 
-/** Coluna Envio: apenas OK. */
-const MEI_ENVIO_OPTIONS = [{ value: "OK", label: "OK" }] as const;
+/** Rótulo do DAS nesta tabela: "OK-SM" aparece como "SM". */
+const meiDasLabel = (value: string): string =>
+  value === "OK-SM" ? "SM" : value;
 
 /** Cores: OK e Envio = finalizada (verde); SM = azul; FAZENDO = pendente. */
 const TONE: Record<string, string> = {
@@ -122,6 +123,8 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
   /** Status cadastrados para o MEI (com fallback). */
   const resolveStatusOptions = useStatusOptions();
   const resolveStatusTone = useStatusTone();
+  const resolveFieldOptions = useFieldOptions();
+  const resolveFieldTone = useFieldTone();
   const situacaoOptions = resolveStatusOptions(
     MEI_TRIBUTACAO,
     MEI_SITUACAO_VALUES
@@ -295,9 +298,13 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                   <SelectContent>
                     <SelectItem value="todos">Todos</SelectItem>
                     <SelectItem value="branco">Em branco</SelectItem>
-                    {MEI_DAS_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
+                    {resolveFieldOptions(
+                      MEI_TRIBUTACAO,
+                      "das",
+                      MEI_DAS_VALUES
+                    ).map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {meiDasLabel(option)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -317,9 +324,13 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                   <SelectContent>
                     <SelectItem value="todos">Todos</SelectItem>
                     <SelectItem value="branco">Em branco</SelectItem>
-                    {MEI_ENVIO_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
+                    {resolveFieldOptions(
+                      MEI_TRIBUTACAO,
+                      "envio_sn",
+                      MEI_ENVIO_VALUES
+                    ).map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -393,16 +404,21 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                       <SelectTrigger
                         className={cn(
                           "h-7 w-full min-w-0 px-1 text-[11px] font-semibold",
-                          TONE[das]
+                          resolveFieldTone(MEI_TRIBUTACAO, "das", das) ??
+                            TONE[das]
                         )}
                       >
                         <SelectValue placeholder="—" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">—</SelectItem>
-                        {MEI_DAS_OPTIONS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
+                        {resolveFieldOptions(
+                          MEI_TRIBUTACAO,
+                          "das",
+                          MEI_DAS_VALUES
+                        ).map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {meiDasLabel(option)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -420,16 +436,21 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                       <SelectTrigger
                         className={cn(
                           "h-7 w-full min-w-0 px-1 text-[11px] font-semibold",
-                          TONE[envio]
+                          resolveFieldTone(MEI_TRIBUTACAO, "envio_sn", envio) ??
+                            TONE[envio]
                         )}
                       >
                         <SelectValue placeholder="—" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">—</SelectItem>
-                        {MEI_ENVIO_OPTIONS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
+                        {resolveFieldOptions(
+                          MEI_TRIBUTACAO,
+                          "envio_sn",
+                          MEI_ENVIO_VALUES
+                        ).map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
                           </SelectItem>
                         ))}
                       </SelectContent>

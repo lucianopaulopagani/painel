@@ -46,6 +46,8 @@ import {
   type LucroFieldKey,
 } from "@/lib/fiscal-lucro-real";
 import {
+  useFieldOptions,
+  useFieldTone,
   useStatusOptions,
   useStatusTone,
 } from "@/hooks/use-tributacao-status";
@@ -115,6 +117,8 @@ export function LucroRealPresumidoTable({
   /** Status cadastrados para esta tributação (com fallback). */
   const resolveStatusOptions = useStatusOptions();
   const resolveStatusTone = useStatusTone();
+  const resolveFieldOptions = useFieldOptions();
+  const resolveFieldTone = useFieldTone();
   const situacaoOptions = resolveStatusOptions(tributacao, SITUACAO_OPTIONS);
 
   const { data: records } = useMovimentoFiscal(mes);
@@ -369,7 +373,8 @@ export function LucroRealPresumidoTable({
           <span
             className={cn(
               "inline-block w-full truncate rounded px-1 py-0.5 text-center",
-              LUCRO_TONE[value]
+              resolveFieldTone(tributacao, field.key, value) ??
+                LUCRO_TONE[value]
             )}
           >
             {value || "—"}
@@ -386,14 +391,19 @@ export function LucroRealPresumidoTable({
             <SelectTrigger
               className={cn(
                 "h-7 w-full min-w-0 px-1 text-[11px]",
-                LUCRO_TONE[value]
+                resolveFieldTone(tributacao, field.key, value) ??
+                  LUCRO_TONE[value]
               )}
             >
               <SelectValue placeholder="—" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">—</SelectItem>
-              {LUCRO_OPTIONS.map((option) => (
+              {resolveFieldOptions(
+                tributacao,
+                field.key,
+                LUCRO_OPTIONS
+              ).map((option) => (
                 <SelectItem key={option} value={option}>
                   {option}
                 </SelectItem>
@@ -444,7 +454,8 @@ export function LucroRealPresumidoTable({
                 renderFilterSelect(
                   field.key,
                   field.label,
-                  field.key === "dime_gia_pr" ? "w-24" : "w-20"
+                  field.key === "dime_gia_pr" ? "w-24" : "w-20",
+                  resolveFieldOptions(tributacao, field.key, LUCRO_OPTIONS)
                 )
               )}
               {renderFilterInput("observacoes", "OBS", "w-72")}

@@ -1,0 +1,63 @@
+alter table public.tributacao_status
+  add column if not exists campo text not null default 'situacao';
+
+comment on column public.tributacao_status.campo is 'Coluna de menu suspenso da tabela do Movimento Fiscal: situacao, das, guia, destda, envio_sn, envio_icms, prestados, tomados, iss_fixo, carne_leao, envio_guia e as obrigações do Lucro Real/Presumido.';
+
+drop index if exists public.tributacao_status_key;
+create unique index if not exists tributacao_status_key
+  on public.tributacao_status (tributacao_id, campo, lower(nome));
+
+create index if not exists tributacao_status_campo_idx
+  on public.tributacao_status (tributacao_id, campo);
+
+insert into public.tributacao_status (tributacao_id, campo, nome, cor, ordem)
+select t.id, f.campo, o.nome, o.cor, o.ordem
+from public.tributacoes t
+join (values
+  ('Simples Nacional', 'das'),
+  ('Simples Nacional', 'guia'),
+  ('Simples Nacional', 'destda'),
+  ('Simples Nacional', 'envio_sn'),
+  ('Simples Nacional', 'envio_icms'),
+  ('MEI', 'das'),
+  ('MEI', 'envio_sn'),
+  ('Carne Leão', 'iss_fixo'),
+  ('Carne Leão', 'carne_leao'),
+  ('Carne Leão', 'envio_guia')
+) as f(tributacao, campo) on f.tributacao = t.nome
+cross join (values
+  ('OK', 'success', 1),
+  ('OK-SM', 'info', 2)
+) as o(nome, cor, ordem)
+on conflict (tributacao_id, campo, lower(nome)) do nothing;
+
+insert into public.tributacao_status (tributacao_id, campo, nome, cor, ordem)
+select t.id, f.campo, o.nome, o.cor, o.ordem
+from public.tributacoes t
+join (values
+  ('Carne Leão', 'prestados'),
+  ('Carne Leão', 'tomados')
+) as f(tributacao, campo) on f.tributacao = t.nome
+cross join (values
+  ('OK', 'success', 1),
+  ('SM', 'info', 2)
+) as o(nome, cor, ordem)
+on conflict (tributacao_id, campo, lower(nome)) do nothing;
+
+insert into public.tributacao_status (tributacao_id, campo, nome, cor, ordem)
+select t.id, f.campo, o.nome, o.cor, o.ordem
+from public.tributacoes t
+join (values ('Lucro Real'), ('Lucro Presumido')) as l(tributacao) on l.tributacao = t.nome
+cross join (values
+  ('issqn'), ('dime_gia_pr'), ('dapi'), ('gia_rs'), ('drcst'),
+  ('sped_fiscal'), ('sped_contr'), ('reinf'), ('dirbi'), ('mit')
+) as f(campo)
+cross join (values
+  ('OK', 'success', 1),
+  ('SM', 'info', 2),
+  ('X', 'warning', 3),
+  ('Dispensada', 'neutral', 4),
+  ('Pendências', 'danger', 5),
+  ('Desabilitado', 'disabled', 6)
+) as o(nome, cor, ordem)
+on conflict (tributacao_id, campo, lower(nome)) do nothing;

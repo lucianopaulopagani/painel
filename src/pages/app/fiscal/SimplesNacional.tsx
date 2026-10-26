@@ -44,6 +44,8 @@ import {
   maskCurrencyInput,
 } from "@/lib/currency";
 import {
+  useFieldOptions,
+  useFieldTone,
   useStatusOptions,
   useStatusTone,
 } from "@/hooks/use-tributacao-status";
@@ -141,6 +143,8 @@ export function SimplesNacionalTable({
   /** Status cadastrados para esta tributação (com fallback). */
   const resolveStatusOptions = useStatusOptions();
   const resolveStatusTone = useStatusTone();
+  const resolveFieldOptions = useFieldOptions();
+  const resolveFieldTone = useFieldTone();
   const situacaoOptions = resolveStatusOptions(
     SIMPLES_NACIONAL_TRIBUTACAO,
     SITUACAO_OPTIONS
@@ -378,7 +382,11 @@ export function SimplesNacionalTable({
                     renderFilterSelect(
                       field.key,
                       field.short,
-                      field.options ?? [],
+                      resolveFieldOptions(
+                        SIMPLES_NACIONAL_TRIBUTACAO,
+                        field.key,
+                        field.options ?? []
+                      ),
                       "w-16"
                     )
                   ) : (

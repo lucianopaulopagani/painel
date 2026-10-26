@@ -26,6 +26,8 @@ import {
   CARNE_LEAO_TRIBUTACAO,
 } from "@/lib/carne-leao";
 import {
+  useFieldOptions,
+  useFieldTone,
   useStatusOptions,
   useStatusTone,
 } from "@/hooks/use-tributacao-status";
@@ -84,6 +86,8 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
   /** Status cadastrados para o Carne Leão (com fallback). */
   const resolveStatusOptions = useStatusOptions();
   const resolveStatusTone = useStatusTone();
+  const resolveFieldOptions = useFieldOptions();
+  const resolveFieldTone = useFieldTone();
   const situacaoOptions = resolveStatusOptions(
     CARNE_LEAO_TRIBUTACAO,
     CARNE_LEAO_SITUACAO_OPTIONS
@@ -187,18 +191,22 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
       <SelectTrigger
         className={cn(
           "h-7 w-full min-w-0 px-1 text-xs font-semibold",
-          toneOverride ?? TONE[value]
+          toneOverride ??
+            resolveFieldTone(CARNE_LEAO_TRIBUTACAO, patchKey, value) ??
+            TONE[value]
         )}
       >
         <SelectValue placeholder="—" />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="none">—</SelectItem>
-        {options.map((option) => (
-          <SelectItem key={option} value={option}>
-            {option}
-          </SelectItem>
-        ))}
+        {resolveFieldOptions(CARNE_LEAO_TRIBUTACAO, patchKey, options).map(
+          (option) => (
+            <SelectItem key={option} value={option}>
+              {option}
+            </SelectItem>
+          )
+        )}
       </SelectContent>
     </Select>
     );
@@ -280,11 +288,52 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
               {renderFilterInput("empresa", "Empresa", "w-48")}
               {renderFilterInput("cpf", "CPF", "w-28")}
               {renderFilterSelect("situacao", "Status", situacaoOptions, "w-28")}
-              {renderFilterSelect("prestados", "Prestados", CARNE_LEAO_PRESTADOS_OPTIONS)}
-              {renderFilterSelect("tomados", "Tomados", CARNE_LEAO_TOMADOS_OPTIONS)}
-              {renderFilterSelect("iss", "ISS Fixo", CARNE_LEAO_ISS_OPTIONS)}
-              {renderFilterSelect("carne", "Carne Leão", CARNE_LEAO_CARNE_OPTIONS)}
-              {renderFilterSelect("envio", "Envio/Guia", CARNE_LEAO_ENVIO_OPTIONS, "w-28")}
+              {renderFilterSelect(
+                "prestados",
+                "Prestados",
+                resolveFieldOptions(
+                  CARNE_LEAO_TRIBUTACAO,
+                  "prestados",
+                  CARNE_LEAO_PRESTADOS_OPTIONS
+                )
+              )}
+              {renderFilterSelect(
+                "tomados",
+                "Tomados",
+                resolveFieldOptions(
+                  CARNE_LEAO_TRIBUTACAO,
+                  "tomados",
+                  CARNE_LEAO_TOMADOS_OPTIONS
+                )
+              )}
+              {renderFilterSelect(
+                "iss",
+                "ISS Fixo",
+                resolveFieldOptions(
+                  CARNE_LEAO_TRIBUTACAO,
+                  "iss_fixo",
+                  CARNE_LEAO_ISS_OPTIONS
+                )
+              )}
+              {renderFilterSelect(
+                "carne",
+                "Carne Leão",
+                resolveFieldOptions(
+                  CARNE_LEAO_TRIBUTACAO,
+                  "carne_leao",
+                  CARNE_LEAO_CARNE_OPTIONS
+                )
+              )}
+              {renderFilterSelect(
+                "envio",
+                "Envio/Guia",
+                resolveFieldOptions(
+                  CARNE_LEAO_TRIBUTACAO,
+                  "envio_guia",
+                  CARNE_LEAO_ENVIO_OPTIONS
+                ),
+                "w-28"
+              )}
               {renderFilterInput("observacoes", "Observações", "w-[26rem]")}
             </TableRow>
           </TableHeader>
