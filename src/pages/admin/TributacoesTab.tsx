@@ -1,5 +1,12 @@
 import { useState, type FormEvent } from "react";
-import { Loader2, Pencil, Plus, Tags, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  Loader2,
+  Pencil,
+  Plus,
+  Tags,
+  Trash2,
+} from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +37,8 @@ import {
   useTributacoes,
   useUpdateTributacao,
 } from "@/hooks/use-tributacoes";
+import { TributacaoStatusEditor } from "@/components/admin/TributacaoStatusEditor";
+import { cn } from "@/lib/utils";
 import type { Tributacao } from "@/lib/types";
 
 const normalize = (value: string) => value.trim().toLocaleLowerCase("pt-BR");
@@ -49,6 +58,10 @@ export default function TributacoesTab() {
   const [editing, setEditing] = useState<Tributacao | null>(null);
   const [editingNome, setEditingNome] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<Tributacao | null>(null);
+  /* Tributações com o editor de status aberto. */
+  const [expandedStatus, setExpandedStatus] = useState<Record<string, boolean>>(
+    {}
+  );
 
   /** Quantas empresas usam a tributação (para avisar antes de excluir). */
   const usageOf = (nome: string): number =>
@@ -183,10 +196,8 @@ export default function TributacoesTab() {
           {(tributacoes ?? []).map((tributacao) => {
             const usage = usageOf(tributacao.nome);
             return (
-              <div
-                key={tributacao.id}
-                className="flex flex-wrap items-center justify-between gap-3 p-3 sm:px-4"
-              >
+              <div key={tributacao.id} className="flex flex-col">
+              <div className="flex flex-wrap items-center justify-between gap-3 p-3 sm:px-4">
                 <div className="flex min-w-0 items-center gap-2">
                   <span className="truncate text-sm font-medium">
                     {tributacao.nome}
@@ -197,6 +208,30 @@ export default function TributacoesTab() {
                 </div>
 
                 <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    title={
+                      expandedStatus[tributacao.id]
+                        ? "Ocultar status"
+                        : "Ver/editar status desta tributação"
+                    }
+                    aria-expanded={expandedStatus[tributacao.id] === true}
+                    onClick={() =>
+                      setExpandedStatus((prev) => ({
+                        ...prev,
+                        [tributacao.id]: !prev[tributacao.id],
+                      }))
+                    }
+                  >
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 transition-transform",
+                        expandedStatus[tributacao.id] && "rotate-180"
+                      )}
+                    />
+                  </Button>
                   <Button
                     type="button"
                     variant="ghost"
@@ -225,6 +260,10 @@ export default function TributacoesTab() {
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
+              </div>
+              {expandedStatus[tributacao.id] && (
+                <TributacaoStatusEditor tributacao={tributacao} />
+              )}
               </div>
             );
           })}

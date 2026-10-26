@@ -4826,6 +4826,37 @@ export type Database = {
         }
         Relationships: []
       }
+      tributacao_status: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+          ordem: number
+          tributacao_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+          ordem?: number
+          tributacao_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+          ordem?: number
+          tributacao_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tributacao_status_tributacao_id_fkey"
+            columns: ["tributacao_id"]
+            referencedRelation: "tributacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tributacoes: {
         Row: {
           created_at: string

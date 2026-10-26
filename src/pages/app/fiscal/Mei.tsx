@@ -34,6 +34,7 @@ import {
 import { cn } from "@/lib/utils";
 import { SITUACAO_TONE } from "@/lib/fiscal";
 import { CompanyNumber } from "@/components/company-number";
+import { useStatusOptions } from "@/hooks/use-tributacao-status";
 import type {
   CompanyWithDepartments,
   MovementFiscalInput,
@@ -47,14 +48,16 @@ const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
 export const MEI_TRIBUTACAO = "MEI";
 
 /**
- * Situação do MEI: OK, FAZENDO e SM. O "SM" (Simples Nacional) é gravado como
- * "OK-SM", o mesmo valor usado no restante do Movimento Fiscal.
+ * Valores de Status usados pelo MEI quando não há status cadastrados na
+ * administração. O "SM" (Simples Nacional) é gravado como "OK-SM", o mesmo
+ * valor usado no restante do Movimento Fiscal.
  */
-export const MEI_SITUACAO_OPTIONS = [
-  { value: "OK", label: "OK" },
-  { value: "FAZENDO", label: "FAZENDO" },
-  { value: "OK-SM", label: "SM" },
-] as const;
+const MEI_SITUACAO_VALUES = ["OK", "FAZENDO", "OK-SM"] as const;
+
+/** Rótulo exibido nesta tabela: OK-SM aparece como "SM". */
+const MEI_STATUS_LABELS: Record<string, string> = { "OK-SM": "SM" };
+const meiStatusLabel = (value: string): string =>
+  MEI_STATUS_LABELS[value] ?? value;
 
 /** Coluna DAS: OK e SM (SM gravado como "OK-SM"). */
 const MEI_DAS_OPTIONS = [
@@ -112,6 +115,13 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
 
   const setBuscaField = (key: keyof typeof busca, value: string) =>
     setBusca((prev) => ({ ...prev, [key]: value }));
+
+  /** Status cadastrados para o MEI (com fallback). */
+  const resolveStatusOptions = useStatusOptions();
+  const situacaoOptions = resolveStatusOptions(
+    MEI_TRIBUTACAO,
+    MEI_SITUACAO_VALUES
+  );
 
   const { data: records } = useMovimentoFiscal(mes);
   const { data: allRecords } = useAllMovimentoFiscal();
@@ -259,9 +269,9 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                   <SelectContent>
                     <SelectItem value="todos">Todos</SelectItem>
                     <SelectItem value="branco">Em branco</SelectItem>
-                    {MEI_SITUACAO_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
+                    {situacaoOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {meiStatusLabel(option)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -358,9 +368,9 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">—</SelectItem>
-                        {MEI_SITUACAO_OPTIONS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
+                        {situacaoOptions.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {meiStatusLabel(option)}
                           </SelectItem>
                         ))}
                       </SelectContent>

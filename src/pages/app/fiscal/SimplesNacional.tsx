@@ -43,6 +43,7 @@ import {
   formatCurrencyField,
   maskCurrencyInput,
 } from "@/lib/currency";
+import { useStatusOptions } from "@/hooks/use-tributacao-status";
 import { cn, formatCpfCnpj } from "@/lib/utils";
 import type {
   CompanyWithDepartments,
@@ -133,6 +134,13 @@ export function SimplesNacionalTable({
 
   const setBuscaField = (key: string, value: string) =>
     setBusca((prev) => ({ ...prev, [key]: value }));
+
+  /** Status cadastrados para esta tributação (com fallback). */
+  const resolveStatusOptions = useStatusOptions();
+  const situacaoOptions = resolveStatusOptions(
+    SIMPLES_NACIONAL_TRIBUTACAO,
+    SITUACAO_OPTIONS
+  );
 
   const { data: records } = useMovimentoFiscal(mes);
   const { data: allRecords } = useAllMovimentoFiscal();
@@ -350,7 +358,7 @@ export function SimplesNacionalTable({
               {renderFilterInput("empresa", "Empresa", "w-36")}
               {renderFilterInput("cnpj", "CNPJ", "w-24")}
               {renderFilterInput("ie", "Insc. Estadual", "w-20")}
-              {renderFilterSelect("situacao", "Status", SITUACAO_OPTIONS, "w-20")}
+              {renderFilterSelect("situacao", "Status", situacaoOptions, "w-20")}
               {MOVIMENTO_FISCAL_FIELDS.map((field) => {
                 const head =
                   field.type === "checkbox" ? (
@@ -435,7 +443,7 @@ export function SimplesNacionalTable({
                     {renderSelectCell(
                       company.id,
                       record?.situacao ?? "",
-                      SITUACAO_OPTIONS,
+                      situacaoOptions,
                       "situacao"
                     )}
                   </TableCell>

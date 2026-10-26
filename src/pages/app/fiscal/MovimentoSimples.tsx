@@ -33,6 +33,7 @@ import {
 } from "@/hooks/use-movimento-fiscal";
 import { SITUACAO_TONE } from "@/lib/fiscal";
 import { cn, formatCpfCnpj } from "@/lib/utils";
+import { useStatusOptions } from "@/hooks/use-tributacao-status";
 import { CompanyNumber } from "@/components/company-number";
 import type {
   CompanyWithDepartments,
@@ -102,6 +103,13 @@ export function MovimentoSimplesTable({
 
   const setBuscaField = (key: keyof typeof busca, value: string) =>
     setBusca((prev) => ({ ...prev, [key]: value }));
+
+  /** Status cadastrados para esta tributação (com fallback "OK"). */
+  const resolveStatusOptions = useStatusOptions();
+  const situacaoOptions = resolveStatusOptions(
+    tributacao,
+    MOVIMENTO_SIMPLES_SITUACAO_OPTIONS
+  );
 
   const { data: records } = useMovimentoFiscal(mes);
   const { data: allRecords } = useAllMovimentoFiscal();
@@ -257,7 +265,7 @@ export function MovimentoSimplesTable({
                   <SelectContent>
                     <SelectItem value="todos">Todos</SelectItem>
                     <SelectItem value="branco">Em branco</SelectItem>
-                    {MOVIMENTO_SIMPLES_SITUACAO_OPTIONS.map((option) => (
+                    {situacaoOptions.map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>
@@ -318,7 +326,7 @@ export function MovimentoSimplesTable({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">—</SelectItem>
-                        {MOVIMENTO_SIMPLES_SITUACAO_OPTIONS.map((option) => (
+                        {situacaoOptions.map((option) => (
                           <SelectItem key={option} value={option}>
                             {option}
                           </SelectItem>

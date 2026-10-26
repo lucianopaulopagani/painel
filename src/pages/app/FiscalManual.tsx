@@ -66,6 +66,11 @@ const SECTIONS: ManualSection[] = [
           "Status e obrigações (DAS, Antecipação, ST, DIF ALIQ, DIF ALIQ C/ST, Guia, DESTDA, Envio/SN, Envio/ICMS) e Obs. Status tem menu suspenso; DAS/Guia/DESTDA/Envio têm marcações OK/OK-SM; alguns campos são de digitação.",
       },
       {
+        label: "Status por tributação (administração)",
+        detail:
+          "As opções da coluna Status são cadastradas por tributação no painel de administração (Empresas → Tributações → abrir a tributação, no botão de seta). Ali é possível incluir, renomear e excluir os status: Simples Nacional, Lucro Real e Lucro Presumido usam OK, OK-ENT, OK-SM e FAZENDO; o MEI usa OK, FAZENDO e SM (gravado como OK-SM); Carne Leão usa OK, FAZENDO, OK-ENT e OK-SM; SM-Mensal, Empregada Doméstica e Pessoa Física usam OK. Alterar a lista muda as opções das tabelas do Movimento Fiscal daqui para frente — os lançamentos já gravados não são alterados — e, quando uma tributação não tem nenhum status cadastrado, a tabela usa a lista padrão.",
+      },
+      {
         label: "Cores das opções",
         detail:
           "OK aparece em verde (finalizada), OK-SM e SM em azul, OK-ENT em âmbar e FAZENDO em vermelho, seguindo o padrão dos departamentos.",

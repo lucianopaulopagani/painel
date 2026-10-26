@@ -1,0 +1,51 @@
+create table if not exists public.tributacao_status (
+  id uuid primary key default gen_random_uuid(),
+  tributacao_id uuid not null references public.tributacoes(id) on delete cascade,
+  nome text not null,
+  ordem integer not null default 100,
+  created_at timestamptz not null default now()
+);
+
+create unique index if not exists tributacao_status_key
+  on public.tributacao_status (tributacao_id, lower(nome));
+
+create index if not exists tributacao_status_tributacao_idx
+  on public.tributacao_status (tributacao_id);
+
+alter table public.tributacao_status enable row level security;
+
+create policy tributacao_status_read on public.tributacao_status
+  for select to authenticated using (true);
+
+create policy tributacao_status_admin_all on public.tributacao_status
+  for all to authenticated using (is_admin()) with check (is_admin());
+
+-- Opções de Status já usadas por cada tabela do Movimento Fiscal.
+insert into public.tributacao_status (tributacao_id, nome, ordem)
+select t.id, s.nome, s.ordem
+from public.tributacoes t
+join (values
+  ('Simples Nacional', 'OK', 1),
+  ('Simples Nacional', 'OK-ENT', 2),
+  ('Simples Nacional', 'OK-SM', 3),
+  ('Simples Nacional', 'FAZENDO', 4),
+  ('Lucro Real', 'OK', 1),
+  ('Lucro Real', 'OK-ENT', 2),
+  ('Lucro Real', 'OK-SM', 3),
+  ('Lucro Real', 'FAZENDO', 4),
+  ('Lucro Presumido', 'OK', 1),
+  ('Lucro Presumido', 'OK-ENT', 2),
+  ('Lucro Presumido', 'OK-SM', 3),
+  ('Lucro Presumido', 'FAZENDO', 4),
+  ('MEI', 'OK', 1),
+  ('MEI', 'FAZENDO', 2),
+  ('MEI', 'OK-SM', 3),
+  ('Carne Leão', 'OK', 1),
+  ('Carne Leão', 'FAZENDO', 2),
+  ('Carne Leão', 'OK-ENT', 3),
+  ('Carne Leão', 'OK-SM', 4),
+  ('Simples Nacional/SM-Mensal', 'OK', 1),
+  ('Empregada Doméstica', 'OK', 1),
+  ('Pessoa Física', 'OK', 1)
+) as s(tributacao, nome, ordem) on s.tributacao = t.nome
+on conflict (tributacao_id, lower(nome)) do nothing;

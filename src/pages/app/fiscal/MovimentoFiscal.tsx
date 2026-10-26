@@ -52,6 +52,7 @@ import {
   SIMPLES_NACIONAL_TRIBUTACAO,
   SimplesNacionalTable,
 } from "./SimplesNacional";
+import { useStatusOptions } from "@/hooks/use-tributacao-status";
 import { isLucroTributacao } from "@/lib/fiscal-lucro-real";
 import { LucroRealPresumidoTable } from "./LucroRealPresumido";
 import { MEI_TRIBUTACAO, MeiTable } from "./Mei";
@@ -147,6 +148,9 @@ export function MovimentoFiscal() {
 
   const fiscal = findDepartmentByName(departments, FISCAL_DEPARTMENT_NAME);
 
+  /** Status cadastrados para a tributação selecionada (com fallback). */
+  const resolveStatusOptions = useStatusOptions();
+
   /** Subdepartamento que define as empresas e os responsáveis do módulo. */
   const SUBMENU = "Movimento Fiscal";
 
@@ -197,6 +201,11 @@ export function MovimentoFiscal() {
   const tributacaoSelecionada = tributacaoOptions.includes(tributacaoFiltro)
     ? tributacaoFiltro
     : (tributacaoOptions[0] ?? "");
+
+  const situacaoOptions = resolveStatusOptions(
+    tributacaoSelecionada,
+    SITUACAO_OPTIONS
+  );
 
   const rows = responsavelFiltered
     .filter(
@@ -622,7 +631,7 @@ export function MovimentoFiscal() {
                     <SelectContent>
                       <SelectItem value="todos">Todos</SelectItem>
                       <SelectItem value="branco">Em branco</SelectItem>
-                      {SITUACAO_OPTIONS.map((option) => (
+                      {situacaoOptions.map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>
@@ -754,7 +763,7 @@ export function MovimentoFiscal() {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="none">—</SelectItem>
-                              {SITUACAO_OPTIONS.map((option) => (
+                              {situacaoOptions.map((option) => (
                                 <SelectItem key={option} value={option}>
                                   {option}
                                 </SelectItem>

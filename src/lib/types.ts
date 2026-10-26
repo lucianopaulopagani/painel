@@ -16,6 +16,15 @@ export interface Tributacao {
   created_at: string;
 }
 
+/** Opção de Status de uma tributação (coluna Status do Movimento Fiscal). */
+export interface TributacaoStatus {
+  id: string;
+  tributacao_id: string;
+  nome: string;
+  ordem: number;
+  created_at: string;
+}
+
 export interface DepartmentRef {
   id: string;
   name: string;

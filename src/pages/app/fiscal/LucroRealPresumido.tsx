@@ -45,6 +45,7 @@ import {
   type LucroFieldDef,
   type LucroFieldKey,
 } from "@/lib/fiscal-lucro-real";
+import { useStatusOptions } from "@/hooks/use-tributacao-status";
 import { cn } from "@/lib/utils";
 import { CompanyNumber } from "@/components/company-number";
 import type { CompanyWithDepartments, MovementFiscalInput } from "@/lib/types";
@@ -107,6 +108,10 @@ export function LucroRealPresumidoTable({
     numero: string;
   } | null>(null);
   const [obsText, setObsText] = useState("");
+
+  /** Status cadastrados para esta tributação (com fallback). */
+  const resolveStatusOptions = useStatusOptions();
+  const situacaoOptions = resolveStatusOptions(tributacao, SITUACAO_OPTIONS);
 
   const { data: records } = useMovimentoFiscal(mes);
   const { data: allRecords } = useAllMovimentoFiscal();
@@ -326,7 +331,7 @@ export function LucroRealPresumidoTable({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="none">—</SelectItem>
-          {SITUACAO_OPTIONS.map((option) => (
+          {situacaoOptions.map((option) => (
             <SelectItem key={option} value={option}>
               {option}
             </SelectItem>
@@ -423,7 +428,7 @@ export function LucroRealPresumidoTable({
                   <SelectContent>
                     <SelectItem value="todos">Todos</SelectItem>
                     <SelectItem value="branco">Em branco</SelectItem>
-                    {SITUACAO_OPTIONS.map((option) => (
+                    {situacaoOptions.map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>
