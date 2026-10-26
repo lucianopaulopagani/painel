@@ -50,6 +50,7 @@ export default function AcessoriasTab() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [onlyNew, setOnlyNew] = useState(true);
+  const [onlyActive, setOnlyActive] = useState(false);
   /* Empresas escolhidas para importar (documentos = CNPJ/CPF). */
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const importMutation = useAcessoriasImport();
@@ -113,14 +114,14 @@ export default function AcessoriasTab() {
     );
   });
 
-  const empresas = onlyNew
-    ? matched.filter((empresa) => !empresa.existente && !empresa.problema)
-    : matched;
+  const empresas = matched.filter((empresa) => {
+    if (onlyNew && (empresa.existente || empresa.problema)) return false;
+    if (onlyActive && !empresa.ativa) return false;
+    return true;
+  });
 
-  /** Correspondências escondidas pelo filtro "somente as novas". */
-  const hiddenByFilter = onlyNew
-    ? matched.filter((empresa) => empresa.existente || empresa.problema).length
-    : 0;
+  /** Correspondências escondidas pelos filtros marcados. */
+  const hiddenByFilter = matched.length - empresas.length;
 
   const novas = (result?.empresas ?? []).filter(
     (empresa) => !empresa.existente && !empresa.problema
@@ -280,25 +281,37 @@ export default function AcessoriasTab() {
                 className="h-9 rounded-lg pl-9"
               />
             </div>
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
-              <Checkbox
-                checked={onlyNew}
-                onCheckedChange={(checked) => setOnlyNew(checked === true)}
-              />
-              Mostrar somente as novas
-            </label>
+            <div className="flex flex-col gap-2">
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
+                <Checkbox
+                  checked={onlyNew}
+                  onCheckedChange={(checked) => setOnlyNew(checked === true)}
+                />
+                Mostrar somente as novas
+              </label>
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
+                <Checkbox
+                  checked={onlyActive}
+                  onCheckedChange={(checked) => setOnlyActive(checked === true)}
+                />
+                Mostrar somente as ativas
+              </label>
+            </div>
             <span className="text-xs text-muted-foreground">
               {empresas.length} linha(s) · {selected.size} selecionada(s)
             </span>
             {hiddenByFilter > 0 && (
               <span className="flex items-center gap-2 text-xs text-muted-foreground">
-                {hiddenByFilter} resultado(s) também correspondem à busca e não
-                aparecem por não serem novas
+                {hiddenByFilter} resultado(s) também correspondem à busca e estão
+                ocultos pelos filtros marcados
                 <Button
                   type="button"
                   variant="ghost"
                   className="h-7 px-2 text-xs"
-                  onClick={() => setOnlyNew(false)}
+                  onClick={() => {
+                    setOnlyNew(false);
+                    setOnlyActive(false);
+                  }}
                 >
                   Mostrar também
                 </Button>
@@ -406,8 +419,8 @@ export default function AcessoriasTab() {
                     >
                       {query.trim()
                         ? `Nenhuma empresa encontrada para "${query.trim()}".${
-                            onlyNew
-                              ? " As empresas já cadastradas aqui não aparecem com o filtro \"somente as novas\"."
+                            onlyNew || onlyActive
+                              ? " Verifique os filtros marcados (somente as novas / somente as ativas)."
                               : ""
                           }`
                         : "Nenhuma empresa para mostrar com os filtros atuais."}
