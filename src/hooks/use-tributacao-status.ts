@@ -115,29 +115,11 @@ export function useFieldOptions() {
  * da tabela do Movimento Fiscal.
  */
 export function useStatusOptions() {
-  const { data: tributacoes } = useTributacoes();
-  const { data: statuses } = useTributacaoStatus();
-
-  const nameById = new Map(
-    (tributacoes ?? []).map((tributacao) => [tributacao.id, tributacao.nome])
-  );
-  const byTributacao = new Map<string, string[]>();
-  for (const status of statuses ?? []) {
-    const nome = nameById.get(status.tributacao_id);
-    if (!nome) continue;
-    const list = byTributacao.get(nome) ?? [];
-    list.push(status.nome);
-    byTributacao.set(nome, list);
-  }
-
+  const resolveFieldOptions = useFieldOptions();
   return (
     tributacao: string | null | undefined,
     fallback: readonly string[]
-  ): readonly string[] => {
-    if (!tributacao) return fallback;
-    const options = byTributacao.get(tributacao);
-    return options && options.length > 0 ? options : fallback;
-  };
+  ): readonly string[] => resolveFieldOptions(tributacao, "situacao", fallback);
 }
 
 /**
@@ -178,31 +160,11 @@ export function useFieldTone() {
  * (undefined quando o status não está cadastrado — a tabela usa o tom padrão).
  */
 export function useStatusTone() {
-  const { data: tributacoes } = useTributacoes();
-  const { data: statuses } = useTributacaoStatus();
-
-  const nameById = new Map(
-    (tributacoes ?? []).map((tributacao) => [tributacao.id, tributacao.nome])
-  );
-  const toneByKey = new Map<string, string>();
-  for (const status of statuses ?? []) {
-    const nome = nameById.get(status.tributacao_id);
-    if (!nome) continue;
-    toneByKey.set(
-      `${nome}\u0000${status.nome.trim().toUpperCase()}`,
-      statusColorClass(status.cor)
-    );
-  }
-
+  const resolveFieldTone = useFieldTone();
   return (
     tributacao: string | null | undefined,
     value: string | null | undefined
-  ): string | undefined => {
-    if (!tributacao || !value) return undefined;
-    return toneByKey.get(
-      `${tributacao}\u0000${value.trim().toUpperCase()}`
-    );
-  };
+  ): string | undefined => resolveFieldTone(tributacao, "situacao", value);
 }
 
 export function useCreateTributacaoStatus() {
