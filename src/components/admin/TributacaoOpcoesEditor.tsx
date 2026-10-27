@@ -18,6 +18,10 @@ import {
   useUpdateTributacaoStatus,
 } from "@/hooks/use-tributacao-status";
 import { dropdownFieldsFor, type DropdownField } from "@/lib/fiscal-fields";
+import {
+  useColumnLabel,
+  useUpdateColumnLabel,
+} from "@/hooks/use-fiscal-colunas";
 import { cn } from "@/lib/utils";
 import type { Tributacao, TributacaoStatus } from "@/lib/types";
 
@@ -40,18 +44,36 @@ function FieldOptions({
   field: DropdownField;
 }) {
   const { data: statuses } = useTributacaoStatus();
+  const columnLabel = useColumnLabel();
+  const updateLabel = useUpdateColumnLabel();
   const createMutation = useCreateTributacaoStatus();
   const updateMutation = useUpdateTributacaoStatus();
   const deleteMutation = useDeleteTributacaoStatus();
 
   const [novo, setNovo] = useState("");
   const [novaCor, setNovaCor] = useState<string>("neutral");
+  const [labelDraft, setLabelDraft] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
 
   const list = (statuses ?? []).filter(
     (status) =>
       status.tributacao_id === tributacao.id && status.campo === field.key
   );
+
+  const saveColumnLabel = async () => {
+    const label = (labelDraft ?? "").trim();
+    setLabelDraft(null);
+    const atual = columnLabel(field.key, field.label);
+    if (!label || label === atual) return;
+    try {
+      await updateLabel.mutateAsync({ campo: field.key, label });
+      toast.success("Nome da coluna atualizado.");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao atualizar o nome."
+      );
+    }
+  };
 
   const saveName = async (status: TributacaoStatus) => {
     const nome = (drafts[status.id] ?? status.nome).trim();
@@ -159,7 +181,21 @@ function FieldOptions({
   return (
     <div className="flex flex-col gap-2 rounded-lg border bg-card/60 p-2.5">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-semibold">{field.label}</span>
+        <Input
+          value={labelDraft ?? columnLabel(field.key, field.label)}
+          onChange={(event) => setLabelDraft(event.target.value)}
+          onBlur={() => void saveColumnLabel()}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              void saveColumnLabel();
+            }
+            if (event.key === "Escape") setLabelDraft(null);
+          }}
+          aria-label={`Nome da coluna ${field.label}`}
+          title="Nome da coluna no cabeçalho (vale para todas as tabelas do Fiscal)"
+          className="h-8 w-44 text-xs font-semibold"
+        />
         <span className="text-[11px] text-muted-foreground">
           {list.length} opç{list.length === 1 ? "ão" : "ões"}
           {list.length === 0 && " — usa a lista padrão"}
@@ -265,8 +301,9 @@ export function TributacaoOptionsEditor({
         <FieldOptions key={field.key} tributacao={tributacao} field={field} />
       ))}
       <p className="text-xs text-muted-foreground">
-        Renomeie no campo de texto (Enter ou sair para salvar) e escolha a cor ao
-        lado de cada opção.
+        O primeiro campo de cada seção é o nome da coluna no cabeçalho (vale
+        para todas as tabelas do Fiscal). Abaixo dele, renomeie cada opção
+        (Enter ou sair para salvar) e escolha a cor.
       </p>
     </div>
   );

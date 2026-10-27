@@ -158,6 +158,7 @@ export function MovimentoFiscal() {
   const resolveStatusTone = useStatusTone();
   const resolveFieldOptions = useFieldOptions();
   const resolveFieldTone = useFieldTone();
+  const columnLabel = useColumnLabel();
 
   /** Subdepartamento que define as empresas e os responsáveis do módulo. */
   const SUBMENU = "Movimento Fiscal";
@@ -626,7 +627,7 @@ export function MovimentoFiscal() {
                 </TableHead>
                 <TableHead className="w-20 px-1 py-1 align-bottom">
                   <span className="mb-1 block text-[11px] font-semibold lowercase text-foreground">
-                    status
+                    {columnLabel("situacao", "status")}
                   </span>
                   <Select
                     value={busca.situacao === "" ? "todos" : busca.situacao}
@@ -659,7 +660,7 @@ export function MovimentoFiscal() {
                       title={field.label}
                     >
                       <span className="mb-1 block whitespace-nowrap text-[11px] font-semibold lowercase text-foreground">
-                        {field.short}
+                        {columnLabel(field.key, field.short)}
                       </span>
                       <Select
                         value={
@@ -699,7 +700,7 @@ export function MovimentoFiscal() {
                       title={field.label}
                     >
                       <span className="mb-1 block whitespace-nowrap text-[11px] font-semibold lowercase text-foreground">
-                        {field.short}
+                        {columnLabel(field.key, field.short)}
                       </span>
                       <Input
                         value={busca[field.key as keyof typeof busca]}

@@ -49,6 +49,7 @@ import {
   useStatusOptions,
   useStatusTone,
 } from "@/hooks/use-tributacao-status";
+import { useColumnLabel } from "@/hooks/use-fiscal-colunas";
 import { cn, formatCpfCnpj } from "@/lib/utils";
 import type {
   CompanyWithDepartments,
@@ -145,6 +146,7 @@ export function SimplesNacionalTable({
   const resolveStatusTone = useStatusTone();
   const resolveFieldOptions = useFieldOptions();
   const resolveFieldTone = useFieldTone();
+  const columnLabel = useColumnLabel();
   const situacaoOptions = resolveStatusOptions(
     SIMPLES_NACIONAL_TRIBUTACAO,
     SITUACAO_OPTIONS
@@ -367,7 +369,12 @@ export function SimplesNacionalTable({
               {renderFilterInput("empresa", "Empresa", "w-36")}
               {renderFilterInput("cnpj", "CNPJ", "w-24")}
               {renderFilterInput("ie", "Insc. Estadual", "w-20")}
-              {renderFilterSelect("situacao", "Status", situacaoOptions, "w-20")}
+              {renderFilterSelect(
+                "situacao",
+                columnLabel("situacao", "Status"),
+                situacaoOptions,
+                "w-20"
+              )}
               {MOVIMENTO_FISCAL_FIELDS.map((field) => {
                 const head =
                   field.type === "checkbox" ? (
@@ -375,13 +382,13 @@ export function SimplesNacionalTable({
                       className={`${HEAD} w-12 text-center align-bottom`}
                     >
                       <span className="mb-1 block whitespace-nowrap">
-                        {field.short}
+                        {columnLabel(field.key, field.short)}
                       </span>
                     </TableHead>
                   ) : field.type === "select" ? (
                     renderFilterSelect(
                       field.key,
-                      field.short,
+                      columnLabel(field.key, field.short),
                       resolveFieldOptions(
                         SIMPLES_NACIONAL_TRIBUTACAO,
                         field.key,
@@ -390,7 +397,7 @@ export function SimplesNacionalTable({
                       "w-16"
                     )
                   ) : (
-                    renderFilterInput(field.key, field.short, "w-20")
+                    renderFilterInput(field.key, columnLabel(field.key, field.short), "w-20")
                   );
                 return (
                   <Fragment key={field.key}>

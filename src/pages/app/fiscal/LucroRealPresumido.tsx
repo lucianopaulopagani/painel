@@ -51,6 +51,7 @@ import {
   useStatusOptions,
   useStatusTone,
 } from "@/hooks/use-tributacao-status";
+import { useColumnLabel } from "@/hooks/use-fiscal-colunas";
 import { cn } from "@/lib/utils";
 import { CompanyNumber } from "@/components/company-number";
 import type { CompanyWithDepartments, MovementFiscalInput } from "@/lib/types";
@@ -119,6 +120,7 @@ export function LucroRealPresumidoTable({
   const resolveStatusTone = useStatusTone();
   const resolveFieldOptions = useFieldOptions();
   const resolveFieldTone = useFieldTone();
+  const columnLabel = useColumnLabel();
   const situacaoOptions = resolveStatusOptions(tributacao, SITUACAO_OPTIONS);
 
   const { data: records } = useMovimentoFiscal(mes);
@@ -429,7 +431,9 @@ export function LucroRealPresumidoTable({
               {renderFilterInput("empresa", "Empresas", "w-56")}
               {renderFilterSelect("uf", "UF", "w-12", ufOptions)}
               <TableHead className={`${HEAD} w-24 align-bottom`}>
-                <span className="mb-1 block whitespace-nowrap">Status</span>
+                <span className="mb-1 block whitespace-nowrap">
+                  {columnLabel("situacao", "Status")}
+                </span>
                 <Select
                   value={busca.situacao === "" ? "todos" : busca.situacao}
                   onValueChange={(value) =>
@@ -453,7 +457,7 @@ export function LucroRealPresumidoTable({
               {LUCRO_FIELDS.map((field) =>
                 renderFilterSelect(
                   field.key,
-                  field.label,
+                  columnLabel(field.key, field.label),
                   field.key === "dime_gia_pr" ? "w-24" : "w-20",
                   resolveFieldOptions(tributacao, field.key, LUCRO_OPTIONS)
                 )

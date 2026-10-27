@@ -1,0 +1,39 @@
+create table if not exists public.fiscal_colunas (
+  campo text primary key,
+  label text not null,
+  updated_at timestamptz not null default now()
+);
+
+comment on table public.fiscal_colunas is 'Nome exibido no cabeçalho de cada coluna do Movimento Fiscal (vale para todas as tabelas do departamento Fiscal).';
+
+alter table public.fiscal_colunas enable row level security;
+
+create policy fiscal_colunas_read on public.fiscal_colunas
+  for select to authenticated using (true);
+
+create policy fiscal_colunas_admin_all on public.fiscal_colunas
+  for all to authenticated using (is_admin()) with check (is_admin());
+
+insert into public.fiscal_colunas (campo, label) values
+  ('situacao', 'Status'),
+  ('das', 'DAS'),
+  ('guia', 'Guia'),
+  ('destda', 'DESTDA'),
+  ('envio_sn', 'Envio/SN'),
+  ('envio_icms', 'Envio/ICMS'),
+  ('prestados', 'Prestados'),
+  ('tomados', 'Tomados'),
+  ('iss_fixo', 'ISS Fixo'),
+  ('carne_leao', 'Carne Leão'),
+  ('envio_guia', 'Envio/Guia'),
+  ('issqn', 'ISSQN'),
+  ('dime_gia_pr', 'DIME/GIA PR'),
+  ('dapi', 'DAPI'),
+  ('gia_rs', 'GIA RS'),
+  ('drcst', 'DRCST'),
+  ('sped_fiscal', 'SPED FISCAL'),
+  ('sped_contr', 'SPED CONTR'),
+  ('reinf', 'REINF'),
+  ('dirbi', 'DIRBI'),
+  ('mit', 'MIT')
+on conflict (campo) do nothing;

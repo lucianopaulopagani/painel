@@ -16,6 +16,13 @@ export interface Tributacao {
   created_at: string;
 }
 
+/** Nome exibido no cabeçalho de uma coluna do Movimento Fiscal. */
+export interface FiscalColuna {
+  campo: string;
+  label: string;
+  updated_at: string;
+}
+
 /** Opção de Status de uma tributação (coluna Status do Movimento Fiscal). */
 export interface TributacaoStatus {
   id: string;

@@ -110,6 +110,7 @@ export function MovimentoSimplesTable({
   /** Status cadastrados para esta tributação (com fallback "OK"). */
   const resolveStatusOptions = useStatusOptions();
   const resolveStatusTone = useStatusTone();
+  const columnLabel = useColumnLabel();
   const situacaoOptions = resolveStatusOptions(
     tributacao,
     MOVIMENTO_SIMPLES_SITUACAO_OPTIONS
@@ -256,7 +257,9 @@ export function MovimentoSimplesTable({
               {renderFilterInput("cnpj", "CNPJ", "w-32")}
               {renderFilterInput("ie", "Insc. Estadual", "w-32")}
               <TableHead className={`${HEAD} w-24 align-bottom`}>
-                <span className="mb-1 block whitespace-nowrap">Status</span>
+                <span className="mb-1 block whitespace-nowrap">
+                  {columnLabel("situacao", "Status")}
+                </span>
                 <Select
                   value={busca.situacao === "" ? "todos" : busca.situacao}
                   onValueChange={(value) =>

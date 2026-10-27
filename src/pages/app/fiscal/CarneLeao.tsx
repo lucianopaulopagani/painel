@@ -31,6 +31,7 @@ import {
   useStatusOptions,
   useStatusTone,
 } from "@/hooks/use-tributacao-status";
+import { useColumnLabel } from "@/hooks/use-fiscal-colunas";
 import { CompanyNumber } from "@/components/company-number";
 import { cn, formatCpfCnpj } from "@/lib/utils";
 import type { CompanyWithDepartments, MovimentoCarneLeaoInput } from "@/lib/types";
@@ -88,6 +89,7 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
   const resolveStatusTone = useStatusTone();
   const resolveFieldOptions = useFieldOptions();
   const resolveFieldTone = useFieldTone();
+  const columnLabel = useColumnLabel();
   const situacaoOptions = resolveStatusOptions(
     CARNE_LEAO_TRIBUTACAO,
     CARNE_LEAO_SITUACAO_OPTIONS
@@ -287,10 +289,15 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
               </TableHead>
               {renderFilterInput("empresa", "Empresa", "w-48")}
               {renderFilterInput("cpf", "CPF", "w-28")}
-              {renderFilterSelect("situacao", "Status", situacaoOptions, "w-28")}
+              {renderFilterSelect(
+                "situacao",
+                columnLabel("situacao", "Status"),
+                situacaoOptions,
+                "w-28"
+              )}
               {renderFilterSelect(
                 "prestados",
-                "Prestados",
+                columnLabel("prestados", "Prestados"),
                 resolveFieldOptions(
                   CARNE_LEAO_TRIBUTACAO,
                   "prestados",
@@ -299,7 +306,7 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
               )}
               {renderFilterSelect(
                 "tomados",
-                "Tomados",
+                columnLabel("tomados", "Tomados"),
                 resolveFieldOptions(
                   CARNE_LEAO_TRIBUTACAO,
                   "tomados",
@@ -308,7 +315,7 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
               )}
               {renderFilterSelect(
                 "iss",
-                "ISS Fixo",
+                columnLabel("iss_fixo", "ISS Fixo"),
                 resolveFieldOptions(
                   CARNE_LEAO_TRIBUTACAO,
                   "iss_fixo",
@@ -317,7 +324,7 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
               )}
               {renderFilterSelect(
                 "carne",
-                "Carne Leão",
+                columnLabel("carne_leao", "Carne Leão"),
                 resolveFieldOptions(
                   CARNE_LEAO_TRIBUTACAO,
                   "carne_leao",
@@ -326,7 +333,7 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
               )}
               {renderFilterSelect(
                 "envio",
-                "Envio/Guia",
+                columnLabel("envio_guia", "Envio/Guia"),
                 resolveFieldOptions(
                   CARNE_LEAO_TRIBUTACAO,
                   "envio_guia",

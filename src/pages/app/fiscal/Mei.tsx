@@ -40,6 +40,7 @@ import {
   useStatusOptions,
   useStatusTone,
 } from "@/hooks/use-tributacao-status";
+import { useColumnLabel } from "@/hooks/use-fiscal-colunas";
 import type {
   CompanyWithDepartments,
   MovementFiscalInput,
@@ -125,6 +126,7 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
   const resolveStatusTone = useStatusTone();
   const resolveFieldOptions = useFieldOptions();
   const resolveFieldTone = useFieldTone();
+  const columnLabel = useColumnLabel();
   const situacaoOptions = resolveStatusOptions(
     MEI_TRIBUTACAO,
     MEI_SITUACAO_VALUES
@@ -263,7 +265,9 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
               </TableHead>
               {renderFilterInput("empresa", "Empresa", "w-[22rem]")}
               <TableHead className={`${HEAD} w-24 align-bottom`}>
-                <span className="mb-1 block whitespace-nowrap">Status</span>
+                <span className="mb-1 block whitespace-nowrap">
+                  {columnLabel("situacao", "Status")}
+                </span>
                 <Select
                   value={busca.situacao === "" ? "todos" : busca.situacao}
                   onValueChange={(value) =>
@@ -285,7 +289,7 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                 </Select>
               </TableHead>
               <TableHead className={`${HEAD} w-20 align-bottom`}>
-                <span className="mb-1 block">DAS</span>
+                <span className="mb-1 block">{columnLabel("das", "DAS")}</span>
                 <Select
                   value={busca.das === "" ? "todos" : busca.das}
                   onValueChange={(value) =>
@@ -311,7 +315,9 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                 </Select>
               </TableHead>
               <TableHead className={`${HEAD} w-20 align-bottom`}>
-                <span className="mb-1 block">Envio</span>
+                <span className="mb-1 block">
+                  {columnLabel("envio_sn", "Envio")}
+                </span>
                 <Select
                   value={busca.envio === "" ? "todos" : busca.envio}
                   onValueChange={(value) =>

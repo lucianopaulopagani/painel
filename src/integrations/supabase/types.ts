@@ -4417,6 +4417,24 @@ export type Database = {
           },
         ]
       }
+      fiscal_colunas: {
+        Row: {
+          campo: string
+          label: string
+          updated_at: string
+        }
+        Insert: {
+          campo: string
+          label: string
+          updated_at?: string
+        }
+        Update: {
+          campo?: string
+          label?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       movimento_fiscal: {
         Row: {
           antecipacao: string | null
