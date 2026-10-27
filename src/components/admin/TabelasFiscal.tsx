@@ -64,7 +64,7 @@ export default function TabelasFiscal() {
   /* Tabelas com o editor de colunas aberto. */
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
-  const tabelas = tabelasDoDepartamento(FISCAL_DEPARTMENT_NAME, tributacoes);
+  const tabelas = tabelasDoDepartamento(FISCAL_DEPARTMENT_NAME, { tributacoes });
 
   /** Quantas empresas usam a tributação (para avisar antes de excluir). */
   const usageOf = (nome: string): number =>

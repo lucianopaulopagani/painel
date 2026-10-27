@@ -43,6 +43,7 @@ import {
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
+import { useCadastroLabels } from "@/hooks/use-cadastro-tabelas";
 import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import {
   EMPRESAS_FUNC_DCTFWEB_OPTIONS,
@@ -93,6 +94,8 @@ const EMPRESA_EDGE = "border-r border-border";
 
 export default function EmpresasFuncionarios() {
   const [mes, setMes] = useState<string>(readStoredMes);
+  /* Nomes das colunas cadastrados na administração (Cadastro de Tabelas). */
+  const columnLabel = useCadastroLabels(PESSOAL_DEPARTMENT_NAME);
   const [busca, setBusca] = useState({
     status: "",
     numero: "",
@@ -726,19 +729,19 @@ export default function EmpresasFuncionarios() {
           <Table className="table-fixed min-w-[1144px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
-                {renderFilterSelect("status", "Status", STATUS_SELECT_OPTIONS, "w-32", `${STICKY_HEAD} left-0`)}
-                {renderFilterInput("numero", "Nº", "w-10", `${STICKY_HEAD} ${N_LEFT}`)}
-                {renderFilterInput("empresa", "Empresa", "w-24", `${STICKY_HEAD} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`)}
-                {renderFilterInput("cnpj", "CNPJ", "w-24")}
-                {renderFilterInput("tributacao", "Tributação", "w-24")}
-                {renderFilterSelect("dataBase", "Data Base", EMPRESAS_FUNC_MESES_OPTIONS, "w-20")}
-                {renderFilterSelect("folha", "Folha", EMPRESAS_FUNC_FOLHA_OPTIONS, "w-24")}
-                {renderFilterSelect("emprestimo", "Empréstimo", EMPRESAS_FUNC_EMPRESTIMO_OPTIONS, "w-24")}
-                {renderFilterSelect("fgts", "FGTS", EMPRESAS_FUNC_FGTS_OPTIONS, "w-20")}
-                {renderFilterSelect("taxaSindical", "Taxa Sindical", EMPRESAS_FUNC_FLAG_OPTIONS, "w-24")}
-                {renderFilterSelect("dctfweb", "DCTFWEB", EMPRESAS_FUNC_DCTFWEB_OPTIONS, "w-20")}
-                {renderFilterSelect("envio", "Envio", EMPRESAS_FUNC_ENVIO_OPTIONS, "w-20")}
-                {renderFilterInput("notas", "Notas", "w-20")}
+                {renderFilterSelect("status", columnLabel("status", "Status"), STATUS_SELECT_OPTIONS, "w-32", `${STICKY_HEAD} left-0`)}
+                {renderFilterInput("numero", columnLabel("numero", "Nº"), "w-10", `${STICKY_HEAD} ${N_LEFT}`)}
+                {renderFilterInput("empresa", columnLabel("empresa", "Empresa"), "w-24", `${STICKY_HEAD} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`)}
+                {renderFilterInput("cnpj", columnLabel("cnpj", "CNPJ"), "w-24")}
+                {renderFilterInput("tributacao", columnLabel("tributacao", "Tributação"), "w-24")}
+                {renderFilterSelect("dataBase", columnLabel("dataBase", "Data Base"), EMPRESAS_FUNC_MESES_OPTIONS, "w-20")}
+                {renderFilterSelect("folha", columnLabel("folha", "Folha"), EMPRESAS_FUNC_FOLHA_OPTIONS, "w-24")}
+                {renderFilterSelect("emprestimo", columnLabel("emprestimo", "Empréstimo"), EMPRESAS_FUNC_EMPRESTIMO_OPTIONS, "w-24")}
+                {renderFilterSelect("fgts", columnLabel("fgts", "FGTS"), EMPRESAS_FUNC_FGTS_OPTIONS, "w-20")}
+                {renderFilterSelect("taxaSindical", columnLabel("taxaSindical", "Taxa Sindical"), EMPRESAS_FUNC_FLAG_OPTIONS, "w-24")}
+                {renderFilterSelect("dctfweb", columnLabel("dctfweb", "DCTFWEB"), EMPRESAS_FUNC_DCTFWEB_OPTIONS, "w-20")}
+                {renderFilterSelect("envio", columnLabel("envio", "Envio"), EMPRESAS_FUNC_ENVIO_OPTIONS, "w-20")}
+                {renderFilterInput("notas", columnLabel("notas", "Notas"), "w-20")}
               </TableRow>
             </TableHeader>
             <TableBody>

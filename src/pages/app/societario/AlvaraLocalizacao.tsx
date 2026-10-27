@@ -33,6 +33,7 @@ import {
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { SOCIETARIO_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
+import { useCadastroLabels } from "@/hooks/use-cadastro-tabelas";
 import {
   companyUsesSubmenu,
   isCompanyInSubmenuInYear,
@@ -80,6 +81,8 @@ export default function AlvaraLocalizacao() {
   const [municipioFiltro, setMunicipioFiltro] = useState("todos");
   const [vencimentoDe, setVencimentoDe] = useState("");
   const [vencimentoAte, setVencimentoAte] = useState("");
+  /* Nomes das colunas cadastrados na administração (Cadastro de Tabelas). */
+  const columnLabel = useCadastroLabels(SOCIETARIO_DEPARTMENT_NAME);
   const [busca, setBusca] = useState({
     numero: "",
     empresa: "",
@@ -487,22 +490,22 @@ export default function AlvaraLocalizacao() {
           <Table className="table-fixed min-w-[1240px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
-                {renderFilterInput("numero", "Nº", "w-12")}
-                {renderFilterInput("empresa", "Empresa", "w-56")}
-                {renderFilterInput("cnpj", "CNPJ", "w-36")}
-                {renderFilterSelect("uf", "UF", ufOptions, "w-16")}
+                {renderFilterInput("numero", columnLabel("numero", "Nº"), "w-12")}
+                {renderFilterInput("empresa", columnLabel("empresa", "Empresa"), "w-56")}
+                {renderFilterInput("cnpj", columnLabel("cnpj", "CNPJ"), "w-36")}
+                {renderFilterSelect("uf", columnLabel("uf", "UF"), ufOptions, "w-16")}
                 {renderFilterSelect(
                   "municipio",
-                  "Município",
+                  columnLabel("municipio", "Município"),
                   municipioOptions,
                   "w-40"
                 )}
-                {renderFilterInput("observacao", "Observação", "w-72")}
-                {renderFilterInput("vencimento", "Venc.", "w-20")}
-                {renderFilterSelect("gerado", "Gerado", ALVARA_GERADO_OPTIONS, "w-24")}
+                {renderFilterInput("observacao", columnLabel("observacao", "Observação"), "w-72")}
+                {renderFilterInput("vencimento", columnLabel("venc_alvara", "Venc."), "w-20")}
+                {renderFilterSelect("gerado", columnLabel("gerado", "Gerado"), ALVARA_GERADO_OPTIONS, "w-24")}
                 {renderFilterSelect(
                   "enviado",
-                  "Enviado",
+                  columnLabel("enviado", "Enviado"),
                   ALVARA_ENVIADO_OPTIONS,
                   "w-24"
                 )}

@@ -34,6 +34,11 @@ const SECTIONS: ManualSection[] = [
         label: "Empresas",
         detail:
           "Somente as empresas marcadas com o departamento Societário no cadastro de empresas aparecem aqui.",
+      },
+      {
+        label: "Nomes das colunas (administração)",
+        detail:
+          "Os nomes das colunas das tabelas deste departamento são cadastrados no painel de administração, em Cadastro de Tabelas › Departamento Societário › abrir a tabela (botão de seta) e editar o primeiro campo de cada coluna.",
       },      {
         label: "Datas por subdepartamento",
         detail:

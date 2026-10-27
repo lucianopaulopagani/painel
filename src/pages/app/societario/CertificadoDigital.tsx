@@ -39,6 +39,7 @@ import {
   SOCIETARIO_DEPARTMENT_NAME,
   findDepartmentByName,
 } from "@/lib/departments";
+import { useCadastroLabels } from "@/hooks/use-cadastro-tabelas";
 import {
   companyUsesSubmenu,
   isCompanyInSubmenuInYear,
@@ -89,6 +90,8 @@ export default function CertificadoDigital() {
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: certificates } = useCertificates();
+  /* Nomes das colunas cadastrados na administração (Cadastro de Tabelas). */
+  const columnLabel = useCadastroLabels(SOCIETARIO_DEPARTMENT_NAME);
 
   const [editing, setEditing] = useState<CertificateRow | null>(null);
 
@@ -385,19 +388,19 @@ export default function CertificadoDigital() {
           <Table className="min-w-[1250px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
-                {filterInput("vencimento", "Vencimento")}
-                {filterSelect("situacao", "Situação", Object.values(LEVEL_SITUACAO))}
-                {filterSelect("status", "Status", Object.values(LEVEL_STATUS))}
-                {filterInput("empresa", "Empresa")}
-                {filterInput("socio", "Responsável")}
-                {filterInput("socioCpf", "CPF")}
-                {filterSelect("produto", "Produto", CERTIFICATE_PRODUCTS)}
-                {filterSelect("avisado", "Avisado", ["Sim", "Não"])}
-                {filterSelect("financ", "Financ.", ["Sim", "Não"])}
-                {filterInput("agendamento", "Agendamento")}
-                {filterInput("observacoes", "Observações")}
+                {filterInput("vencimento", columnLabel("vencimento", "Vencimento"))}
+                {filterSelect("situacao", columnLabel("situacao", "Situação"), Object.values(LEVEL_SITUACAO))}
+                {filterSelect("status", columnLabel("status", "Status"), Object.values(LEVEL_STATUS))}
+                {filterInput("empresa", columnLabel("empresa", "Empresa"))}
+                {filterInput("socio", columnLabel("socio", "Responsável"))}
+                {filterInput("socioCpf", columnLabel("socioCpf", "CPF"))}
+                {filterSelect("produto", columnLabel("produto", "Produto"), CERTIFICATE_PRODUCTS)}
+                {filterSelect("avisado", columnLabel("avisado", "Avisado"), ["Sim", "Não"])}
+                {filterSelect("financ", columnLabel("financ", "Financ."), ["Sim", "Não"])}
+                {filterInput("agendamento", columnLabel("agendamento", "Agendamento"))}
+                {filterInput("observacoes", columnLabel("observacoes", "Observações"))}
                 <TableHead className={`${HEAD} w-20 text-right align-bottom`}>
-                  <span className="mb-1 block">Ações</span>
+                  <span className="mb-1 block">{columnLabel("acoes", "Ações")}</span>
                 </TableHead>
               </TableRow>
             </TableHeader>

@@ -22,6 +22,7 @@ import { usePonto, usePontoAll, useSavePonto } from "@/hooks/use-ponto";
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
+import { useCadastroLabels } from "@/hooks/use-cadastro-tabelas";
 import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
 import { PONTO_ENVIO_DESATIVADO, PONTO_ENVIO_OPTIONS } from "@/lib/ponto";
@@ -55,6 +56,8 @@ export default function Ponto() {
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: records } = usePonto(mes);
   const { data: allRecords } = usePontoAll();
+  /* Nomes das colunas cadastrados na administração (Cadastro de Tabelas). */
+  const columnLabel = useCadastroLabels(PESSOAL_DEPARTMENT_NAME);
   const saveMutation = useSavePonto(mes);
 
   const pessoal = findDepartmentByName(departments, PESSOAL_DEPARTMENT_NAME);
@@ -241,7 +244,7 @@ export default function Ponto() {
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
                 <TableHead className={`${HEAD} w-16 align-bottom`}>
-                  <span className="mb-1 block">Nº</span>
+                  <span className="mb-1 block">{columnLabel("numero", "Nº")}</span>
                   <Input
                     value={busca.numero}
                     onChange={(e) =>
@@ -252,7 +255,7 @@ export default function Ponto() {
                   />
                 </TableHead>
                 <TableHead className={`${HEAD} align-bottom`}>
-                  <span className="mb-1 block">Empresa</span>
+                  <span className="mb-1 block">{columnLabel("empresa", "Empresa")}</span>
                   <Input
                     value={busca.empresa}
                     onChange={(e) =>
@@ -263,7 +266,7 @@ export default function Ponto() {
                   />
                 </TableHead>
                 <TableHead className={`${HEAD} w-36 align-bottom`}>
-                  <div className="mb-1">Envio</div>
+                  <div className="mb-1">{columnLabel("envio", "Envio")}</div>
                   <Select
                     value={busca.envio === "" ? "todos" : busca.envio}
                     onValueChange={(value) =>

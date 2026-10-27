@@ -21,6 +21,11 @@ const SECTIONS: ManualSection[] = [
         detail:
           "Cada submenu tem o seletor de mês de referência (o mês anterior ao mês em curso), com a escolha lembrada no navegador.",
       },
+      {
+        label: "Nomes das colunas (administração)",
+        detail:
+          "Os nomes das colunas das tabelas deste departamento são cadastrados no painel de administração, em Cadastro de Tabelas › Departamento Pessoal › abrir a tabela (botão de seta) e editar o primeiro campo de cada coluna. O nome escolhido vale para as tabelas do departamento que usam a mesma coluna (por exemplo, Envio vale para Empresas com funcionários, Domésticas e Complemento INSS).",
+      },
     ],
   },
   {

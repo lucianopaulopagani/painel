@@ -32,6 +32,7 @@ import { useCompanies } from "@/hooks/use-companies";
 import { useContabilUsuarios } from "@/hooks/use-contabil-usuarios";
 import { useDepartments } from "@/hooks/use-departments";
 import { CONTABIL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
+import { useCadastroLabels } from "@/hooks/use-cadastro-tabelas";
 import {
   companyUsesSubmenu,
   isCompanyInSubmenuInMonth,
@@ -64,6 +65,8 @@ const EMPRESA_EDGE = "border-r border-border";
 
 export default function BalanceteBalanco() {
   const [ano, setAno] = useState<string>(readStoredBalanceteAno);
+  /* Nomes das colunas cadastrados na administração (Cadastro de Tabelas). */
+  const columnLabel = useCadastroLabels(CONTABIL_DEPARTMENT_NAME);
   const [busca, setBusca] = useState<Record<string, string>>({
     usuario: "",
     numero: "",
@@ -388,7 +391,7 @@ export default function BalanceteBalanco() {
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
                 <TableHead className={`${HEAD} w-10 ${N_LEFT} ${STICKY_HEAD}`}>
-                  <span className="mb-1 block">Nº</span>
+                  <span className="mb-1 block">{columnLabel("numero", "Nº")}</span>
                   <Input
                     value={busca.numero}
                     onChange={(e) => setBuscaField("numero", e.target.value)}
@@ -399,7 +402,7 @@ export default function BalanceteBalanco() {
                 <TableHead
                   className={`${HEAD} w-12 ${UF_LEFT} ${STICKY_HEAD} align-bottom`}
                 >
-                  <span className="mb-1 block">UF</span>
+                  <span className="mb-1 block">{columnLabel("uf", "UF")}</span>
                   <Select
                     value={busca.uf === "" ? "todos" : busca.uf}
                     onValueChange={(value) =>
@@ -423,7 +426,7 @@ export default function BalanceteBalanco() {
                 <TableHead
                   className={`${HEAD} w-32 ${STICKY_HEAD} ${EMPRESA_LEFT} ${EMPRESA_EDGE}`}
                 >
-                  <span className="mb-1 block">Empresa</span>
+                  <span className="mb-1 block">{columnLabel("empresa", "Empresa")}</span>
                   <Input
                     value={busca.empresa}
                     onChange={(e) => setBuscaField("empresa", e.target.value)}
@@ -434,8 +437,8 @@ export default function BalanceteBalanco() {
                 {BALANCETE_MESES.map((mes) =>
                   renderFilterMonth(mes.key, mes.label)
                 )}
-                {renderFilterMonth("fechamento", "Fechamento", BALANCETE_FECHAMENTO_OPTIONS, "w-24")}
-                {renderFilterInput("observacoes", "Obs.", "w-20")}
+                {renderFilterMonth("fechamento", columnLabel("fechamento", "Fechamento"), BALANCETE_FECHAMENTO_OPTIONS, "w-24")}
+                {renderFilterInput("observacoes", columnLabel("observacoes", "Obs."), "w-20")}
               </TableRow>
             </TableHeader>
             <TableBody>

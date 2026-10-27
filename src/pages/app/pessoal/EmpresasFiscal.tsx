@@ -36,6 +36,7 @@ import {
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
+import { useCadastroLabels } from "@/hooks/use-cadastro-tabelas";
 import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import {
   EMPRESAS_FISCAL_DCTFWEB_OPTIONS,
@@ -73,6 +74,8 @@ const ENVIO_SELECT_OPTIONS = EMPRESAS_FISCAL_ENVIO_OPTIONS.filter(
 
 export default function EmpresasFiscal() {
   const [mes, setMes] = useState<string>(readStoredMes);
+  /* Nomes das colunas cadastrados na administração (Cadastro de Tabelas). */
+  const columnLabel = useCadastroLabels(PESSOAL_DEPARTMENT_NAME);
   const [busca, setBusca] = useState({
     status: "",
     numero: "",
@@ -386,7 +389,7 @@ export default function EmpresasFiscal() {
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
                 <TableHead className={`${HEAD} w-24 align-bottom`}>
-                  <span className="mb-1 block">Status</span>
+                  <span className="mb-1 block">{columnLabel("status", "Status")}</span>
                   <Select
                     value={busca.status === "" ? "todos" : busca.status}
                     onValueChange={(value) =>
@@ -408,7 +411,7 @@ export default function EmpresasFiscal() {
                   </Select>
                 </TableHead>
                 <TableHead className={`${HEAD} w-14 align-bottom`}>
-                  <span className="mb-1 block">Nº</span>
+                  <span className="mb-1 block">{columnLabel("numero", "Nº")}</span>
                   <Input
                     value={busca.numero}
                     onChange={(e) =>
@@ -419,7 +422,7 @@ export default function EmpresasFiscal() {
                   />
                 </TableHead>
                 <TableHead className={`${HEAD} w-36 align-bottom`}>
-                  <span className="mb-1 block">Empresa</span>
+                  <span className="mb-1 block">{columnLabel("empresa", "Empresa")}</span>
                   <Input
                     value={busca.empresa}
                     onChange={(e) =>
@@ -430,7 +433,7 @@ export default function EmpresasFiscal() {
                   />
                 </TableHead>
                 <TableHead className={`${HEAD} w-36 align-bottom`}>
-                  <span className="mb-1 block">CNPJ</span>
+                  <span className="mb-1 block">{columnLabel("cnpj", "CNPJ")}</span>
                   <Input
                     value={busca.cnpj}
                     onChange={(e) => setBuscaField("cnpj", e.target.value)}
@@ -439,7 +442,7 @@ export default function EmpresasFiscal() {
                   />
                 </TableHead>
                 <TableHead className={`${HEAD} w-64 align-bottom`}>
-                  <span className="mb-1 block">Informações fechamento</span>
+                  <span className="mb-1 block">{columnLabel("informacoes", "Informações fechamento")}</span>
                   <Input
                     value={busca.informacoes}
                     onChange={(e) =>
@@ -450,7 +453,7 @@ export default function EmpresasFiscal() {
                   />
                 </TableHead>
                 <TableHead className={`${HEAD} w-24 align-bottom`}>
-                  <span className="mb-1 block">DCTFWEB</span>
+                  <span className="mb-1 block">{columnLabel("dctfweb", "DCTFWEB")}</span>
                   <Select
                     value={busca.dctfweb === "" ? "todos" : busca.dctfweb}
                     onValueChange={(value) =>
@@ -472,7 +475,7 @@ export default function EmpresasFiscal() {
                   </Select>
                 </TableHead>
                 <TableHead className={`${HEAD} w-28 align-bottom`}>
-                  <span className="mb-1 block">Envio</span>
+                  <span className="mb-1 block">{columnLabel("envio", "Envio")}</span>
                   <Select
                     value={busca.envio === "" ? "todos" : busca.envio}
                     onValueChange={(value) =>

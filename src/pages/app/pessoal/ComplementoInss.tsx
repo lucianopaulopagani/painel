@@ -36,6 +36,7 @@ import {
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
+import { useCadastroLabels } from "@/hooks/use-cadastro-tabelas";
 import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import {
   COMPLEMENTO_INSS_DARF_OPTIONS,
@@ -66,6 +67,8 @@ const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
 
 export default function ComplementoInss() {
   const [mes, setMes] = useState<string>(readStoredMes);
+  /* Nomes das colunas cadastrados na administração (Cadastro de Tabelas). */
+  const columnLabel = useCadastroLabels(PESSOAL_DEPARTMENT_NAME);
   const [busca, setBusca] = useState({
     numero: "",
     empresa: "",
@@ -381,7 +384,7 @@ export default function ComplementoInss() {
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
                 <TableHead className={`${HEAD} w-14 align-bottom`}>
-                  <span className="mb-1 block">Nº</span>
+                  <span className="mb-1 block">{columnLabel("numero", "Nº")}</span>
                   <Input
                     value={busca.numero}
                     onChange={(e) => setBuscaField("numero", e.target.value)}
@@ -390,7 +393,7 @@ export default function ComplementoInss() {
                   />
                 </TableHead>
                 <TableHead className={`${HEAD} w-48 align-bottom`}>
-                  <span className="mb-1 block">Empresa</span>
+                  <span className="mb-1 block">{columnLabel("empresa", "Empresa")}</span>
                   <Input
                     value={busca.empresa}
                     onChange={(e) => setBuscaField("empresa", e.target.value)}
@@ -399,7 +402,7 @@ export default function ComplementoInss() {
                   />
                 </TableHead>
                 <TableHead className={`${HEAD} w-72 align-bottom`}>
-                  <span className="mb-1 block">Observações</span>
+                  <span className="mb-1 block">{columnLabel("observacoes", "Observações")}</span>
                   <Input
                     value={busca.observacoes}
                     onChange={(e) =>
@@ -409,8 +412,8 @@ export default function ComplementoInss() {
                     className="h-6 w-full min-w-0 px-1 text-xs"
                   />
                 </TableHead>
-                {renderFilterSelect("darf", "DARF", COMPLEMENTO_INSS_DARF_OPTIONS)}
-                {renderFilterSelect("envio", "Envio", COMPLEMENTO_INSS_ENVIO_OPTIONS)}
+                {renderFilterSelect("darf", columnLabel("darf", "DARF"), COMPLEMENTO_INSS_DARF_OPTIONS)}
+                {renderFilterSelect("envio", columnLabel("envio", "Envio"), COMPLEMENTO_INSS_ENVIO_OPTIONS)}
               </TableRow>
             </TableHeader>
             <TableBody>

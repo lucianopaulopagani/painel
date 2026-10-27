@@ -45,6 +45,7 @@ import {
   DOMESTICAS_STATUS_OPTIONS,
 } from "@/lib/domesticas";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
+import { useCadastroLabels } from "@/hooks/use-cadastro-tabelas";
 import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
 import {
@@ -87,6 +88,8 @@ type PinnedKey = "data_base" | "senha";
  */
 export default function Domesticas() {
   const [mes, setMes] = useState<string>(readStoredMes);
+  /* Nomes das colunas cadastrados na administração (Cadastro de Tabelas). */
+  const columnLabel = useCadastroLabels(PESSOAL_DEPARTMENT_NAME);
   const [busca, setBusca] = useState({
     status: "",
     dataBase: "",
@@ -422,16 +425,16 @@ export default function Domesticas() {
     <Table className="table-fixed min-w-[1180px]">
       <TableHeader>
         <TableRow className="bg-muted hover:bg-muted">
-          {renderFilterSelect("status", "Status", DOMESTICAS_STATUS_OPTIONS, "w-28")}
-          {renderFilterSelect("dataBase", "Data Base", DOMESTICAS_MESES_OPTIONS)}
-          {renderFilterInput("numero", "N", "w-12")}
-          {renderFilterInput("nome", "Nome", "w-56")}
-          {renderFilterInput("cpf", "CPF", "w-32")}
-          {renderFilterInput("senha", "Senha", "w-40")}
-          {renderFilterSelect("folha", "Folha", DOMESTICAS_FOLHA_OPTIONS)}
-          {renderFilterSelect("dae", "DAE", DOMESTICAS_DAE_OPTIONS)}
-          {renderFilterSelect("envio", "Envio", DOMESTICAS_ENVIO_OPTIONS)}
-          {renderFilterSelect("ponto", "Ponto", DOMESTICAS_PONTO_OPTIONS)}
+          {renderFilterSelect("status", columnLabel("status", "Status"), DOMESTICAS_STATUS_OPTIONS, "w-28")}
+          {renderFilterSelect("dataBase", columnLabel("dataBase", "Data Base"), DOMESTICAS_MESES_OPTIONS)}
+          {renderFilterInput("numero", columnLabel("numero", "N"), "w-12")}
+          {renderFilterInput("nome", columnLabel("nome", "Nome"), "w-56")}
+          {renderFilterInput("cpf", columnLabel("cpf", "CPF"), "w-32")}
+          {renderFilterInput("senha", columnLabel("senha", "Senha"), "w-40")}
+          {renderFilterSelect("folha", columnLabel("folha", "Folha"), DOMESTICAS_FOLHA_OPTIONS)}
+          {renderFilterSelect("dae", columnLabel("dae", "DAE"), DOMESTICAS_DAE_OPTIONS)}
+          {renderFilterSelect("envio", columnLabel("envio", "Envio"), DOMESTICAS_ENVIO_OPTIONS)}
+          {renderFilterSelect("ponto", columnLabel("ponto", "Ponto"), DOMESTICAS_PONTO_OPTIONS)}
         </TableRow>
       </TableHeader>
       <TableBody>

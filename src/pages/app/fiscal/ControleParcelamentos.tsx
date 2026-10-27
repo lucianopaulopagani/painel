@@ -30,6 +30,7 @@ import {
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { FISCAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
+import { useCadastroLabels } from "@/hooks/use-cadastro-tabelas";
 import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import {
   defaultReferenceMonth,
@@ -86,6 +87,9 @@ export default function ControleParcelamentos() {
 
   const setBuscaField = (key: string, value: string) =>
     setBusca((prev) => ({ ...prev, [key]: value }));
+
+  /* Nomes das colunas cadastrados na administração (Cadastro de Tabelas). */
+  const columnLabel = useCadastroLabels(FISCAL_DEPARTMENT_NAME);
 
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
@@ -339,10 +343,10 @@ export default function ControleParcelamentos() {
 
   const renderHeaders = () => (
     <TableRow className="bg-muted hover:bg-muted">
-      {renderFilterInput("numero", "N", "w-10")}
-      {renderFilterSelect("uf", "UF", "w-12", ufOptions, "Todos")}
-      {renderFilterInput("empresa", "Empresa", "w-56")}
-      {renderFilterInput("documento", "CNPJ", "w-32")}
+      {renderFilterInput("numero", columnLabel("numero", "N"), "w-10")}
+      {renderFilterSelect("uf", columnLabel("uf", "UF"), "w-12", ufOptions, "Todos")}
+      {renderFilterInput("empresa", columnLabel("empresa", "Empresa"), "w-56")}
+      {renderFilterInput("documento", columnLabel("documento", "CNPJ"), "w-32")}
       {PARCELAMENTO_FIELDS.map((field) => (
         <TableHead
           key={field.key}
@@ -350,8 +354,11 @@ export default function ControleParcelamentos() {
             field.key === "mei_relp_iss" ? "w-28" : "w-24"
           } align-bottom`}
         >
-          <span className="mb-1 block truncate" title={field.label}>
-            {field.label}
+          <span
+            className="mb-1 block truncate"
+            title={columnLabel(field.key, field.label)}
+          >
+            {columnLabel(field.key, field.label)}
           </span>
           <Select
             value={busca[field.key] === "" ? "todos" : busca[field.key]}
@@ -376,7 +383,7 @@ export default function ControleParcelamentos() {
       ))}
       {renderFilterSelect(
         "envio",
-        "ENVIO",
+        columnLabel("envio", "ENVIO"),
         "w-24",
         PARCELAMENTO_ENVIO_OPTIONS,
         "Todos"

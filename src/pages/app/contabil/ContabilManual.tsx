@@ -16,6 +16,11 @@ const SECTIONS: ManualSection[] = [
         detail:
           "Somente as empresas marcadas com o departamento Contábil no cadastro de empresas aparecem.",
       },
+      {
+        label: "Nomes das colunas (administração)",
+        detail:
+          "Os nomes das colunas das tabelas deste departamento são cadastrados no painel de administração, em Cadastro de Tabelas › Departamento Contábil › abrir a tabela (botão de seta) e editar o primeiro campo de cada coluna. As colunas dos meses (JAN a DEZ) não são renomeadas por ali.",
+      },
     ],
   },
   {
