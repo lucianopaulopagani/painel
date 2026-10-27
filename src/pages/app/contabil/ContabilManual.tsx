@@ -19,7 +19,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Nomes das colunas e opções (administração)",
         detail:
-          "Os nomes das colunas e as opções (nome e cor) das colunas com menu suspenso são cadastrados no painel de administração, em Cadastro de Tabelas › Departamento Contábil › abrir a tabela (botão de seta). Os meses (JAN a DEZ) usam a lista OK/LANÇADO e a coluna Fechamento usa LANÇADO/ENCERRADA: cada opção pode ser renomeada, receber uma cor e ser excluída, e a cor escolhida é a usada na pílula da célula. As colunas Nº, UF, Empresa e Obs. são de texto, e a lista de UFs vem do cadastro de empresas.",
+          "Os nomes das colunas e as opções (nome e cor) das colunas com menu suspenso são cadastrados no painel de administração, em Cadastro de Tabelas › Departamento Contábil › abrir a tabela (botão de seta). Os meses (JAN a DEZ) usam a lista OK/LANÇADO e a coluna Fechamento usa LANÇADO/ENCERRADA: cada opção pode ser renomeada, receber uma cor e ser excluída, e a cor escolhida é a usada na pílula da célula. As colunas Nº, Empresa e Obs. são de texto. O filtro de UF tem lista editável: por padrão usa as UFs das empresas da tabela e, com opções cadastradas, passa a usar a lista cadastrada.",
       },
     ],
   },

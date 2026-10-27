@@ -4,6 +4,36 @@ export type CertificateStatusLevel =
   | "ativo"
   | "sem-vencimento";
 
+/** Níveis de situação/status, na ordem exibida nos filtros e no cadastro. */
+export const CERTIFICATE_LEVELS: CertificateStatusLevel[] = [
+  "vencido",
+  "renovar",
+  "ativo",
+  "sem-vencimento",
+];
+
+/** Rótulos da coluna SITUAÇÃO (filtro, célula e cadastro de tabelas). */
+export const CERTIFICATE_SITUACAO_LABELS: Record<
+  CertificateStatusLevel,
+  string
+> = {
+  vencido: "Vencido",
+  renovar: "Vence hoje",
+  ativo: "Ativo",
+  "sem-vencimento": "Sem vencimento",
+};
+
+/** Rótulos da coluna STATUS (filtro, célula e cadastro de tabelas). */
+export const CERTIFICATE_STATUS_LABELS: Record<
+  CertificateStatusLevel,
+  string
+> = {
+  vencido: "VENCIDO",
+  renovar: "RENOVAR",
+  ativo: "ATIVO",
+  "sem-vencimento": "SEM VENCIMENTO",
+};
+
 export interface CertificateStatus {
   level: CertificateStatusLevel;
   /** Texto da coluna SITUAÇÃO (ex.: "Vencido à 30 dia(s)!"). */

@@ -222,7 +222,9 @@ export function CadastroColunaEditor({
             </span>
             {list.length === 0 && (
               <span className="text-[11px] text-muted-foreground">
-                Padrão: {coluna.opcoes.join(" · ")}
+                {coluna.opcoes.length === 0
+                  ? "Padrão: lista da tabela"
+                  : `Padrão: ${coluna.opcoes.join(" · ")}`}
               </span>
             )}
           </div>

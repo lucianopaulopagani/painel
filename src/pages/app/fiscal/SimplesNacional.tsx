@@ -365,7 +365,12 @@ export function SimplesNacionalTable({
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
               {renderFilterInput("numero", columnLabel("numero", "Nº"), "w-10")}
-              {renderFilterSelect("uf", columnLabel("uf", "UF"), ufOptions, "w-16")}
+              {renderFilterSelect(
+                "uf",
+                columnLabel("uf", "UF"),
+                resolveFieldOptions(SIMPLES_NACIONAL_TRIBUTACAO, "uf", ufOptions),
+                "w-16"
+              )}
               {renderFilterInput("empresa", columnLabel("empresa", "Empresa"), "w-36")}
               {renderFilterInput("cnpj", columnLabel("cnpj", "CNPJ"), "w-24")}
               {renderFilterInput("ie", columnLabel("ie", "Insc. Estadual"), "w-20")}

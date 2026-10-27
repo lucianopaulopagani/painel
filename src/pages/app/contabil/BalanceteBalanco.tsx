@@ -443,7 +443,7 @@ export default function BalanceteBalanco() {
                     <SelectContent className="max-h-80">
                       <SelectItem value="todos">Todos</SelectItem>
                       <SelectItem value="branco">Em branco</SelectItem>
-                      {ufOptions.map((option) => (
+                      {cadastro.options("uf", ufOptions).map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>

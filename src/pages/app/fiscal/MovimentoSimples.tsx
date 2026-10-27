@@ -35,6 +35,7 @@ import { SITUACAO_TONE } from "@/lib/fiscal";
 import { cn, formatCpfCnpj } from "@/lib/utils";
 import {
   useColumnLabel,
+  useFieldOptions,
   useStatusOptions,
   useStatusTone,
 } from "@/hooks/use-fiscal-cadastro";
@@ -111,6 +112,7 @@ export function MovimentoSimplesTable({
   /** Status cadastrados para esta tributação (com fallback "OK"). */
   const resolveStatusOptions = useStatusOptions();
   const resolveStatusTone = useStatusTone();
+  const resolveFieldOptions = useFieldOptions();
   const columnLabel = useColumnLabel();
   const situacaoOptions = resolveStatusOptions(
     tributacao,
@@ -248,7 +250,7 @@ export function MovimentoSimplesTable({
                   <SelectContent>
                     <SelectItem value="todos">Todos</SelectItem>
                     <SelectItem value="branco">Em branco</SelectItem>
-                    {ufOptions.map((option) => (
+                    {resolveFieldOptions(tributacao, "uf", ufOptions).map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>

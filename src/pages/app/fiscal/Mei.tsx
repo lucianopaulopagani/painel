@@ -257,7 +257,7 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                   <SelectContent>
                     <SelectItem value="todos">Todos</SelectItem>
                     <SelectItem value="branco">Em branco</SelectItem>
-                    {ufOptions.map((option) => (
+                    {resolveFieldOptions(MEI_TRIBUTACAO, "uf", ufOptions).map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>

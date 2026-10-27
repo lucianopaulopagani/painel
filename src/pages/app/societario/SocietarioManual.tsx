@@ -38,7 +38,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Nomes das colunas e opções (administração)",
         detail:
-          "Os nomes das colunas e as opções (nome e cor) das colunas com menu suspenso são cadastrados no painel de administração, em Cadastro de Tabelas › Departamento Societário › abrir a tabela (botão de seta). Nos Alvarás, as opções de Gerado e Enviado podem ser incluídas, renomeadas, coloridas e excluídas, e a cor escolhida é a usada na pílula da célula. No Certificado digital, as colunas Situação, Status, Produto, Avisado e Financ. são definidas pelo sistema (calculadas pela data de vencimento do certificado) e não têm opções editáveis.",
+          "Os nomes das colunas e as opções (nome e cor) das colunas com menu suspenso são cadastrados no painel de administração, em Cadastro de Tabelas › Departamento Societário › abrir a tabela (botão de seta). Nos Alvarás, as opções de Gerado e Enviado podem ser incluídas, renomeadas, coloridas e excluídas, e a cor escolhida é a usada na pílula da célula. No Certificado digital também é possível incluir, renomear e colorir as opções de Situação, Status, Produto, Avisado e Financ.: Situação e Status são calculados pelo vencimento e cada opção corresponde a um nível, na ordem (Vencido, Vence hoje, Ativo e Sem vencimento) — o texto da célula mostra os dias restantes e a pílula usa a cor cadastrada; Produto vale no filtro, no formulário do certificado e no cartão do dashboard; e em Avisado/Financ. a primeira opção é o Sim.",
       },      {
         label: "Datas por subdepartamento",
         detail:

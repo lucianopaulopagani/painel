@@ -20,6 +20,7 @@ import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { getCertificateStatus, type CertificateStatusLevel } from "@/lib/certificate-status";
 import { CERTIFICATE_PRODUCTS } from "@/lib/certificate-products";
+import { useTabelaCadastro } from "@/hooks/use-tabela-cadastro";
 import { SOCIETARIO_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import {
   companyUsesSubmenu,
@@ -73,6 +74,12 @@ export default function SocietarioDashboard() {
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
   const { data: certificates } = useCertificates();
+  /* Produtos cadastrados na administração (Cadastro de Tabelas). */
+  const cadastro = useTabelaCadastro(
+    SOCIETARIO_DEPARTMENT_NAME,
+    "Certificado digital"
+  );
+  const produtoOpcoes = cadastro.options("produto", CERTIFICATE_PRODUCTS);
 
   const societario = findDepartmentByName(
     departments,
@@ -194,8 +201,12 @@ export default function SocietarioDashboard() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {CERTIFICATE_PRODUCTS.map((produto) => {
-              const count = productCounts.get(produto) ?? 0;
+            {produtoOpcoes.map((produto, index) => {
+              /* O valor gravado é o produto padrão (ou o cadastrado) da posição. */
+              const count =
+                productCounts.get(produto) ??
+                productCounts.get(CERTIFICATE_PRODUCTS[index] ?? "") ??
+                0;
               return (
                 <Card key={produto}>
                   <CardHeader className="rounded-t-lg bg-muted/50 pb-2">

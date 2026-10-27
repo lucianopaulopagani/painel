@@ -2,6 +2,12 @@ import {
   ALVARA_ENVIADO_OPTIONS,
   ALVARA_GERADO_OPTIONS,
 } from "@/lib/alvara-localizacao";
+import { CERTIFICATE_PRODUCTS } from "@/lib/certificate-products";
+import {
+  CERTIFICATE_LEVELS,
+  CERTIFICATE_SITUACAO_LABELS,
+  CERTIFICATE_STATUS_LABELS,
+} from "@/lib/certificate-status";
 import {
   COMPLEMENTO_INSS_DARF_OPTIONS,
   COMPLEMENTO_INSS_ENVIO_OPTIONS,
@@ -22,6 +28,7 @@ import {
   DOMESTICAS_DAE_OPTIONS,
   DOMESTICAS_ENVIO_OPTIONS,
   DOMESTICAS_FOLHA_OPTIONS,
+  DOMESTICAS_MESES_OPTIONS,
   DOMESTICAS_PONTO_OPTIONS,
   DOMESTICAS_STATUS_OPTIONS,
 } from "@/lib/domesticas";
@@ -37,6 +44,7 @@ import {
   EMPRESAS_FUNC_FGTS_OPTIONS,
   EMPRESAS_FUNC_FLAG_OPTIONS,
   EMPRESAS_FUNC_FOLHA_OPTIONS,
+  EMPRESAS_FUNC_MESES_OPTIONS,
   EMPRESAS_FUNC_STATUS_OPTIONS,
 } from "@/lib/empresas-funcionarios";
 import { dropdownFieldsFor, fiscalFormato } from "@/lib/fiscal-fields";
@@ -73,6 +81,29 @@ export interface TabelaCadastro {
   /** Colunas da tabela (vazio quando as colunas ainda não foram mapeadas). */
   colunas: ColunaCadastro[];
 }
+
+/** Opções de marcação Sim/Não (a primeira opção é o Sim). */
+const SIM_NAO_OPTIONS = ["Sim", "Não"] as const;
+
+/** Opções do certificado: os níveis na ordem em que são calculados. */
+const CERTIFICATE_SITUACAO_OPTIONS = CERTIFICATE_LEVELS.map(
+  (level) => CERTIFICATE_SITUACAO_LABELS[level]
+);
+const CERTIFICATE_STATUS_OPTIONS = CERTIFICATE_LEVELS.map(
+  (level) => CERTIFICATE_STATUS_LABELS[level]
+);
+
+/** Nota das colunas cuja lista padrão vem do cadastro de empresas. */
+const NOTA_LISTA_DO_CADASTRO =
+  "A lista padrão vem do cadastro de empresas; as opções cadastradas aqui passam a ser a lista do filtro.";
+
+/** Coluna UF (filtro com menu suspenso; a lista vem das empresas). */
+const COLUNA_UF: ColunaCadastro = {
+  campo: "uf",
+  label: "UF",
+  opcoes: [],
+  nota: NOTA_LISTA_DO_CADASTRO,
+};
 
 /** Nome do subdepartamento que reúne as tabelas do Movimento Fiscal. */
 export const MOVIMENTO_FISCAL_SUBMENU = "Movimento Fiscal";
@@ -165,37 +196,37 @@ export const DEPARTAMENTOS_INTEGRADOS: readonly string[] = [
 const COLUNAS_FIXAS_FISCAL: Record<string, ColunaCadastro[]> = {
   simples: [
     { campo: "numero", label: "Nº" },
-    { campo: "uf", label: "UF" },
+    COLUNA_UF,
     { campo: "empresa", label: "Empresa" },
     { campo: "cnpj", label: "CNPJ" },
     { campo: "ie", label: "Insc. Estadual" },
   ],
   mei: [
     { campo: "numero", label: "Nº" },
-    { campo: "uf", label: "UF" },
+    COLUNA_UF,
     { campo: "empresa", label: "Empresa" },
   ],
   "movimento-simples": [
     { campo: "numero", label: "Nº" },
-    { campo: "uf", label: "UF" },
+    COLUNA_UF,
     { campo: "empresa", label: "Empresa" },
     { campo: "cnpj", label: "CNPJ" },
     { campo: "ie", label: "Insc. Estadual" },
   ],
   "carne-leao": [
     { campo: "numero", label: "Nº" },
-    { campo: "uf", label: "UF" },
+    COLUNA_UF,
     { campo: "empresa", label: "Empresa" },
     { campo: "cpf", label: "CPF" },
   ],
   lucro: [
     { campo: "numero", label: "Nº" },
     { campo: "empresa", label: "Empresa" },
-    { campo: "uf", label: "UF" },
+    COLUNA_UF,
   ],
   padrao: [
     { campo: "numero", label: "Nº" },
-    { campo: "uf", label: "UF" },
+    COLUNA_UF,
     { campo: "empresa", label: "Empresa" },
   ],
 };
@@ -229,15 +260,12 @@ const COLUNAS_ALVARA: ColunaCadastro[] = [
   { campo: "numero", label: "Nº" },
   { campo: "empresa", label: "Empresa" },
   { campo: "cnpj", label: "CNPJ" },
-  {
-    campo: "uf",
-    label: "UF",
-    nota: "Lista de UFs do cadastro de empresas — opções não editáveis.",
-  },
+  COLUNA_UF,
   {
     campo: "municipio",
     label: "Município",
-    nota: "Lista do cadastro de empresas — opções não editáveis.",
+    opcoes: [],
+    nota: NOTA_LISTA_DO_CADASTRO,
   },
   { campo: "observacao", label: "Observação" },
   { campo: "venc_alvara", label: "Venc." },
@@ -250,11 +278,7 @@ const COLUNAS_POR_MODULO: Record<string, ColunaCadastro[]> = {
   /* Departamento Fiscal */
   "Controle de Parcelamentos": [
     { campo: "numero", label: "Nº" },
-    {
-      campo: "uf",
-      label: "UF",
-      nota: "Lista de UFs do cadastro de empresas — opções não editáveis.",
-    },
+    COLUNA_UF,
     { campo: "empresa", label: "Empresa" },
     { campo: "documento", label: "CNPJ" },
     ...PARCELAMENTO_FIELDS.map((field) => ({
@@ -279,11 +303,7 @@ const COLUNAS_POR_MODULO: Record<string, ColunaCadastro[]> = {
     { campo: "empresa", label: "Empresa" },
     { campo: "cnpj", label: "CNPJ" },
     { campo: "tributacao", label: "Tributação" },
-    {
-      campo: "dataBase",
-      label: "Data Base",
-      nota: "Lista de meses do sistema — opções não editáveis.",
-    },
+    { campo: "dataBase", label: "Data Base", opcoes: EMPRESAS_FUNC_MESES_OPTIONS },
     { campo: "folha", label: "Folha", opcoes: EMPRESAS_FUNC_FOLHA_OPTIONS },
     {
       campo: "emprestimo",
@@ -330,11 +350,7 @@ const COLUNAS_POR_MODULO: Record<string, ColunaCadastro[]> = {
   ],
   "Domésticas": [
     { campo: "status", label: "Status", opcoes: DOMESTICAS_STATUS_OPTIONS },
-    {
-      campo: "dataBase",
-      label: "Data Base",
-      nota: "Lista de meses do sistema — opções não editáveis.",
-    },
+    { campo: "dataBase", label: "Data Base", opcoes: DOMESTICAS_MESES_OPTIONS },
     { campo: "numero", label: "Nº" },
     { campo: "nome", label: "Nome" },
     { campo: "cpf", label: "CPF" },
@@ -364,11 +380,7 @@ const COLUNAS_POR_MODULO: Record<string, ColunaCadastro[]> = {
   /* Departamento Contábil */
   "Balancete/Balanço": [
     { campo: "numero", label: "Nº" },
-    {
-      campo: "uf",
-      label: "UF",
-      nota: "Lista de UFs do cadastro de empresas — opções não editáveis.",
-    },
+    COLUNA_UF,
     { campo: "empresa", label: "Empresa" },
     ...BALANCETE_MESES.map((mes) => ({
       campo: mes.key,
@@ -389,12 +401,14 @@ const COLUNAS_POR_MODULO: Record<string, ColunaCadastro[]> = {
     {
       campo: "situacao",
       label: "Situação",
-      nota: "Calculada pela data de vencimento do certificado — opções não editáveis.",
+      opcoes: CERTIFICATE_SITUACAO_OPTIONS,
+      nota: "Calculada pelo vencimento: cada opção corresponde a um nível (Vencido, Vence hoje, Ativo e Sem vencimento). O texto da célula mostra os dias restantes e a pílula usa a cor cadastrada aqui.",
     },
     {
       campo: "status",
       label: "Status",
-      nota: "Calculado pela data de vencimento do certificado — opções não editáveis.",
+      opcoes: CERTIFICATE_STATUS_OPTIONS,
+      nota: "Calculado pelo vencimento do certificado: cada opção corresponde a um nível, na mesma ordem da Situação.",
     },
     { campo: "empresa", label: "Empresa" },
     { campo: "socio", label: "Responsável" },
@@ -402,17 +416,19 @@ const COLUNAS_POR_MODULO: Record<string, ColunaCadastro[]> = {
     {
       campo: "produto",
       label: "Produto",
-      nota: "Lista de produtos de certificado do sistema — opções não editáveis.",
+      opcoes: CERTIFICATE_PRODUCTS,
     },
     {
       campo: "avisado",
       label: "Avisado",
-      nota: "Marcação Sim/Não do certificado — opções não editáveis.",
+      opcoes: SIM_NAO_OPTIONS,
+      nota: "Marcação do certificado: a primeira opção é o Sim.",
     },
     {
       campo: "financ",
       label: "Financ.",
-      nota: "Marcação Sim/Não do certificado — opções não editáveis.",
+      opcoes: SIM_NAO_OPTIONS,
+      nota: "Marcação do certificado: a primeira opção é o Sim.",
     },
     { campo: "agendamento", label: "Agendamento" },
     { campo: "observacoes", label: "Observações" },

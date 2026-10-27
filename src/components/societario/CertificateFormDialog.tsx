@@ -23,6 +23,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { MultiSelectDropdown } from "@/components/ui/multi-select-dropdown";
 import { useUpsertCertificate } from "@/hooks/use-certificates";
 import { CERTIFICATE_PRODUCTS } from "@/lib/certificate-products";
+import { SOCIETARIO_DEPARTMENT_NAME } from "@/lib/departments";
+import { useTabelaCadastro } from "@/hooks/use-tabela-cadastro";
 import { joinDateTimeLocal, splitDateTimeLocal } from "@/lib/utils";
 import type { CertificateRow } from "@/lib/types";
 
@@ -38,6 +40,12 @@ export default function CertificateFormDialog({
   onOpenChange,
 }: CertificateFormDialogProps) {
   const upsert = useUpsertCertificate();
+  /* Produtos cadastrados na administração (Cadastro de Tabelas). */
+  const cadastro = useTabelaCadastro(
+    SOCIETARIO_DEPARTMENT_NAME,
+    "Certificado digital"
+  );
+  const produtosOpcoes = cadastro.options("produto", CERTIFICATE_PRODUCTS);
 
   const [vencimento, setVencimento] = useState("");
   const [avisado, setAvisado] = useState("branco");
@@ -162,7 +170,7 @@ export default function CertificateFormDialog({
             <div className="flex flex-col gap-1.5">
               <Label>Produto</Label>
               <MultiSelectDropdown
-                options={CERTIFICATE_PRODUCTS.map((produto) => ({
+                options={produtosOpcoes.map((produto) => ({
                   value: produto,
                   label: produto,
                 }))}

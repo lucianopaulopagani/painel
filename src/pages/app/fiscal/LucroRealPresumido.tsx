@@ -429,7 +429,12 @@ export function LucroRealPresumidoTable({
             <TableRow className="bg-muted hover:bg-muted">
               {renderFilterInput("numero", columnLabel("numero", "N"), "w-10")}
               {renderFilterInput("empresa", columnLabel("empresa", "Empresas"), "w-56")}
-              {renderFilterSelect("uf", columnLabel("uf", "UF"), "w-12", ufOptions)}
+              {renderFilterSelect(
+                "uf",
+                columnLabel("uf", "UF"),
+                "w-12",
+                resolveFieldOptions(tributacao, "uf", ufOptions)
+              )}
               <TableHead className={`${HEAD} w-24 align-bottom`}>
                 <span className="mb-1 block whitespace-nowrap">
                   {columnLabel("situacao", "Status")}

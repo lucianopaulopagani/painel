@@ -24,7 +24,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Nomes das colunas e opções (administração)",
         detail:
-          "Os nomes das colunas e as opções (nome e cor) das colunas com menu suspenso são cadastrados no painel de administração, em Cadastro de Tabelas › Departamento Pessoal › abrir a tabela (botão de seta). O nome da coluna vale para as tabelas do departamento que usam a mesma coluna (por exemplo, Envio vale para Empresas com funcionários, Domésticas e Complemento INSS). Nas colunas com menu suspenso (Status, Folha, Empréstimo, FGTS, Taxa Sindical, DCTFWEB, Envio, DAE, Ponto e DARF) é possível incluir, renomear, escolher a cor e excluir as opções — a cor escolhida é a usada na pílula da coluna na tabela. Alterar a lista muda as opções daqui para frente e os lançamentos já gravados continuam aparecendo na linha; a opção Sem Movimento das Domésticas acompanha o nome escolhido.",
+          "Os nomes das colunas e as opções (nome e cor) das colunas com menu suspenso são cadastrados no painel de administração, em Cadastro de Tabelas › Departamento Pessoal › abrir a tabela (botão de seta). O nome da coluna vale para as tabelas do departamento que usam a mesma coluna (por exemplo, Envio vale para Empresas com funcionários, Domésticas e Complemento INSS). Nas colunas com menu suspenso (Status, Data Base, Folha, Empréstimo, FGTS, Taxa Sindical, DCTFWEB, Envio, DAE, Ponto e DARF) é possível incluir, renomear, escolher a cor e excluir as opções — a cor escolhida é a usada na pílula da coluna na tabela. Alterar a lista muda as opções daqui para frente e os lançamentos já gravados continuam aparecendo na linha; a opção Sem Movimento das Domésticas acompanha o nome escolhido.",
       },
     ],
   },

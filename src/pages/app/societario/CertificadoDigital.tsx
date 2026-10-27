@@ -30,9 +30,13 @@ import { useCertificates } from "@/hooks/use-certificates";
 import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import {
+  CERTIFICATE_LEVELS,
+  CERTIFICATE_SITUACAO_LABELS,
+  CERTIFICATE_STATUS_LABELS,
   getCertificateStatus,
   type CertificateStatusLevel,
 } from "@/lib/certificate-status";
+import { useTabelaCadastro } from "@/hooks/use-tabela-cadastro";
 import { CERTIFICATE_PRODUCTS } from "@/lib/certificate-products";
 import { printCertificateReport, downloadCertificateReportExcel } from "@/lib/certificate-report";
 import {
@@ -72,19 +76,15 @@ const CELL = "px-1 py-1 text-[11px]";
 const HEAD =
   "sticky top-0 z-20 h-auto bg-muted px-1 py-1 text-[11px] font-medium text-muted-foreground";
 
-/** Rótulos dos filtros de situação e status (por nível). */
-const LEVEL_SITUACAO: Record<CertificateStatusLevel, string> = {
-  vencido: "Vencido",
-  renovar: "Vence hoje",
-  ativo: "Ativo",
-  "sem-vencimento": "Sem vencimento",
-};
-const LEVEL_STATUS: Record<CertificateStatusLevel, string> = {
-  vencido: "VENCIDO",
-  renovar: "RENOVAR",
-  ativo: "ATIVO",
-  "sem-vencimento": "SEM VENCIMENTO",
-};
+/** Rótulos padrão dos filtros de situação e status (por nível). */
+const LEVEL_SITUACAO = CERTIFICATE_SITUACAO_LABELS;
+const LEVEL_STATUS = CERTIFICATE_STATUS_LABELS;
+
+/** Tabela deste módulo no Cadastro de Tabelas. */
+const TABELA = "Certificado digital";
+
+/** Marcação Sim/Não do certificado (a primeira opção é o Sim). */
+const SIM_NAO_OPTIONS = ["Sim", "Não"] as const;
 
 export default function CertificadoDigital() {
   const { data: departments } = useDepartments();
@@ -92,6 +92,35 @@ export default function CertificadoDigital() {
   const { data: certificates } = useCertificates();
   /* Nomes das colunas cadastrados na administração (Cadastro de Tabelas). */
   const columnLabel = useCadastroLabels(SOCIETARIO_DEPARTMENT_NAME);
+  /* Opções e cores cadastradas na administração (Cadastro de Tabelas). */
+  const cadastro = useTabelaCadastro(SOCIETARIO_DEPARTMENT_NAME, TABELA);
+  const situacaoOpcoes = cadastro.options(
+    "situacao",
+    Object.values(LEVEL_SITUACAO)
+  );
+  const statusOpcoes = cadastro.options("status", Object.values(LEVEL_STATUS));
+  const avisadoOpcoes = cadastro.options("avisado", SIM_NAO_OPTIONS);
+  const financOpcoes = cadastro.options("financ", SIM_NAO_OPTIONS);
+  const produtoOpcoes = cadastro.options("produto", CERTIFICATE_PRODUCTS);
+  /** Rótulo cadastrado de um nível (Situação/Status são calculados no vencimento). */
+  const rotuloDoNivel = (
+    opcoes: readonly string[],
+    padrao: Record<CertificateStatusLevel, string>,
+    level: CertificateStatusLevel
+  ): string => opcoes[CERTIFICATE_LEVELS.indexOf(level)] ?? padrao[level];
+  const rotuloSituacao = (level: CertificateStatusLevel): string =>
+    rotuloDoNivel(situacaoOpcoes, LEVEL_SITUACAO, level);
+  const rotuloStatus = (level: CertificateStatusLevel): string =>
+    rotuloDoNivel(statusOpcoes, LEVEL_STATUS, level);
+  /** Sim/Não conforme a lista cadastrada (vazio continua em branco). */
+  const rotuloSimNao = (
+    opcoes: readonly string[],
+    valor: boolean | null | undefined
+  ): string =>
+    valor == null ? "" : valor ? (opcoes[0] ?? "Sim") : (opcoes[1] ?? "Não");
+  /** Nome cadastrado do produto gravado no certificado. */
+  const rotuloProduto = (valor: string): string =>
+    produtoOpcoes[CERTIFICATE_PRODUCTS.indexOf(valor)] ?? valor;
 
   const [editing, setEditing] = useState<CertificateRow | null>(null);
 
@@ -174,8 +203,8 @@ export default function CertificadoDigital() {
     return (
       inVencimentoRange &&
       match(vencimento, filtros.vencimento) &&
-      selectOrBlank(LEVEL_SITUACAO[status.level], filtros.situacao) &&
-      selectOrBlank(LEVEL_STATUS[status.level], filtros.status) &&
+      selectOrBlank(rotuloSituacao(status.level), filtros.situacao) &&
+      selectOrBlank(rotuloStatus(status.level), filtros.status) &&
       match(row.company.name, filtros.empresa) &&
       match(row.company.socio_responsavel ?? "", filtros.socio) &&
       match(row.company.socio_cpf ?? "", filtros.socioCpf) &&
@@ -183,20 +212,15 @@ export default function CertificadoDigital() {
         ? true
         : filtros.produto === "branco"
           ? produtos.length === 0
-          : produtos.includes(filtros.produto)) &&
-      (filtros.avisado === ""
-        ? true
-        : filtros.avisado === "branco"
-          ? row.certificate?.avisado == null
-          : filtros.avisado === "sim"
-            ? row.certificate?.avisado === true
-            : row.certificate?.avisado === false) &&
+          : produtos.some(
+              (produto) => rotuloProduto(produto) === filtros.produto
+            )) &&
       selectOrBlank(
-        row.certificate?.financ == null
-          ? ""
-          : row.certificate.financ
-            ? "Sim"
-            : "Não",
+        rotuloSimNao(avisadoOpcoes, row.certificate?.avisado),
+        filtros.avisado
+      ) &&
+      selectOrBlank(
+        rotuloSimNao(financOpcoes, row.certificate?.financ),
         filtros.financ
       ) &&
       match(agendamento, filtros.agendamento) &&
@@ -265,7 +289,10 @@ export default function CertificadoDigital() {
     key: keyof typeof filtros,
     label: string,
     options: readonly string[]
-  ) => (
+  ) => {
+    /* Opções cadastradas na administração (Cadastro de Tabelas). */
+    const lista = cadastro.options(key, options);
+    return (
     <TableHead className={`${HEAD} align-bottom`}>
       <span className="mb-1 block whitespace-nowrap">{label}</span>
       <Select
@@ -283,7 +310,7 @@ export default function CertificadoDigital() {
         <SelectContent>
           <SelectItem value="todos">Todos</SelectItem>
           <SelectItem value="branco">Em branco</SelectItem>
-          {options.map((option) => (
+          {lista.map((option) => (
             <SelectItem key={option} value={option}>
               {option}
             </SelectItem>
@@ -291,7 +318,8 @@ export default function CertificadoDigital() {
         </SelectContent>
       </Select>
     </TableHead>
-  );
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -416,13 +444,27 @@ export default function CertificadoDigital() {
                         {formatDateOnlyBr(row.certificate?.vencimento)}
                       </TableCell>
                       <TableCell className={CELL}>
-                        <Badge className={STATUS_CLASS[status.level]}>
+                        <Badge
+                          className={
+                            cadastro.tone(
+                              "situacao",
+                              rotuloSituacao(status.level)
+                            ) ?? STATUS_CLASS[status.level]
+                          }
+                        >
                           {status.situacao}
                         </Badge>
                       </TableCell>
                       <TableCell className={CELL}>
-                        <Badge className={STATUS_CLASS[status.level]}>
-                          {status.status}
+                        <Badge
+                          className={
+                            cadastro.tone(
+                              "status",
+                              rotuloStatus(status.level)
+                            ) ?? STATUS_CLASS[status.level]
+                          }
+                        >
+                          {rotuloStatus(status.level)}
                         </Badge>
                       </TableCell>
                       <TableCell className={`${CELL} font-medium`}>
@@ -455,9 +497,12 @@ export default function CertificadoDigital() {
                             {row.certificate.produtos.map((produto) => (
                               <Badge
                                 key={produto}
-                                className={`${PRODUCT_CLASS[produto] ?? ""} whitespace-nowrap`}
+                                className={`${cadastro.tone("produto", produto) ?? PRODUCT_CLASS[produto] ?? ""} whitespace-nowrap`}
                                 variant={
-                                  PRODUCT_CLASS[produto] ? "default" : "outline"
+                                  (cadastro.tone("produto", produto) ??
+                                  PRODUCT_CLASS[produto])
+                                    ? "default"
+                                    : "outline"
                                 }
                               >
                                 {produto}
@@ -469,29 +514,47 @@ export default function CertificadoDigital() {
                         )}
                       </TableCell>
                       <TableCell className={CELL}>
-                        {row.certificate?.avisado === true ? (
-                          <Badge className="bg-status-success text-status-success-foreground hover:bg-status-success">
-                            Sim
-                          </Badge>
-                        ) : row.certificate?.avisado === false ? (
-                          <Badge className="bg-status-danger text-status-danger-foreground hover:bg-status-danger">
-                            Não
-                          </Badge>
-                        ) : (
+                        {row.certificate?.avisado == null ? (
                           <span className="text-muted-foreground">—</span>
+                        ) : (
+                          <Badge
+                            className={
+                              cadastro.tone(
+                                "avisado",
+                                rotuloSimNao(
+                                  avisadoOpcoes,
+                                  row.certificate?.avisado
+                                )
+                              ) ??
+                              (row.certificate?.avisado
+                                ? "bg-status-success text-status-success-foreground hover:bg-status-success"
+                                : "bg-status-danger text-status-danger-foreground hover:bg-status-danger")
+                            }
+                          >
+                            {rotuloSimNao(avisadoOpcoes, row.certificate?.avisado)}
+                          </Badge>
                         )}
                       </TableCell>
                       <TableCell className={CELL}>
-                        {row.certificate?.financ === true ? (
-                          <Badge className="bg-status-success text-status-success-foreground hover:bg-status-success">
-                            Sim
-                          </Badge>
-                        ) : row.certificate?.financ === false ? (
-                          <Badge className="bg-status-danger text-status-danger-foreground hover:bg-status-danger">
-                            Não
-                          </Badge>
-                        ) : (
+                        {row.certificate?.financ == null ? (
                           <span className="text-muted-foreground">—</span>
+                        ) : (
+                          <Badge
+                            className={
+                              cadastro.tone(
+                                "financ",
+                                rotuloSimNao(
+                                  financOpcoes,
+                                  row.certificate?.financ
+                                )
+                              ) ??
+                              (row.certificate?.financ
+                                ? "bg-status-success text-status-success-foreground hover:bg-status-success"
+                                : "bg-status-danger text-status-danger-foreground hover:bg-status-danger")
+                            }
+                          >
+                            {rotuloSimNao(financOpcoes, row.certificate?.financ)}
+                          </Badge>
                         )}
                       </TableCell>
                       <TableCell className={`${CELL} whitespace-nowrap`}>
