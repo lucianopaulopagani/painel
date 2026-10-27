@@ -72,16 +72,18 @@ export const PARCELAMENTO_ENVIO_TONE: Record<string, string> = {
 
 /** Indica o valor "Desabilitado" (segue para os próximos meses até ser alterado). */
 export function isParcelamentoDesabilitado(
-  value: string | null | undefined
+  value: string | null | undefined,
+  desabilitado: string = PARCELAMENTO_DESABILITADO
 ): boolean {
-  return value === PARCELAMENTO_DESABILITADO;
+  return value === desabilitado;
 }
 
 /** ENVIADO conta como finalizada; GERADO e em branco como pendentes. */
 export function isEnvioFinalizado(
-  value: string | null | undefined
+  value: string | null | undefined,
+  enviado: string = PARCELAMENTO_ENVIO_ENVIADO
 ): boolean {
-  return value === PARCELAMENTO_ENVIO_ENVIADO;
+  return value === enviado;
 }
 
 /** Rótulo do ENVIO em branco (usado nos filtros e no dashboard). */

@@ -36,9 +36,9 @@ const SECTIONS: ManualSection[] = [
           "Somente as empresas marcadas com o departamento Societário no cadastro de empresas aparecem aqui.",
       },
       {
-        label: "Nomes das colunas (administração)",
+        label: "Nomes das colunas e opções (administração)",
         detail:
-          "Os nomes das colunas das tabelas deste departamento são cadastrados no painel de administração, em Cadastro de Tabelas › Departamento Societário › abrir a tabela (botão de seta) e editar o primeiro campo de cada coluna.",
+          "Os nomes das colunas e as opções (nome e cor) das colunas com menu suspenso são cadastrados no painel de administração, em Cadastro de Tabelas › Departamento Societário › abrir a tabela (botão de seta). Nos Alvarás, as opções de Gerado e Enviado podem ser incluídas, renomeadas, coloridas e excluídas, e a cor escolhida é a usada na pílula da célula. No Certificado digital, as colunas Situação, Status, Produto, Avisado e Financ. são definidas pelo sistema (calculadas pela data de vencimento do certificado) e não têm opções editáveis.",
       },      {
         label: "Datas por subdepartamento",
         detail:

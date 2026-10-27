@@ -33,6 +33,7 @@ import { useContabilUsuarios } from "@/hooks/use-contabil-usuarios";
 import { useDepartments } from "@/hooks/use-departments";
 import { CONTABIL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import { useCadastroLabels } from "@/hooks/use-cadastro-tabelas";
+import { useTabelaCadastro } from "@/hooks/use-tabela-cadastro";
 import {
   companyUsesSubmenu,
   isCompanyInSubmenuInMonth,
@@ -63,10 +64,15 @@ const UF_LEFT = "left-[40px]";
 const EMPRESA_LEFT = "left-[88px]";
 const EMPRESA_EDGE = "border-r border-border";
 
+/** Tabela deste módulo no Cadastro de Tabelas. */
+const TABELA = "Balancete/Balanço";
+
 export default function BalanceteBalanco() {
   const [ano, setAno] = useState<string>(readStoredBalanceteAno);
   /* Nomes das colunas cadastrados na administração (Cadastro de Tabelas). */
   const columnLabel = useCadastroLabels(CONTABIL_DEPARTMENT_NAME);
+  /* Opções e cores cadastradas para as colunas com menu suspenso. */
+  const cadastro = useTabelaCadastro(CONTABIL_DEPARTMENT_NAME, TABELA);
   const [busca, setBusca] = useState<Record<string, string>>({
     usuario: "",
     numero: "",
@@ -213,9 +219,19 @@ export default function BalanceteBalanco() {
     companyId: string,
     mesKey: (typeof BALANCETE_MESES)[number]["key"],
     blocked = false
-  ) => (
+  ) => {
+    const value = recordByCompany.get(companyId)?.[mesKey] ?? "";
+    /* Opções e cores cadastradas na administração (Cadastro de Tabelas). */
+    const tom =
+      cadastro.tone(mesKey, value) ??
+      (value === "OK"
+        ? "bg-status-success text-status-success-foreground hover:bg-status-success/90"
+        : value === "LANÇADO"
+          ? "bg-primary/10 text-primary hover:bg-primary/15"
+          : undefined);
+    return (
     <Select
-      value={(recordByCompany.get(companyId)?.[mesKey] ?? "") === "" ? "none" : (recordByCompany.get(companyId)?.[mesKey] ?? "")}
+      value={value === "" ? "none" : value}
       disabled={blocked}
       onValueChange={(next) => {
         if (blocked) return;
@@ -225,24 +241,24 @@ export default function BalanceteBalanco() {
       <SelectTrigger
         className={cn(
           "h-7 w-full min-w-0 px-1 text-xs font-semibold",
-          recordByCompany.get(companyId)?.[mesKey] === "OK" &&
-            "bg-status-success text-status-success-foreground hover:bg-status-success/90",
-          recordByCompany.get(companyId)?.[mesKey] === "LANÇADO" &&
-            "bg-primary/10 text-primary hover:bg-primary/15"
+          tom
         )}
       >
         <SelectValue placeholder="—" />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="none">—</SelectItem>
-        {BALANCETE_MES_OPTIONS.map((option) => (
-          <SelectItem key={option} value={option}>
-            {option}
-          </SelectItem>
-        ))}
+        {cadastro
+          .optionsComValor(mesKey, value, BALANCETE_MES_OPTIONS)
+          .map((option) => (
+            <SelectItem key={option} value={option}>
+              {option}
+            </SelectItem>
+          ))}
       </SelectContent>
     </Select>
-  );
+    );
+  };
 
   const renderFilterInput = (
     key: string,
@@ -265,7 +281,10 @@ export default function BalanceteBalanco() {
     label: string,
     options: readonly string[] = BALANCETE_MES_OPTIONS,
     widthClass = "w-24"
-  ) => (
+  ) => {
+    /* Opções cadastradas na administração (Cadastro de Tabelas). */
+    const lista = cadastro.options(key, options);
+    return (
     <TableHead className={`${HEAD} ${widthClass} align-bottom`}>
       <span className="mb-1 block whitespace-nowrap">{label}</span>
       <Select
@@ -280,7 +299,7 @@ export default function BalanceteBalanco() {
         <SelectContent>
           <SelectItem value="todos">Todos</SelectItem>
           <SelectItem value="branco">Em branco</SelectItem>
-          {BALANCETE_MES_OPTIONS.map((option) => (
+          {lista.map((option) => (
             <SelectItem key={option} value={option}>
               {option}
             </SelectItem>
@@ -288,10 +307,19 @@ export default function BalanceteBalanco() {
         </SelectContent>
       </Select>
     </TableHead>
-  );
+    );
+  };
 
   const renderFechamentoCell = (companyId: string, blocked = false) => {
     const value = recordByCompany.get(companyId)?.fechamento ?? "";
+    /* Opções e cores cadastradas na administração (Cadastro de Tabelas). */
+    const tom =
+      cadastro.tone("fechamento", value) ??
+      (value === "ENCERRADA"
+        ? "bg-status-success text-status-success-foreground hover:bg-status-success/90"
+        : value === "LANÇADO"
+          ? "bg-primary/10 text-primary hover:bg-primary/15"
+          : undefined);
     return (
       <Select
         value={value === "" ? "none" : value}
@@ -304,16 +332,16 @@ export default function BalanceteBalanco() {
         <SelectTrigger
           className={cn(
             "h-7 w-full min-w-0 px-1 text-xs font-semibold",
-            value === "ENCERRADA" &&
-              "bg-status-success text-status-success-foreground hover:bg-status-success/90",
-            value === "LANÇADO" && "bg-primary/10 text-primary hover:bg-primary/15"
+            tom
           )}
         >
           <SelectValue placeholder="—" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="none">—</SelectItem>
-          {BALANCETE_FECHAMENTO_OPTIONS.map((option) => (
+          {cadastro
+            .optionsComValor("fechamento", value, BALANCETE_FECHAMENTO_OPTIONS)
+            .map((option) => (
             <SelectItem key={option} value={option}>
               {option}
             </SelectItem>
@@ -435,7 +463,7 @@ export default function BalanceteBalanco() {
                   />
                 </TableHead>
                 {BALANCETE_MESES.map((mes) =>
-                  renderFilterMonth(mes.key, mes.label)
+                  renderFilterMonth(mes.key, columnLabel(mes.key, mes.label))
                 )}
                 {renderFilterMonth("fechamento", columnLabel("fechamento", "Fechamento"), BALANCETE_FECHAMENTO_OPTIONS, "w-24")}
                 {renderFilterInput("observacoes", columnLabel("observacoes", "Obs."), "w-20")}

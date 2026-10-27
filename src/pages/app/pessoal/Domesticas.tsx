@@ -46,6 +46,8 @@ import {
 } from "@/lib/domesticas";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import { useCadastroLabels } from "@/hooks/use-cadastro-tabelas";
+import { useTabelaCadastro } from "@/hooks/use-tabela-cadastro";
+import { opcaoEquivalente } from "@/lib/cadastro-tabelas";
 import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
 import {
@@ -86,10 +88,21 @@ type PinnedKey = "data_base" | "senha";
  * para os meses seguintes até serem alterados; o Status "Sem Movimento" joga a
  * empresa para a tabela "Sem movimento" abaixo da principal.
  */
+/** Tabela deste módulo no Cadastro de Tabelas. */
+const TABELA = "Domésticas";
+
 export default function Domesticas() {
   const [mes, setMes] = useState<string>(readStoredMes);
   /* Nomes das colunas cadastrados na administração (Cadastro de Tabelas). */
   const columnLabel = useCadastroLabels(PESSOAL_DEPARTMENT_NAME);
+  /* Opções e cores cadastradas para as colunas com menu suspenso. */
+  const cadastro = useTabelaCadastro(PESSOAL_DEPARTMENT_NAME, TABELA);
+  /* A opção "Sem Movimento" segue o nome cadastrado na administração. */
+  const statusSemMovimento = opcaoEquivalente(
+    cadastro.options("status", DOMESTICAS_STATUS_OPTIONS),
+    DOMESTICAS_STATUS_OPTIONS,
+    DOMESTICAS_SEM_MOVIMENTO
+  );
   const [busca, setBusca] = useState({
     status: "",
     dataBase: "",
@@ -164,8 +177,8 @@ export default function Domesticas() {
   const effectiveStatus = (companyId: string): string => {
     const current = recordByCompany.get(companyId);
     if (current) return current.status ?? "";
-    return priorRecords(companyId)[0]?.status === DOMESTICAS_SEM_MOVIMENTO
-      ? DOMESTICAS_SEM_MOVIMENTO
+    return priorRecords(companyId)[0]?.status === statusSemMovimento
+      ? statusSemMovimento
       : "";
   };
 
@@ -204,10 +217,10 @@ export default function Domesticas() {
   });
 
   const movimentadas = filteredRows.filter(
-    (company) => effectiveStatus(company.id) !== DOMESTICAS_SEM_MOVIMENTO
+    (company) => effectiveStatus(company.id) !== statusSemMovimento
   );
   const semMovimento = filteredRows.filter(
-    (company) => effectiveStatus(company.id) === DOMESTICAS_SEM_MOVIMENTO
+    (company) => effectiveStatus(company.id) === statusSemMovimento
   );
 
   const save = (companyId: string, patch: Record<string, unknown>) => {
@@ -265,14 +278,14 @@ export default function Domesticas() {
         <SelectTrigger
           className={cn(
             "h-7 w-full min-w-0 px-1 text-[11px] font-semibold",
-            toneClass[value]
+            cadastro.toneMap(patchKey, toneClass)[value]
           )}
         >
           <SelectValue placeholder="—" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="none">—</SelectItem>
-          {options.map((option) => (
+          {cadastro.optionsComValor(patchKey, value, options).map((option) => (
             <SelectItem key={option} value={option}>
               {option}
             </SelectItem>
@@ -302,7 +315,7 @@ export default function Domesticas() {
         <SelectContent>
           <SelectItem value="todos">Todos</SelectItem>
           <SelectItem value="branco">Em branco</SelectItem>
-          {options.map((option) => (
+          {cadastro.options(key, options).map((option) => (
             <SelectItem key={option} value={option}>
               {option}
             </SelectItem>
@@ -506,7 +519,7 @@ export default function Domesticas() {
 
           <div className="space-y-2 pt-2">
             <h3 className="text-sm font-semibold">
-              {DOMESTICAS_SEM_MOVIMENTO} ({semMovimento.length})
+              {statusSemMovimento} ({semMovimento.length})
             </h3>
             <div className="max-h-[calc(100vh-16rem)] overflow-auto rounded-lg border">
               {renderTable(

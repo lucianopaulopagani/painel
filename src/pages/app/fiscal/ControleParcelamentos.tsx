@@ -31,6 +31,8 @@ import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { FISCAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import { useCadastroLabels } from "@/hooks/use-cadastro-tabelas";
+import { useTabelaCadastro } from "@/hooks/use-tabela-cadastro";
+import { opcaoEquivalente } from "@/lib/cadastro-tabelas";
 import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import {
   defaultReferenceMonth,
@@ -69,6 +71,9 @@ type CadastroKey = "numero" | "uf" | "empresa" | "documento";
  * alterado). ENVIO tem GERADO e ENVIADO. Todas as células aceitam comentário
  * (clique com o botão direito), que também segue para os meses seguintes.
  */
+/** Tabela deste módulo no Cadastro de Tabelas. */
+const TABELA = "Controle de Parcelamentos";
+
 export default function ControleParcelamentos() {
   const [mes, setMes] = useState<string>(
     () => readStoredMonth() || defaultReferenceMonth()
@@ -90,6 +95,8 @@ export default function ControleParcelamentos() {
 
   /* Nomes das colunas cadastrados na administração (Cadastro de Tabelas). */
   const columnLabel = useCadastroLabels(FISCAL_DEPARTMENT_NAME);
+  /* Opções e cores cadastradas para as colunas com menu suspenso. */
+  const cadastro = useTabelaCadastro(FISCAL_DEPARTMENT_NAME, TABELA);
 
   const { data: departments } = useDepartments();
   const { data: companies, isLoading, isError } = useCompanies();
@@ -141,9 +148,13 @@ export default function ControleParcelamentos() {
     const inherited = priorRecords(companyId)
       .map((record) => record[key] as string | null)
       .find((value): value is string => Boolean(value));
-    return inherited === PARCELAMENTO_DESABILITADO
-      ? PARCELAMENTO_DESABILITADO
-      : "";
+    /* A opção "Desabilitado" segue o nome cadastrado na administração. */
+    const desabilitado = opcaoEquivalente(
+      cadastro.options(key, PARCELAMENTO_OPTIONS),
+      PARCELAMENTO_OPTIONS,
+      PARCELAMENTO_DESABILITADO
+    );
+    return inherited === desabilitado ? desabilitado : "";
   };
 
   /**
@@ -302,6 +313,13 @@ export default function ControleParcelamentos() {
     field: ParcelamentoFieldDef
   ) => {
     const value = effectiveValue(companyId, field.key);
+    /* Opções e cores cadastradas na administração (Cadastro de Tabelas). */
+    const lista = cadastro.optionsComValor(
+      field.key,
+      value,
+      PARCELAMENTO_OPTIONS
+    );
+    const tom = cadastro.tone(field.key, value) ?? PARCELAMENTO_TONE[value];
     return commentable(
       companyId,
       field.key,
@@ -315,14 +333,14 @@ export default function ControleParcelamentos() {
         <SelectTrigger
           className={cn(
             "h-7 w-full min-w-0 px-1 text-[11px]",
-            PARCELAMENTO_TONE[value]
+            tom
           )}
         >
           <SelectValue placeholder="—" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="none">—</SelectItem>
-          {PARCELAMENTO_OPTIONS.map((option) => (
+          {lista.map((option) => (
             <SelectItem key={option} value={option}>
               {option}
             </SelectItem>
@@ -372,7 +390,9 @@ export default function ControleParcelamentos() {
             <SelectContent>
               <SelectItem value="todos">Todos</SelectItem>
               <SelectItem value="branco">Em branco</SelectItem>
-              {PARCELAMENTO_OPTIONS.map((option) => (
+              {cadastro
+                .options(field.key, PARCELAMENTO_OPTIONS)
+                .map((option) => (
                 <SelectItem key={option} value={option}>
                   {option}
                 </SelectItem>
@@ -385,7 +405,7 @@ export default function ControleParcelamentos() {
         "envio",
         columnLabel("envio", "ENVIO"),
         "w-24",
-        PARCELAMENTO_ENVIO_OPTIONS,
+        cadastro.options("envio", PARCELAMENTO_ENVIO_OPTIONS),
         "Todos"
       )}
     </TableRow>
@@ -509,14 +529,17 @@ export default function ControleParcelamentos() {
                           <SelectTrigger
                             className={cn(
                               "h-7 w-full min-w-0 px-1 text-[11px] font-semibold",
-                              PARCELAMENTO_ENVIO_TONE[envio]
+                              (cadastro.tone("envio", envio) ??
+                                PARCELAMENTO_ENVIO_TONE[envio])
                             )}
                           >
                             <SelectValue placeholder="—" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="none">—</SelectItem>
-                            {PARCELAMENTO_ENVIO_OPTIONS.map((option) => (
+                            {cadastro
+                              .optionsComValor("envio", envio, PARCELAMENTO_ENVIO_OPTIONS)
+                              .map((option) => (
                               <SelectItem key={option} value={option}>
                                 {option}
                               </SelectItem>

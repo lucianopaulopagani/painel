@@ -34,6 +34,7 @@ import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { SOCIETARIO_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import { useCadastroLabels } from "@/hooks/use-cadastro-tabelas";
+import { useTabelaCadastro } from "@/hooks/use-tabela-cadastro";
 import {
   companyUsesSubmenu,
   isCompanyInSubmenuInYear,
@@ -75,6 +76,9 @@ function formatVencimento(value: string): string {
 const CELL = "px-1 py-1 text-[11px]";
 const HEAD = "px-1 py-1 text-[11px] font-medium text-muted-foreground";
 
+/** Tabela deste módulo no Cadastro de Tabelas. */
+const TABELA = "Alvará Bombeiros";
+
 export default function AlvaraBombeiros() {
   const [ano, setAno] = useState<string>(readStoredAno);
   const [ufFiltro, setUfFiltro] = useState("todos");
@@ -83,6 +87,8 @@ export default function AlvaraBombeiros() {
   const [vencimentoAte, setVencimentoAte] = useState("");
   /* Nomes das colunas cadastrados na administração (Cadastro de Tabelas). */
   const columnLabel = useCadastroLabels(SOCIETARIO_DEPARTMENT_NAME);
+  /* Opções e cores cadastradas para as colunas com menu suspenso. */
+  const cadastro = useTabelaCadastro(SOCIETARIO_DEPARTMENT_NAME, TABELA);
   const [busca, setBusca] = useState({
     numero: "",
     empresa: "",
@@ -301,15 +307,16 @@ export default function AlvaraBombeiros() {
       <SelectTrigger
         className={cn(
           "h-7 w-full min-w-0 px-1 text-xs font-semibold",
-          value === "OK" &&
-            "bg-status-success text-status-success-foreground hover:bg-status-success/90"
+          cadastro.tone(patchKey, value) ??
+            (value === "OK" &&
+              "bg-status-success text-status-success-foreground hover:bg-status-success/90")
         )}
       >
         <SelectValue placeholder="—" />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="none">—</SelectItem>
-        {options.map((option) => (
+        {cadastro.optionsComValor(patchKey, value, options).map((option) => (
           <SelectItem key={option} value={option}>
             {option}
           </SelectItem>
@@ -354,7 +361,7 @@ export default function AlvaraBombeiros() {
         <SelectContent>
           <SelectItem value="todos">Todos</SelectItem>
           <SelectItem value="branco">Em branco</SelectItem>
-          {options.map((option) => (
+          {cadastro.options(key, options).map((option) => (
             <SelectItem key={option} value={option}>
               {option}
             </SelectItem>

@@ -1,4 +1,16 @@
-import { PARCELAMENTO_FIELDS } from "@/lib/parcelamentos";
+import {
+  ALVARA_ENVIADO_OPTIONS,
+  ALVARA_GERADO_OPTIONS,
+} from "@/lib/alvara-localizacao";
+import {
+  COMPLEMENTO_INSS_DARF_OPTIONS,
+  COMPLEMENTO_INSS_ENVIO_OPTIONS,
+} from "@/lib/complemento-inss";
+import {
+  BALANCETE_FECHAMENTO_OPTIONS,
+  BALANCETE_MESES,
+  BALANCETE_MES_OPTIONS,
+} from "@/lib/contabil";
 import {
   CONTABIL_DEPARTMENT_NAME,
   FISCAL_DEPARTMENT_NAME,
@@ -6,16 +18,44 @@ import {
   PESSOAL_DEPARTMENT_NAME,
   SOCIETARIO_DEPARTMENT_NAME,
 } from "@/lib/departments";
+import {
+  DOMESTICAS_DAE_OPTIONS,
+  DOMESTICAS_ENVIO_OPTIONS,
+  DOMESTICAS_FOLHA_OPTIONS,
+  DOMESTICAS_PONTO_OPTIONS,
+  DOMESTICAS_STATUS_OPTIONS,
+} from "@/lib/domesticas";
+import {
+  EMPRESAS_FISCAL_DCTFWEB_OPTIONS,
+  EMPRESAS_FISCAL_ENVIO_OPTIONS,
+  EMPRESAS_FISCAL_STATUS_OPTIONS,
+} from "@/lib/empresas-fiscal";
+import {
+  EMPRESAS_FUNC_DCTFWEB_OPTIONS,
+  EMPRESAS_FUNC_EMPRESTIMO_OPTIONS,
+  EMPRESAS_FUNC_ENVIO_OPTIONS,
+  EMPRESAS_FUNC_FGTS_OPTIONS,
+  EMPRESAS_FUNC_FLAG_OPTIONS,
+  EMPRESAS_FUNC_FOLHA_OPTIONS,
+  EMPRESAS_FUNC_STATUS_OPTIONS,
+} from "@/lib/empresas-funcionarios";
 import { dropdownFieldsFor, fiscalFormato } from "@/lib/fiscal-fields";
+import {
+  PARCELAMENTO_ENVIO_OPTIONS,
+  PARCELAMENTO_FIELDS,
+  PARCELAMENTO_OPTIONS,
+} from "@/lib/parcelamentos";
+import { PONTO_ENVIO_OPTIONS } from "@/lib/ponto";
 import type { Tributacao } from "@/lib/types";
 
 /**
  * Catálogo das tabelas de cada departamento e das colunas que elas exibem.
  *
  * O administrador altera em "Cadastro de Tabelas" (Admin) o nome das colunas e
- * as opções das colunas de menu suspenso. O que está gravado no banco vale por
- * departamento; este catálogo diz o que cada tabela exibe e quais são os nomes
- * padrão usados quando ainda não há cadastro.
+ * as opções (nome e cor) das colunas de menu suspenso. O que está gravado no
+ * banco vale por departamento; este catálogo diz o que cada tabela exibe, quais
+ * colunas têm menu suspenso e quais são as listas padrão usadas enquanto não
+ * houver cadastro.
  */
 
 export interface ColunaCadastro {
@@ -24,6 +64,8 @@ export interface ColunaCadastro {
   label: string;
   /** Opções padrão da coluna; quando existe, a coluna tem menu suspenso. */
   opcoes?: readonly string[];
+  /** Observação exibida no cadastro quando as opções não são editáveis. */
+  nota?: string;
 }
 
 export interface TabelaCadastro {
@@ -90,9 +132,25 @@ export function statusColorClass(cor: string | null | undefined): string {
   );
 }
 
+/**
+ * Nome configurado equivalente a uma opção padrão: usa a opção que ocupa a mesma
+ * posição na lista cadastrada, para as automações do sistema acompanharem o nome
+ * escolhido na administração. Sem cadastro (ou com lista de tamanho diferente),
+ * devolve o próprio valor padrão.
+ */
+export function opcaoEquivalente(
+  configuradas: readonly string[],
+  padrao: readonly string[],
+  valor: string
+): string {
+  const index = padrao.indexOf(valor);
+  if (index < 0 || configuradas.length !== padrao.length) return valor;
+  return configuradas[index] ?? valor;
+}
+
 /* ----------------------------------------------------------- departamentos */
 
-/** Departamentos cujas tabelas já leem o cadastro de nomes. */
+/** Departamentos cujas tabelas já leem o cadastro de nomes e opções. */
 export const DEPARTAMENTOS_INTEGRADOS: readonly string[] = [
   FISCAL_DEPARTMENT_NAME,
   PESSOAL_DEPARTMENT_NAME,
@@ -171,12 +229,20 @@ const COLUNAS_ALVARA: ColunaCadastro[] = [
   { campo: "numero", label: "Nº" },
   { campo: "empresa", label: "Empresa" },
   { campo: "cnpj", label: "CNPJ" },
-  { campo: "uf", label: "UF" },
-  { campo: "municipio", label: "Município" },
+  {
+    campo: "uf",
+    label: "UF",
+    nota: "Lista de UFs do cadastro de empresas — opções não editáveis.",
+  },
+  {
+    campo: "municipio",
+    label: "Município",
+    nota: "Lista do cadastro de empresas — opções não editáveis.",
+  },
   { campo: "observacao", label: "Observação" },
   { campo: "venc_alvara", label: "Venc." },
-  { campo: "gerado", label: "Gerado" },
-  { campo: "enviado", label: "Enviado" },
+  { campo: "gerado", label: "Gerado", opcoes: ALVARA_GERADO_OPTIONS },
+  { campo: "enviado", label: "Enviado", opcoes: ALVARA_ENVIADO_OPTIONS },
 ];
 
 /** Colunas das tabelas dos módulos (subdepartamentos) de cada departamento. */
@@ -184,86 +250,170 @@ const COLUNAS_POR_MODULO: Record<string, ColunaCadastro[]> = {
   /* Departamento Fiscal */
   "Controle de Parcelamentos": [
     { campo: "numero", label: "Nº" },
-    { campo: "uf", label: "UF" },
+    {
+      campo: "uf",
+      label: "UF",
+      nota: "Lista de UFs do cadastro de empresas — opções não editáveis.",
+    },
     { campo: "empresa", label: "Empresa" },
     { campo: "documento", label: "CNPJ" },
     ...PARCELAMENTO_FIELDS.map((field) => ({
       campo: field.key,
       label: field.label,
+      opcoes: PARCELAMENTO_OPTIONS,
     })),
-    { campo: "envio", label: "Envio" },
+    { campo: "envio", label: "Envio", opcoes: PARCELAMENTO_ENVIO_OPTIONS },
   ],
 
   /* Departamento Pessoal */
   "Empresas com funcionários": [
-    { campo: "status", label: "Status" },
+    {
+      campo: "status",
+      label: "Status",
+      // A opção Desativado não é oferecida neste módulo.
+      opcoes: EMPRESAS_FUNC_STATUS_OPTIONS.filter(
+        (option) => option !== "Desativado"
+      ),
+    },
     { campo: "numero", label: "Nº" },
     { campo: "empresa", label: "Empresa" },
     { campo: "cnpj", label: "CNPJ" },
     { campo: "tributacao", label: "Tributação" },
-    { campo: "dataBase", label: "Data Base" },
-    { campo: "folha", label: "Folha" },
-    { campo: "emprestimo", label: "Empréstimo" },
-    { campo: "fgts", label: "FGTS" },
-    { campo: "taxaSindical", label: "Taxa Sindical" },
-    { campo: "dctfweb", label: "DCTFWEB" },
-    { campo: "envio", label: "Envio" },
+    {
+      campo: "dataBase",
+      label: "Data Base",
+      nota: "Lista de meses do sistema — opções não editáveis.",
+    },
+    { campo: "folha", label: "Folha", opcoes: EMPRESAS_FUNC_FOLHA_OPTIONS },
+    {
+      campo: "emprestimo",
+      label: "Empréstimo",
+      opcoes: EMPRESAS_FUNC_EMPRESTIMO_OPTIONS,
+    },
+    { campo: "fgts", label: "FGTS", opcoes: EMPRESAS_FUNC_FGTS_OPTIONS },
+    {
+      campo: "taxaSindical",
+      label: "Taxa Sindical",
+      opcoes: EMPRESAS_FUNC_FLAG_OPTIONS,
+    },
+    {
+      campo: "dctfweb",
+      label: "DCTFWEB",
+      opcoes: EMPRESAS_FUNC_DCTFWEB_OPTIONS,
+    },
+    { campo: "envio", label: "Envio", opcoes: EMPRESAS_FUNC_ENVIO_OPTIONS },
     { campo: "notas", label: "Notas" },
   ],
   "Empresas Fiscal": [
-    { campo: "status", label: "Status" },
+    {
+      campo: "status",
+      label: "Status",
+      opcoes: EMPRESAS_FISCAL_STATUS_OPTIONS,
+    },
     { campo: "numero", label: "Nº" },
     { campo: "empresa", label: "Empresa" },
     { campo: "cnpj", label: "CNPJ" },
     { campo: "informacoes", label: "Informações fechamento" },
-    { campo: "dctfweb", label: "DCTFWEB" },
-    { campo: "envio", label: "Envio" },
+    {
+      campo: "dctfweb",
+      label: "DCTFWEB",
+      opcoes: EMPRESAS_FISCAL_DCTFWEB_OPTIONS,
+    },
+    {
+      campo: "envio",
+      label: "Envio",
+      // A opção Desativado não é oferecida neste módulo.
+      opcoes: EMPRESAS_FISCAL_ENVIO_OPTIONS.filter(
+        (option) => option !== "Desativado"
+      ),
+    },
   ],
   "Domésticas": [
-    { campo: "status", label: "Status" },
-    { campo: "dataBase", label: "Data Base" },
+    { campo: "status", label: "Status", opcoes: DOMESTICAS_STATUS_OPTIONS },
+    {
+      campo: "dataBase",
+      label: "Data Base",
+      nota: "Lista de meses do sistema — opções não editáveis.",
+    },
     { campo: "numero", label: "Nº" },
     { campo: "nome", label: "Nome" },
     { campo: "cpf", label: "CPF" },
     { campo: "senha", label: "Senha" },
-    { campo: "folha", label: "Folha" },
-    { campo: "dae", label: "DAE" },
-    { campo: "envio", label: "Envio" },
-    { campo: "ponto", label: "Ponto" },
+    { campo: "folha", label: "Folha", opcoes: DOMESTICAS_FOLHA_OPTIONS },
+    { campo: "dae", label: "DAE", opcoes: DOMESTICAS_DAE_OPTIONS },
+    { campo: "envio", label: "Envio", opcoes: DOMESTICAS_ENVIO_OPTIONS },
+    { campo: "ponto", label: "Ponto", opcoes: DOMESTICAS_PONTO_OPTIONS },
   ],
   "Ponto": [
     { campo: "numero", label: "Nº" },
     { campo: "empresa", label: "Empresa" },
-    { campo: "envio", label: "Envio" },
+    { campo: "envio", label: "Envio", opcoes: PONTO_ENVIO_OPTIONS },
   ],
   "Complemento INSS": [
     { campo: "numero", label: "Nº" },
     { campo: "empresa", label: "Empresa" },
     { campo: "observacoes", label: "Observações" },
-    { campo: "darf", label: "DARF" },
-    { campo: "envio", label: "Envio" },
+    { campo: "darf", label: "DARF", opcoes: COMPLEMENTO_INSS_DARF_OPTIONS },
+    {
+      campo: "envio",
+      label: "Envio",
+      opcoes: COMPLEMENTO_INSS_ENVIO_OPTIONS,
+    },
   ],
 
   /* Departamento Contábil */
   "Balancete/Balanço": [
     { campo: "numero", label: "Nº" },
-    { campo: "uf", label: "UF" },
+    {
+      campo: "uf",
+      label: "UF",
+      nota: "Lista de UFs do cadastro de empresas — opções não editáveis.",
+    },
     { campo: "empresa", label: "Empresa" },
-    { campo: "fechamento", label: "Fechamento" },
+    ...BALANCETE_MESES.map((mes) => ({
+      campo: mes.key,
+      label: mes.label,
+      opcoes: BALANCETE_MES_OPTIONS,
+    })),
+    {
+      campo: "fechamento",
+      label: "Fechamento",
+      opcoes: BALANCETE_FECHAMENTO_OPTIONS,
+    },
     { campo: "observacoes", label: "Obs." },
   ],
 
   /* Departamento Societário */
   "Certificado digital": [
     { campo: "vencimento", label: "Vencimento" },
-    { campo: "situacao", label: "Situação" },
-    { campo: "status", label: "Status" },
+    {
+      campo: "situacao",
+      label: "Situação",
+      nota: "Calculada pela data de vencimento do certificado — opções não editáveis.",
+    },
+    {
+      campo: "status",
+      label: "Status",
+      nota: "Calculado pela data de vencimento do certificado — opções não editáveis.",
+    },
     { campo: "empresa", label: "Empresa" },
     { campo: "socio", label: "Responsável" },
     { campo: "socioCpf", label: "CPF" },
-    { campo: "produto", label: "Produto" },
-    { campo: "avisado", label: "Avisado" },
-    { campo: "financ", label: "Financ." },
+    {
+      campo: "produto",
+      label: "Produto",
+      nota: "Lista de produtos de certificado do sistema — opções não editáveis.",
+    },
+    {
+      campo: "avisado",
+      label: "Avisado",
+      nota: "Marcação Sim/Não do certificado — opções não editáveis.",
+    },
+    {
+      campo: "financ",
+      label: "Financ.",
+      nota: "Marcação Sim/Não do certificado — opções não editáveis.",
+    },
     { campo: "agendamento", label: "Agendamento" },
     { campo: "observacoes", label: "Observações" },
     { campo: "acoes", label: "Ações" },

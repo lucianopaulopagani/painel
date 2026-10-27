@@ -23,6 +23,7 @@ import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import { useCadastroLabels } from "@/hooks/use-cadastro-tabelas";
+import { useTabelaCadastro } from "@/hooks/use-tabela-cadastro";
 import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import { defaultReferenceMonth } from "@/lib/fiscal-month";
 import { PONTO_ENVIO_DESATIVADO, PONTO_ENVIO_OPTIONS } from "@/lib/ponto";
@@ -44,6 +45,9 @@ function readPontoMonth(): string {
 const CELL = "px-2 py-1 text-xs";
 const HEAD = "px-2 py-1 text-xs font-medium text-muted-foreground";
 
+/** Tabela deste módulo no Cadastro de Tabelas. */
+const TABELA = "Ponto";
+
 export default function Ponto() {
   const [mes, setMes] = useState<string>(readPontoMonth);
   const [busca, setBusca] = useState({ numero: "", empresa: "", envio: "" });
@@ -58,6 +62,8 @@ export default function Ponto() {
   const { data: allRecords } = usePontoAll();
   /* Nomes das colunas cadastrados na administração (Cadastro de Tabelas). */
   const columnLabel = useCadastroLabels(PESSOAL_DEPARTMENT_NAME);
+  /* Opções e cores cadastradas para as colunas com menu suspenso. */
+  const cadastro = useTabelaCadastro(PESSOAL_DEPARTMENT_NAME, TABELA);
   const saveMutation = useSavePonto(mes);
 
   const pessoal = findDepartmentByName(departments, PESSOAL_DEPARTMENT_NAME);
@@ -182,19 +188,15 @@ export default function Ponto() {
             <SelectTrigger
               className={cn(
                 "h-7 w-full min-w-0 px-1 text-xs font-semibold",
-                PESSOAL_ENVIO_TONE[envio]
+                (cadastro.tone("envio", envio) ?? PESSOAL_ENVIO_TONE[envio])
               )}
             >
               <SelectValue placeholder="—" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">—</SelectItem>
-              {legadoDesativado && (
-                <SelectItem value={PONTO_ENVIO_DESATIVADO}>
-                  {PONTO_ENVIO_DESATIVADO}
-                </SelectItem>
-              )}
-              {PONTO_ENVIO_OPTIONS.map((option) => (
+              {cadastro.optionsComValor("envio", envio, PONTO_ENVIO_OPTIONS).map(
+                (option) => (
                 <SelectItem key={option} value={option}>
                   {option}
                 </SelectItem>
@@ -279,7 +281,7 @@ export default function Ponto() {
                     <SelectContent>
                       <SelectItem value="todos">Todos</SelectItem>
                       <SelectItem value="branco">Em branco</SelectItem>
-                      {PONTO_ENVIO_OPTIONS.map((option) => (
+                      {cadastro.options("envio", PONTO_ENVIO_OPTIONS).map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>

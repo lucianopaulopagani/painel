@@ -44,6 +44,7 @@ import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import { useCadastroLabels } from "@/hooks/use-cadastro-tabelas";
+import { useTabelaCadastro } from "@/hooks/use-tabela-cadastro";
 import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import {
   EMPRESAS_FUNC_DCTFWEB_OPTIONS,
@@ -92,10 +93,15 @@ const N_LEFT = "left-[128px]";
 const EMPRESA_LEFT = "left-[168px]";
 const EMPRESA_EDGE = "border-r border-border";
 
+/** Tabela deste módulo no Cadastro de Tabelas. */
+const TABELA = "Empresas com funcionários";
+
 export default function EmpresasFuncionarios() {
   const [mes, setMes] = useState<string>(readStoredMes);
   /* Nomes das colunas cadastrados na administração (Cadastro de Tabelas). */
   const columnLabel = useCadastroLabels(PESSOAL_DEPARTMENT_NAME);
+  /* Opções e cores cadastradas para as colunas com menu suspenso. */
+  const cadastro = useTabelaCadastro(PESSOAL_DEPARTMENT_NAME, TABELA);
   const [busca, setBusca] = useState({
     status: "",
     numero: "",
@@ -450,14 +456,14 @@ export default function EmpresasFuncionarios() {
         <SelectTrigger
           className={cn(
             "h-7 w-full min-w-0 px-1 text-xs font-semibold",
-            toneClass[value]
+            cadastro.toneMap(patchKey, toneClass)[value]
           )}
         >
           <SelectValue placeholder="—" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="none">—</SelectItem>
-          {options.map((option) => (
+          {cadastro.optionsComValor(patchKey, value, options).map((option) => (
             <SelectItem key={option} value={option}>
               {option}
             </SelectItem>
@@ -513,7 +519,7 @@ export default function EmpresasFuncionarios() {
         <SelectContent>
           <SelectItem value="todos">Todos</SelectItem>
           <SelectItem value="branco">Em branco</SelectItem>
-          {options.map((option) => (
+          {cadastro.options(key, options).map((option) => (
             <SelectItem key={option} value={option}>
               {option}
             </SelectItem>

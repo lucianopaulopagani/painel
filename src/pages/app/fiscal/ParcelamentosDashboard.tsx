@@ -40,8 +40,11 @@ import { companyInSubmenuInMonth, subdepartmentResponsibleIds } from "@/lib/depa
 import {
   PARCELAMENTO_ENVIO_ENVIADO,
   PARCELAMENTO_ENVIO_GERADO,
+  PARCELAMENTO_ENVIO_OPTIONS,
   isEnvioFinalizado,
 } from "@/lib/parcelamentos";
+import { useTabelaCadastro } from "@/hooks/use-tabela-cadastro";
+import { opcaoEquivalente } from "@/lib/cadastro-tabelas";
 import { cn } from "@/lib/utils";
 import type { CompanyWithDepartments } from "@/lib/types";
 
@@ -79,6 +82,17 @@ export default function ParcelamentosDashboard() {
     (directory ?? []).map((user) => [user.id, user.full_name])
   );
 
+  /* As opções do ENVIO acompanham os nomes cadastrados na administração. */
+  const cadastro = useTabelaCadastro(FISCAL_DEPARTMENT_NAME, SUBMENU);
+  const envioOptions = cadastro.options("envio", PARCELAMENTO_ENVIO_OPTIONS);
+  /** Valor gravado equivalente de cada situação do ENVIO no dashboard. */
+  const envioDe = (valor: string): string =>
+    opcaoEquivalente(envioOptions, PARCELAMENTO_ENVIO_OPTIONS, valor);
+  const envioGroups = ENVIO_GROUPS.map((group) => ({
+    key: envioDe(group.key),
+    label: group.key === "" ? group.label : envioDe(group.key),
+  }));
+
   const all = (companies ?? []).filter((company) =>
     companyInSubmenuInMonth(company, fiscal?.id, SUBMENU, mes)
   );
@@ -104,7 +118,7 @@ export default function ParcelamentosDashboard() {
 
   // ENVIADO conta como FINALIZADA; GERADO e em branco como PENDENTE.
   const finalizadas = scoped.filter((company) =>
-    isEnvioFinalizado(envioOf(company.id))
+    isEnvioFinalizado(envioOf(company.id), envioDe(PARCELAMENTO_ENVIO_ENVIADO))
   ).length;
   const total = scoped.length;
   const pendentes = total - finalizadas;
@@ -173,7 +187,7 @@ export default function ParcelamentosDashboard() {
         nome: group.nome,
         total: group.companies.length,
       };
-      for (const envio of ENVIO_GROUPS) {
+      for (const envio of envioGroups) {
         entry[envio.label] = group.companies.filter(
           (company) => envioOf(company.id) === envio.key
         ).length;
@@ -349,7 +363,7 @@ export default function ParcelamentosDashboard() {
                         />
                         <Tooltip />
                         <Legend />
-                        {ENVIO_GROUPS.map((envio, index) => (
+                        {envioGroups.map((envio, index) => (
                           <Bar
                             key={envio.label}
                             dataKey={envio.label}

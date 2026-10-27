@@ -206,6 +206,8 @@ export function CadastroColunaEditor({
               <ListPlus className="h-3.5 w-3.5" aria-hidden="true" />
               menu suspenso
             </>
+          ) : coluna.nota ? (
+            "opções do sistema"
           ) : (
             "texto"
           )}
@@ -305,7 +307,8 @@ export function CadastroColunaEditor({
         </>
       ) : (
         <p className="text-[11px] text-muted-foreground">
-          Coluna de texto — apenas o nome do cabeçalho pode ser alterado.
+          {coluna.nota ??
+            "Coluna de texto — apenas o nome do cabeçalho pode ser alterado."}
         </p>
       )}
     </div>

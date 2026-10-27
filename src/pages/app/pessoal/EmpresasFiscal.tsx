@@ -37,6 +37,7 @@ import { useCompanies } from "@/hooks/use-companies";
 import { useDepartments } from "@/hooks/use-departments";
 import { PESSOAL_DEPARTMENT_NAME, findDepartmentByName } from "@/lib/departments";
 import { useCadastroLabels } from "@/hooks/use-cadastro-tabelas";
+import { useTabelaCadastro } from "@/hooks/use-tabela-cadastro";
 import { companyInSubmenuInMonth } from "@/lib/department-submenus";
 import {
   EMPRESAS_FISCAL_DCTFWEB_OPTIONS,
@@ -72,10 +73,15 @@ const ENVIO_SELECT_OPTIONS = EMPRESAS_FISCAL_ENVIO_OPTIONS.filter(
   (option) => option !== "Desativado"
 );
 
+/** Tabela deste módulo no Cadastro de Tabelas. */
+const TABELA = "Empresas Fiscal";
+
 export default function EmpresasFiscal() {
   const [mes, setMes] = useState<string>(readStoredMes);
   /* Nomes das colunas cadastrados na administração (Cadastro de Tabelas). */
   const columnLabel = useCadastroLabels(PESSOAL_DEPARTMENT_NAME);
+  /* Opções e cores cadastradas para as colunas com menu suspenso. */
+  const cadastro = useTabelaCadastro(PESSOAL_DEPARTMENT_NAME, TABELA);
   const [busca, setBusca] = useState({
     status: "",
     numero: "",
@@ -244,14 +250,14 @@ export default function EmpresasFiscal() {
             <SelectTrigger
               className={cn(
                 "h-7 w-full min-w-0 px-1 text-xs font-semibold",
-                PESSOAL_STATUS_TONE[status]
+                (cadastro.tone("status", status) ?? PESSOAL_STATUS_TONE[status])
               )}
             >
               <SelectValue placeholder="—" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">—</SelectItem>
-              {EMPRESAS_FISCAL_STATUS_OPTIONS.map((option) => (
+              {cadastro.optionsComValor("status", status, EMPRESAS_FISCAL_STATUS_OPTIONS).map((option) => (
                 <SelectItem key={option} value={option}>
                   {option}
                 </SelectItem>
@@ -307,14 +313,14 @@ export default function EmpresasFiscal() {
             <SelectTrigger
               className={cn(
                 "h-7 w-full min-w-0 px-1 text-xs font-semibold",
-                PESSOAL_FLAG_TONE[dctfweb]
+                (cadastro.tone("dctfweb", dctfweb) ?? PESSOAL_FLAG_TONE[dctfweb])
               )}
             >
               <SelectValue placeholder="—" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">—</SelectItem>
-              {EMPRESAS_FISCAL_DCTFWEB_OPTIONS.map((option) => (
+              {cadastro.optionsComValor("dctfweb", dctfweb, EMPRESAS_FISCAL_DCTFWEB_OPTIONS).map((option) => (
                 <SelectItem key={option} value={option}>
                   {option}
                 </SelectItem>
@@ -332,14 +338,14 @@ export default function EmpresasFiscal() {
             <SelectTrigger
               className={cn(
                 "h-7 w-full min-w-0 px-1 text-xs font-semibold",
-                PESSOAL_ENVIO_TONE[envio]
+                (cadastro.tone("envio", envio) ?? PESSOAL_ENVIO_TONE[envio])
               )}
             >
               <SelectValue placeholder="—" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">—</SelectItem>
-                      {ENVIO_SELECT_OPTIONS.map((option) => (
+                      {cadastro.optionsComValor("envio", envio, ENVIO_SELECT_OPTIONS).map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>
@@ -402,7 +408,7 @@ export default function EmpresasFiscal() {
                     <SelectContent>
                       <SelectItem value="todos">Todos</SelectItem>
                       <SelectItem value="branco">Em branco</SelectItem>
-                      {EMPRESAS_FISCAL_STATUS_OPTIONS.map((option) => (
+                      {cadastro.options("status", EMPRESAS_FISCAL_STATUS_OPTIONS).map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>
@@ -466,7 +472,7 @@ export default function EmpresasFiscal() {
                     <SelectContent>
                       <SelectItem value="todos">Todos</SelectItem>
                       <SelectItem value="branco">Em branco</SelectItem>
-                      {EMPRESAS_FISCAL_DCTFWEB_OPTIONS.map((option) => (
+                      {cadastro.options("dctfweb", EMPRESAS_FISCAL_DCTFWEB_OPTIONS).map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>
@@ -488,7 +494,7 @@ export default function EmpresasFiscal() {
                     <SelectContent>
                       <SelectItem value="todos">Todos</SelectItem>
                       <SelectItem value="branco">Em branco</SelectItem>
-                      {ENVIO_SELECT_OPTIONS.map((option) => (
+                      {cadastro.options("envio", ENVIO_SELECT_OPTIONS).map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>

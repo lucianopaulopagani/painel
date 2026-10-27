@@ -17,9 +17,9 @@ const SECTIONS: ManualSection[] = [
           "Somente as empresas marcadas com o departamento Contábil no cadastro de empresas aparecem.",
       },
       {
-        label: "Nomes das colunas (administração)",
+        label: "Nomes das colunas e opções (administração)",
         detail:
-          "Os nomes das colunas das tabelas deste departamento são cadastrados no painel de administração, em Cadastro de Tabelas › Departamento Contábil › abrir a tabela (botão de seta) e editar o primeiro campo de cada coluna. As colunas dos meses (JAN a DEZ) não são renomeadas por ali.",
+          "Os nomes das colunas e as opções (nome e cor) das colunas com menu suspenso são cadastrados no painel de administração, em Cadastro de Tabelas › Departamento Contábil › abrir a tabela (botão de seta). Os meses (JAN a DEZ) usam a lista OK/LANÇADO e a coluna Fechamento usa LANÇADO/ENCERRADA: cada opção pode ser renomeada, receber uma cor e ser excluída, e a cor escolhida é a usada na pílula da célula. As colunas Nº, UF, Empresa e Obs. são de texto, e a lista de UFs vem do cadastro de empresas.",
       },
     ],
   },
