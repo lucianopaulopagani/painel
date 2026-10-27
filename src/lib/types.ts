@@ -36,6 +36,32 @@ export interface TributacaoStatus {
   created_at: string;
 }
 
+/**
+ * Nome exibido no cabeçalho de uma coluna, por departamento (Cadastro de
+ * Tabelas). Vale para as tabelas do departamento informado.
+ */
+export interface CadastroColuna {
+  departamento: string;
+  campo: string;
+  label: string;
+  updated_at: string;
+}
+
+/** Opção de uma coluna de menu suspenso de uma tabela do departamento. */
+export interface CadastroOpcao {
+  id: string;
+  departamento: string;
+  /** Tabela da opção (no Fiscal, o nome da tributação). */
+  tabela: string;
+  /** Coluna da tabela (ex.: situacao, das, envio_sn). */
+  campo: string;
+  nome: string;
+  /** Cor da opção nas tabelas (success, info, warning, danger, neutral, disabled). */
+  cor: string;
+  ordem: number;
+  created_at: string;
+}
+
 export interface DepartmentRef {
   id: string;
   name: string;

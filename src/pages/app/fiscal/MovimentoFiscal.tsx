@@ -53,12 +53,12 @@ import {
   SimplesNacionalTable,
 } from "./SimplesNacional";
 import {
+  useColumnLabel,
   useFieldOptions,
   useFieldTone,
   useStatusOptions,
   useStatusTone,
-} from "@/hooks/use-tributacao-status";
-import { useColumnLabel } from "@/hooks/use-fiscal-colunas";
+} from "@/hooks/use-fiscal-cadastro";
 import { isLucroTributacao } from "@/lib/fiscal-lucro-real";
 import { LucroRealPresumidoTable } from "./LucroRealPresumido";
 import { MEI_TRIBUTACAO, MeiTable } from "./Mei";
@@ -588,12 +588,12 @@ export function MovimentoFiscal() {
               <TableRow className="bg-muted hover:bg-muted">
                 <TableHead className="w-7 px-1 py-1 align-bottom">
                   <span className="text-[11px] font-semibold lowercase text-foreground">
-                    n
+                    {columnLabel("numero", "n")}
                   </span>
                 </TableHead>
                 <TableHead className="w-10 px-1 py-1 align-bottom">
                   <span className="mb-1 block text-[11px] font-semibold lowercase text-foreground">
-                    uf
+                    {columnLabel("uf", "uf")}
                   </span>
                   <Select
                     value={busca.uf === "" ? "todos" : busca.uf}
@@ -617,7 +617,7 @@ export function MovimentoFiscal() {
                 </TableHead>
                 <TableHead className="w-28 px-1 py-1 align-bottom">
                   <span className="mb-1 block text-[11px] font-semibold lowercase text-foreground">
-                    empresa
+                    {columnLabel("empresa", "empresa")}
                   </span>
                   <Input
                     value={busca.empresa}
@@ -719,7 +719,7 @@ export function MovimentoFiscal() {
                 )}
                 <TableHead className="w-20 px-1 py-1 align-bottom">
                   <span className="mb-1 block text-[11px] font-semibold lowercase text-foreground">
-                    obs.
+                    {columnLabel("observacoes", "obs.")}
                   </span>
                   <Input
                     value={busca.obs}

@@ -35,12 +35,12 @@ import { cn } from "@/lib/utils";
 import { SITUACAO_TONE } from "@/lib/fiscal";
 import { CompanyNumber } from "@/components/company-number";
 import {
+  useColumnLabel,
   useFieldOptions,
   useFieldTone,
   useStatusOptions,
   useStatusTone,
-} from "@/hooks/use-tributacao-status";
-import { useColumnLabel } from "@/hooks/use-fiscal-colunas";
+} from "@/hooks/use-fiscal-cadastro";
 import type {
   CompanyWithDepartments,
   MovementFiscalInput,
@@ -240,9 +240,11 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
         <Table className="table-fixed min-w-[1100px]">
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
-              {renderFilterInput("numero", "N", "w-12")}
+              {renderFilterInput("numero", columnLabel("numero", "N"), "w-12")}
               <TableHead className={`${HEAD} w-16 align-bottom`}>
-                <span className="mb-1 block whitespace-nowrap">UF</span>
+                <span className="mb-1 block whitespace-nowrap">
+                  {columnLabel("uf", "UF")}
+                </span>
                 <Select
                   value={busca.uf === "" ? "todos" : busca.uf}
                   onValueChange={(value) =>
@@ -263,7 +265,7 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                   </SelectContent>
                 </Select>
               </TableHead>
-              {renderFilterInput("empresa", "Empresa", "w-[22rem]")}
+              {renderFilterInput("empresa", columnLabel("empresa", "Empresa"), "w-[22rem]")}
               <TableHead className={`${HEAD} w-24 align-bottom`}>
                 <span className="mb-1 block whitespace-nowrap">
                   {columnLabel("situacao", "Status")}
@@ -342,7 +344,7 @@ export function MeiTable({ mes, companies }: MeiTableProps) {
                   </SelectContent>
                 </Select>
               </TableHead>
-              {renderFilterInput("observacoes", "Observação", "w-[18rem]")}
+              {renderFilterInput("observacoes", columnLabel("observacoes", "Observação"), "w-[18rem]")}
             </TableRow>
           </TableHeader>
           <TableBody>

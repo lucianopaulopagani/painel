@@ -44,12 +44,12 @@ import {
   maskCurrencyInput,
 } from "@/lib/currency";
 import {
+  useColumnLabel,
   useFieldOptions,
   useFieldTone,
   useStatusOptions,
   useStatusTone,
-} from "@/hooks/use-tributacao-status";
-import { useColumnLabel } from "@/hooks/use-fiscal-colunas";
+} from "@/hooks/use-fiscal-cadastro";
 import { cn, formatCpfCnpj } from "@/lib/utils";
 import type {
   CompanyWithDepartments,
@@ -364,11 +364,11 @@ export function SimplesNacionalTable({
         <Table className="table-fixed min-w-[1232px]">
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
-              {renderFilterInput("numero", "Nº", "w-10")}
-              {renderFilterSelect("uf", "UF", ufOptions, "w-16")}
-              {renderFilterInput("empresa", "Empresa", "w-36")}
-              {renderFilterInput("cnpj", "CNPJ", "w-24")}
-              {renderFilterInput("ie", "Insc. Estadual", "w-20")}
+              {renderFilterInput("numero", columnLabel("numero", "Nº"), "w-10")}
+              {renderFilterSelect("uf", columnLabel("uf", "UF"), ufOptions, "w-16")}
+              {renderFilterInput("empresa", columnLabel("empresa", "Empresa"), "w-36")}
+              {renderFilterInput("cnpj", columnLabel("cnpj", "CNPJ"), "w-24")}
+              {renderFilterInput("ie", columnLabel("ie", "Insc. Estadual"), "w-20")}
               {renderFilterSelect(
                 "situacao",
                 columnLabel("situacao", "Status"),
@@ -406,14 +406,14 @@ export function SimplesNacionalTable({
                       <Fragment>
                         {renderFilterInput(
                           "observacoes",
-                          "Observações",
+                          columnLabel("observacoes", "Observações"),
                           "w-28"
                         )}
                         <TableHead
                           className={`${HEAD} w-14 text-center align-bottom`}
                         >
                           <span className="mb-1 block whitespace-nowrap">
-                            Ações
+                            {columnLabel("acoes", "Ações")}
                           </span>
                         </TableHead>
                       </Fragment>

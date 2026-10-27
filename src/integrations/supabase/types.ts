@@ -3599,6 +3599,60 @@ export type Database = {
           },
         ]
       }
+      cadastro_colunas: {
+        Row: {
+          campo: string
+          departamento: string
+          label: string
+          updated_at: string
+        }
+        Insert: {
+          campo: string
+          departamento: string
+          label: string
+          updated_at?: string
+        }
+        Update: {
+          campo?: string
+          departamento?: string
+          label?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cadastro_opcoes: {
+        Row: {
+          campo: string
+          cor: string
+          created_at: string
+          departamento: string
+          id: string
+          nome: string
+          ordem: number
+          tabela: string
+        }
+        Insert: {
+          campo: string
+          cor?: string
+          created_at?: string
+          departamento: string
+          id?: string
+          nome: string
+          ordem?: number
+          tabela: string
+        }
+        Update: {
+          campo?: string
+          cor?: string
+          created_at?: string
+          departamento?: string
+          id?: string
+          nome?: string
+          ordem?: number
+          tabela?: string
+        }
+        Relationships: []
+      }
       calendar_shares: {
         Row: {
           calendar_id: string

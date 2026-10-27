@@ -34,10 +34,10 @@ import {
 import { SITUACAO_TONE } from "@/lib/fiscal";
 import { cn, formatCpfCnpj } from "@/lib/utils";
 import {
+  useColumnLabel,
   useStatusOptions,
   useStatusTone,
-} from "@/hooks/use-tributacao-status";
-import { useColumnLabel } from "@/hooks/use-fiscal-colunas";
+} from "@/hooks/use-fiscal-cadastro";
 import { CompanyNumber } from "@/components/company-number";
 import type {
   CompanyWithDepartments,
@@ -231,9 +231,11 @@ export function MovimentoSimplesTable({
         <Table className="table-fixed min-w-[1180px]">
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
-              {renderFilterInput("numero", "N", "w-12")}
+              {renderFilterInput("numero", columnLabel("numero", "N"), "w-12")}
               <TableHead className={`${HEAD} w-16 align-bottom`}>
-                <span className="mb-1 block whitespace-nowrap">UF</span>
+                <span className="mb-1 block whitespace-nowrap">
+                  {columnLabel("uf", "UF")}
+                </span>
                 <Select
                   value={busca.uf === "" ? "todos" : busca.uf}
                   onValueChange={(value) =>
@@ -254,9 +256,9 @@ export function MovimentoSimplesTable({
                   </SelectContent>
                 </Select>
               </TableHead>
-              {renderFilterInput("empresa", "Empresa", "w-[22rem]")}
-              {renderFilterInput("cnpj", "CNPJ", "w-32")}
-              {renderFilterInput("ie", "Insc. Estadual", "w-32")}
+              {renderFilterInput("empresa", columnLabel("empresa", "Empresa"), "w-[22rem]")}
+              {renderFilterInput("cnpj", columnLabel("cnpj", "CNPJ"), "w-32")}
+              {renderFilterInput("ie", columnLabel("ie", "Insc. Estadual"), "w-32")}
               <TableHead className={`${HEAD} w-24 align-bottom`}>
                 <span className="mb-1 block whitespace-nowrap">
                   {columnLabel("situacao", "Status")}
@@ -281,7 +283,7 @@ export function MovimentoSimplesTable({
                   </SelectContent>
                 </Select>
               </TableHead>
-              {renderFilterInput("observacoes", "Observação", "w-[22rem]")}
+              {renderFilterInput("observacoes", columnLabel("observacoes", "Observação"), "w-[22rem]")}
             </TableRow>
           </TableHeader>
           <TableBody>

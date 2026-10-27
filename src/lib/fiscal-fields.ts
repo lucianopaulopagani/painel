@@ -2,9 +2,9 @@
  * Colunas de menu suspenso das tabelas do Movimento Fiscal.
  *
  * Cada tributação tem um conjunto de colunas com opções configuráveis no
- * painel de administração (Empresas → Tributações). Este catálogo liga o nome
- * da coluna (campo) ao rótulo e às opções padrão usadas quando a tributação
- * ainda não tem opções cadastradas.
+ * painel de administração (Cadastro de Tabelas → Departamento Fiscal). Este
+ * catálogo liga o nome da coluna (campo) ao rótulo e às opções padrão usadas
+ * quando a tributação ainda não tem opções cadastradas.
  */
 import { OK_SM_OPTIONS, SITUACAO_OPTIONS } from "@/lib/fiscal";
 import {
@@ -68,23 +68,42 @@ const SOMENTE_STATUS_TRIBUTACOES = [
   "Pessoa Física",
 ];
 
+/** Modelo de tabela usado por cada tributação do Movimento Fiscal. */
+export type FiscalFormato =
+  | "simples"
+  | "mei"
+  | "movimento-simples"
+  | "carne-leao"
+  | "lucro"
+  | "padrao";
+
+/** Modelo da tabela exibida para a tributação informada. */
+export function fiscalFormato(
+  tributacao: string | null | undefined
+): FiscalFormato {
+  if (!tributacao) return "padrao";
+  if (tributacao === "Simples Nacional") return "simples";
+  if (tributacao === "MEI") return "mei";
+  if (tributacao === "Carne Leão") return "carne-leao";
+  if (isLucroTributacao(tributacao)) return "lucro";
+  if (SOMENTE_STATUS_TRIBUTACOES.includes(tributacao)) return "movimento-simples";
+  return "padrao";
+}
+
+/** Colunas de menu suspenso existentes em cada modelo de tabela. */
+const FIELDS_BY_FORMATO: Record<FiscalFormato, string[]> = {
+  simples: SIMPLES_FIELDS,
+  mei: MEI_FIELDS,
+  "movimento-simples": ["situacao"],
+  "carne-leao": CARNE_LEAO_FIELDS,
+  lucro: LUCRO_KEYS,
+  padrao: SIMPLES_FIELDS,
+};
+
 /** Colunas de menu suspenso que a tabela da tributação exibe. */
 export function dropdownFieldsFor(
   tributacao: string | null | undefined
 ): DropdownField[] {
-  const keys = !tributacao
-    ? SIMPLES_FIELDS
-    : tributacao === "Simples Nacional"
-      ? SIMPLES_FIELDS
-      : tributacao === "MEI"
-        ? MEI_FIELDS
-        : tributacao === "Carne Leão"
-          ? CARNE_LEAO_FIELDS
-          : isLucroTributacao(tributacao)
-            ? LUCRO_KEYS
-            : SOMENTE_STATUS_TRIBUTACOES.includes(tributacao)
-              ? ["situacao"]
-              : SIMPLES_FIELDS;
-
+  const keys = FIELDS_BY_FORMATO[fiscalFormato(tributacao)];
   return DROPDOWN_FIELDS.filter((field) => keys.includes(field.key));
 }

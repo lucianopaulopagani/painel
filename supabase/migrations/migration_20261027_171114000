@@ -1,0 +1,40 @@
+-- Cadastro de Tabelas: nomes de colunas e opções de menu suspenso por departamento
+create table if not exists public.cadastro_colunas (
+  departamento text not null,
+  campo text not null,
+  label text not null,
+  updated_at timestamptz not null default now(),
+  primary key (departamento, campo)
+);
+
+create table if not exists public.cadastro_opcoes (
+  id uuid primary key default gen_random_uuid(),
+  departamento text not null,
+  tabela text not null,
+  campo text not null,
+  nome text not null,
+  cor text not null default 'neutral' check (cor in ('success','info','warning','danger','neutral','disabled')),
+  ordem integer not null default 100,
+  created_at timestamptz not null default now()
+);
+
+create unique index if not exists cadastro_opcoes_unique
+  on public.cadastro_opcoes (departamento, tabela, campo, lower(nome));
+
+alter table public.cadastro_colunas enable row level security;
+alter table public.cadastro_opcoes enable row level security;
+
+create policy cadastro_colunas_read on public.cadastro_colunas for select to authenticated using (true);
+create policy cadastro_colunas_admin_all on public.cadastro_colunas for all to authenticated using (is_admin()) with check (is_admin());
+create policy cadastro_opcoes_read on public.cadastro_opcoes for select to authenticated using (true);
+create policy cadastro_opcoes_admin_all on public.cadastro_opcoes for all to authenticated using (is_admin()) with check (is_admin());
+
+insert into public.cadastro_colunas (departamento, campo, label, updated_at)
+select 'Depart. Fiscal', campo, label, updated_at from public.fiscal_colunas
+on conflict do nothing;
+
+insert into public.cadastro_opcoes (departamento, tabela, campo, nome, cor, ordem)
+select 'Depart. Fiscal', t.nome, s.campo, s.nome, s.cor, s.ordem
+from public.tributacao_status s
+join public.tributacoes t on t.id = s.tributacao_id
+on conflict do nothing;

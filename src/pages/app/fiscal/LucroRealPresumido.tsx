@@ -46,12 +46,12 @@ import {
   type LucroFieldKey,
 } from "@/lib/fiscal-lucro-real";
 import {
+  useColumnLabel,
   useFieldOptions,
   useFieldTone,
   useStatusOptions,
   useStatusTone,
-} from "@/hooks/use-tributacao-status";
-import { useColumnLabel } from "@/hooks/use-fiscal-colunas";
+} from "@/hooks/use-fiscal-cadastro";
 import { cn } from "@/lib/utils";
 import { CompanyNumber } from "@/components/company-number";
 import type { CompanyWithDepartments, MovementFiscalInput } from "@/lib/types";
@@ -427,9 +427,9 @@ export function LucroRealPresumidoTable({
         <Table className="table-fixed min-w-[1520px]">
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
-              {renderFilterInput("numero", "N", "w-10")}
-              {renderFilterInput("empresa", "Empresas", "w-56")}
-              {renderFilterSelect("uf", "UF", "w-12", ufOptions)}
+              {renderFilterInput("numero", columnLabel("numero", "N"), "w-10")}
+              {renderFilterInput("empresa", columnLabel("empresa", "Empresas"), "w-56")}
+              {renderFilterSelect("uf", columnLabel("uf", "UF"), "w-12", ufOptions)}
               <TableHead className={`${HEAD} w-24 align-bottom`}>
                 <span className="mb-1 block whitespace-nowrap">
                   {columnLabel("situacao", "Status")}
@@ -462,7 +462,7 @@ export function LucroRealPresumidoTable({
                   resolveFieldOptions(tributacao, field.key, LUCRO_OPTIONS)
                 )
               )}
-              {renderFilterInput("observacoes", "OBS", "w-72")}
+              {renderFilterInput("observacoes", columnLabel("observacoes", "OBS"), "w-72")}
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -5,11 +5,14 @@ import {
   Building2,
   ChevronDown,
   CloudDownload,
+  FileSpreadsheet,
   LayoutDashboard,
-  Percent,
+  Table,
   Users,
   type LucideIcon,
 } from "lucide-react";
+import { useDepartments } from "@/hooks/use-departments";
+import { departmentMenuLabel, sortDepartments } from "@/lib/departments";
 import { cn } from "@/lib/utils";
 
 export type AdminSection =
@@ -17,9 +20,11 @@ export type AdminSection =
   | "users"
   | "departments"
   | "companies"
-  | "tributacoes"
   | "acessorias"
-  | "dashboards";
+  | "dashboards"
+  | "tabelas"
+  /** Cadastro de Tabelas de um departamento específico. */
+  | `tabelas:${string}`;
 
 interface NavChild {
   key: AdminSection;
@@ -33,6 +38,8 @@ interface NavItem {
   icon: LucideIcon;
   /** Submenus exibidos abaixo do item principal. */
   children?: NavChild[];
+  /** Submenus montados com os departamentos cadastrados. */
+  childrenFromDepartments?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -43,11 +50,15 @@ const NAV_ITEMS: NavItem[] = [
     key: "companies",
     label: "Empresas",
     icon: Briefcase,
-    // Submenus do cadastro de empresas.
     children: [
       { key: "acessorias", label: "Integrações", icon: CloudDownload },
-      { key: "tributacoes", label: "Tributações", icon: Percent },
     ],
+  },
+  {
+    key: "tabelas",
+    label: "Cadastro de Tabelas",
+    icon: Table,
+    childrenFromDepartments: true,
   },
   { key: "dashboards", label: "Dashboards", icon: BarChart3 },
 ];
@@ -64,13 +75,32 @@ export function AdminSidebar({
   onSelect,
   allowed,
 }: AdminSidebarProps) {
-  const isAllowed = (key: AdminSection) =>
-    !allowed || allowed.includes(key);
+  const { data: departments } = useDepartments();
 
-  const items = NAV_ITEMS.map((item) => ({
-    ...item,
-    children: (item.children ?? []).filter((child) => isAllowed(child.key)),
-  })).filter((item) => isAllowed(item.key));
+  const isAllowed = (key: AdminSection) =>
+    !allowed ||
+    allowed.includes(key) ||
+    (key.startsWith("tabelas:") && allowed.includes("tabelas"));
+
+  const items = NAV_ITEMS.map((item) => {
+    if (item.childrenFromDepartments) {
+      const nomes = sortDepartments(
+        (departments ?? []).map((department) => department.name)
+      );
+      return {
+        ...item,
+        children: nomes.map((nome) => ({
+          key: `tabelas:${nome}` as AdminSection,
+          label: departmentMenuLabel(nome),
+          icon: FileSpreadsheet,
+        })),
+      };
+    }
+    return {
+      ...item,
+      children: (item.children ?? []).filter((child) => isAllowed(child.key)),
+    };
+  }).filter((item) => isAllowed(item.key));
 
   // Submenus começam recolhidos e abrem ao clicar no menu principal (ou quando
   // um submenu está ativo).

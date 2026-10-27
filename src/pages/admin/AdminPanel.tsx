@@ -6,12 +6,19 @@ import {
   type AdminSection,
 } from "@/components/admin/admin-sidebar";
 import AdminOverview from "./AdminOverview";
+import CadastroTabelasTab from "./CadastroTabelasTab";
 import CompaniesTab from "./CompaniesTab";
 import DashboardsSection from "./DashboardsSection";
 import DepartmentsTab from "./DepartmentsTab";
 import UsersTab from "./UsersTab";
-import TributacoesTab from "./TributacoesTab";
 import AcessoriasTab from "./AcessoriasTab";
+
+/** Departamento aberto na seção "Cadastro de Tabelas" (undefined = escolhido na tela). */
+function tabelasDepartamento(section: AdminSection): string | undefined {
+  return section.startsWith("tabelas:")
+    ? section.slice("tabelas:".length)
+    : undefined;
+}
 
 export default function AdminPanel() {
   const { profile } = useAuth();
@@ -23,7 +30,7 @@ export default function AdminPanel() {
         "users",
         "departments",
         "companies",
-        "tributacoes",
+        "tabelas",
         "acessorias",
         "dashboards",
       ]
@@ -32,6 +39,8 @@ export default function AdminPanel() {
   const [section, setSection] = useState<AdminSection>(
     isAdmin ? "overview" : "companies"
   );
+
+  const isTabelas = section === "tabelas" || section.startsWith("tabelas:");
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -57,7 +66,9 @@ export default function AdminPanel() {
             {section === "users" && <UsersTab />}
             {section === "departments" && <DepartmentsTab />}
             {section === "companies" && <CompaniesTab />}
-            {section === "tributacoes" && <TributacoesTab />}
+            {isTabelas && (
+              <CadastroTabelasTab departamento={tabelasDepartamento(section)} />
+            )}
             {section === "acessorias" && <AcessoriasTab />}
             {section === "dashboards" && <DashboardsSection />}
           </div>

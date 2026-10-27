@@ -26,12 +26,12 @@ import {
   CARNE_LEAO_TRIBUTACAO,
 } from "@/lib/carne-leao";
 import {
+  useColumnLabel,
   useFieldOptions,
   useFieldTone,
   useStatusOptions,
   useStatusTone,
-} from "@/hooks/use-tributacao-status";
-import { useColumnLabel } from "@/hooks/use-fiscal-colunas";
+} from "@/hooks/use-fiscal-cadastro";
 import { CompanyNumber } from "@/components/company-number";
 import { cn, formatCpfCnpj } from "@/lib/utils";
 import type { CompanyWithDepartments, MovimentoCarneLeaoInput } from "@/lib/types";
@@ -270,7 +270,9 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
               <TableHead className={`${HEAD} w-12 align-bottom`}>
-                <span className="mb-1 block">N</span>
+                <span className="mb-1 block">
+                  {columnLabel("numero", "N")}
+                </span>
                 <Input
                   value={busca.numero}
                   onChange={(e) => setBuscaField("numero", e.target.value)}
@@ -279,7 +281,7 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
                 />
               </TableHead>
               <TableHead className={`${HEAD} w-12 align-bottom`}>
-                <span className="mb-1 block">UF</span>
+                <span className="mb-1 block">{columnLabel("uf", "UF")}</span>
                 <Input
                   value={busca.uf}
                   onChange={(e) => setBuscaField("uf", e.target.value)}
@@ -287,8 +289,8 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
                   className="h-6 w-full min-w-0 px-1 text-xs"
                 />
               </TableHead>
-              {renderFilterInput("empresa", "Empresa", "w-48")}
-              {renderFilterInput("cpf", "CPF", "w-28")}
+              {renderFilterInput("empresa", columnLabel("empresa", "Empresa"), "w-48")}
+              {renderFilterInput("cpf", columnLabel("cpf", "CPF"), "w-28")}
               {renderFilterSelect(
                 "situacao",
                 columnLabel("situacao", "Status"),
@@ -341,7 +343,7 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
                 ),
                 "w-28"
               )}
-              {renderFilterInput("observacoes", "Observações", "w-[26rem]")}
+              {renderFilterInput("observacoes", columnLabel("observacoes", "Observações"), "w-[26rem]")}
             </TableRow>
           </TableHeader>
           <TableBody>
