@@ -153,6 +153,24 @@ export const STATUS_COLOR_OPTIONS = [
       "bg-status-disabled text-status-disabled-foreground hover:bg-status-disabled/90",
     swatch: "bg-status-disabled",
   },
+  {
+    key: "primary",
+    label: "Azul principal",
+    className: "bg-primary/10 text-primary hover:bg-primary/15",
+    swatch: "bg-primary/40",
+  },
+  {
+    key: "dark",
+    label: "Grafite",
+    className: "bg-zinc-800 text-zinc-100 hover:bg-zinc-800",
+    swatch: "bg-zinc-800",
+  },
+  {
+    key: "silver",
+    label: "Prata",
+    className: "bg-zinc-200 text-zinc-800 hover:bg-zinc-200",
+    swatch: "bg-zinc-200",
+  },
 ] as const;
 
 /** Classe Tailwind (fundo + texto) da cor cadastrada para uma opção. */

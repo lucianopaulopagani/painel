@@ -1,0 +1,17 @@
+-- Data Base: meses em 3 letras (Empresas com funcionários)
+insert into public.cadastro_opcoes (departamento, tabela, campo, nome, cor, ordem)
+select 'Depart. Pessoal', 'Empresas com funcionários', 'dataBase', m.nome, 'neutral', m.ordem
+from (values
+  ('JAN',1),('FEV',2),('MAR',3),('ABR',4),('MAI',5),('JUN',6),
+  ('JUL',7),('AGO',8),('SET',9),('OUT',10),('NOV',11),('DEZ',12)
+) as m(nome, ordem)
+on conflict do nothing;
+
+-- Data Base: meses por extenso (Domésticas)
+insert into public.cadastro_opcoes (departamento, tabela, campo, nome, cor, ordem)
+select 'Depart. Pessoal', 'Domésticas', 'dataBase', m.nome, 'neutral', m.ordem
+from (values
+  ('Janeiro',1),('Fevereiro',2),('Março',3),('Abril',4),('Maio',5),('Junho',6),
+  ('Julho',7),('Agosto',8),('Setembro',9),('Outubro',10),('Novembro',11),('Dezembro',12)
+) as m(nome, ordem)
+on conflict do nothing;

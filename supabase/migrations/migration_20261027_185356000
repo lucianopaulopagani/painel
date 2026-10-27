@@ -1,0 +1,150 @@
+-- Paleta de cores do Cadastro de Tabelas: três tons usados pelas tabelas atuais
+alter table public.cadastro_opcoes drop constraint cadastro_opcoes_cor_check;
+alter table public.cadastro_opcoes
+  add constraint cadastro_opcoes_cor_check
+  check (cor in ('success','info','warning','danger','neutral','disabled','primary','dark','silver'));
+
+-- Departamento Pessoal: status das tabelas mensais
+insert into public.cadastro_opcoes (departamento, tabela, campo, nome, cor, ordem)
+select c.departamento, c.tabela, c.campo, o.nome, o.cor, o.ordem
+from (values
+  ('Depart. Pessoal','Empresas com funcionários','status'),
+  ('Depart. Pessoal','Empresas Fiscal','status')
+) as c(departamento, tabela, campo)
+cross join (values
+  ('Concluído','success',1),
+  ('Pendente','danger',2),
+  ('Em Andamento','warning',3),
+  ('Em Ajuste','primary',4)
+) as o(nome, cor, ordem)
+on conflict do nothing;
+
+-- Domésticas: o status inclui Sem Movimento
+insert into public.cadastro_opcoes (departamento, tabela, campo, nome, cor, ordem)
+values
+  ('Depart. Pessoal','Domésticas','status','Concluído','success',1),
+  ('Depart. Pessoal','Domésticas','status','Pendente','danger',2),
+  ('Depart. Pessoal','Domésticas','status','Em Andamento','warning',3),
+  ('Depart. Pessoal','Domésticas','status','Em Ajuste','primary',4),
+  ('Depart. Pessoal','Domésticas','status','Sem Movimento','neutral',5)
+on conflict do nothing;
+
+-- Colunas de marcação OK / Possui / Não Possui
+insert into public.cadastro_opcoes (departamento, tabela, campo, nome, cor, ordem)
+select c.departamento, c.tabela, c.campo, o.nome, o.cor, o.ordem
+from (values
+  ('Depart. Pessoal','Empresas com funcionários','folha'),
+  ('Depart. Pessoal','Empresas com funcionários','taxaSindical'),
+  ('Depart. Pessoal','Domésticas','folha'),
+  ('Depart. Pessoal','Domésticas','dae'),
+  ('Depart. Pessoal','Complemento INSS','darf')
+) as c(departamento, tabela, campo)
+cross join (values
+  ('OK','success',1),
+  ('Possui','danger',2),
+  ('Não Possui','info',3)
+) as o(nome, cor, ordem)
+on conflict do nothing;
+
+-- Colunas Empréstimo, FGTS e DCTFWEB (ordem própria)
+insert into public.cadastro_opcoes (departamento, tabela, campo, nome, cor, ordem)
+select c.departamento, c.tabela, c.campo, o.nome, o.cor, o.ordem
+from (values
+  ('Depart. Pessoal','Empresas com funcionários','emprestimo'),
+  ('Depart. Pessoal','Empresas com funcionários','fgts'),
+  ('Depart. Pessoal','Empresas com funcionários','dctfweb')
+) as c(departamento, tabela, campo)
+cross join (values
+  ('OK','success',1),
+  ('Não Possui','info',2),
+  ('Possui','danger',3)
+) as o(nome, cor, ordem)
+on conflict do nothing;
+
+-- Empresas Fiscal: o DCTFWEB só tem OK
+insert into public.cadastro_opcoes (departamento, tabela, campo, nome, cor, ordem)
+values ('Depart. Pessoal','Empresas Fiscal','dctfweb','OK','success',1)
+on conflict do nothing;
+
+-- Colunas de Envio (Enviado / Pendente)
+insert into public.cadastro_opcoes (departamento, tabela, campo, nome, cor, ordem)
+select c.departamento, c.tabela, c.campo, o.nome, o.cor, o.ordem
+from (values
+  ('Depart. Pessoal','Empresas com funcionários','envio'),
+  ('Depart. Pessoal','Empresas Fiscal','envio'),
+  ('Depart. Pessoal','Domésticas','envio'),
+  ('Depart. Pessoal','Domésticas','ponto'),
+  ('Depart. Pessoal','Ponto','envio'),
+  ('Depart. Pessoal','Complemento INSS','envio')
+) as c(departamento, tabela, campo)
+cross join (values
+  ('Enviado','success',1),
+  ('Pendente','danger',2)
+) as o(nome, cor, ordem)
+on conflict do nothing;
+
+-- Contábil: meses do Balancete/Balanço (OK / LANÇADO)
+insert into public.cadastro_opcoes (departamento, tabela, campo, nome, cor, ordem)
+select 'Depart. Contábil', 'Balancete/Balanço', m.campo, o.nome, o.cor, o.ordem
+from (values ('jan'),('fev'),('mar'),('abr'),('mai'),('jun'),('jul'),('ago'),('set'),('out'),('nov'),('dez')) as m(campo)
+cross join (values
+  ('OK','success',1),
+  ('LANÇADO','primary',2)
+) as o(nome, cor, ordem)
+on conflict do nothing;
+
+-- Contábil: coluna Fechamento
+insert into public.cadastro_opcoes (departamento, tabela, campo, nome, cor, ordem)
+values
+  ('Depart. Contábil','Balancete/Balanço','fechamento','LANÇADO','primary',1),
+  ('Depart. Contábil','Balancete/Balanço','fechamento','ENCERRADA','success',2)
+on conflict do nothing;
+
+-- Societário: Certificado digital
+insert into public.cadastro_opcoes (departamento, tabela, campo, nome, cor, ordem)
+values
+  ('Societário','Certificado digital','situacao','Vencido','danger',1),
+  ('Societário','Certificado digital','situacao','Vence hoje','warning',2),
+  ('Societário','Certificado digital','situacao','Ativo','success',3),
+  ('Societário','Certificado digital','situacao','Sem vencimento','neutral',4),
+  ('Societário','Certificado digital','status','VENCIDO','danger',1),
+  ('Societário','Certificado digital','status','RENOVAR','warning',2),
+  ('Societário','Certificado digital','status','ATIVO','success',3),
+  ('Societário','Certificado digital','status','SEM VENCIMENTO','neutral',4),
+  ('Societário','Certificado digital','produto','e-CNPJ A1 12 meses','dark',1),
+  ('Societário','Certificado digital','produto','e-CPF A1 12 meses','silver',2),
+  ('Societário','Certificado digital','avisado','Sim','success',1),
+  ('Societário','Certificado digital','avisado','Não','danger',2),
+  ('Societário','Certificado digital','financ','Sim','success',1),
+  ('Societário','Certificado digital','financ','Não','danger',2)
+on conflict do nothing;
+
+-- Societário: Alvarás (Gerado e Enviado)
+insert into public.cadastro_opcoes (departamento, tabela, campo, nome, cor, ordem)
+select 'Societário', c.tabela, c.campo, 'OK', 'success', 1
+from (values
+  ('Alvará localização','gerado'),
+  ('Alvará localização','enviado'),
+  ('Alvará Sanitário','gerado'),
+  ('Alvará Sanitário','enviado'),
+  ('Alvará Bombeiros','gerado'),
+  ('Alvará Bombeiros','enviado')
+) as c(tabela, campo)
+on conflict do nothing;
+
+-- Fiscal: Controle de Parcelamentos (colunas de parcelamento)
+insert into public.cadastro_opcoes (departamento, tabela, campo, nome, cor, ordem)
+select 'Depart. Fiscal', 'Controle de Parcelamentos', c.campo, o.nome, o.cor, o.ordem
+from (values ('simples'),('mei_relp_iss'),('estadual'),('inss_rfb'),('inss_pgfn'),('sn_pgfn'),('pert'),('sn_relp'),('relp_pgfn'),('municipal')) as c(campo)
+cross join (values
+  ('GERADO','warning',1),
+  ('DESABILITADO','disabled',2)
+) as o(nome, cor, ordem)
+on conflict do nothing;
+
+-- Fiscal: Controle de Parcelamentos (coluna Envio)
+insert into public.cadastro_opcoes (departamento, tabela, campo, nome, cor, ordem)
+values
+  ('Depart. Fiscal','Controle de Parcelamentos','envio','GERADO','warning',1),
+  ('Depart. Fiscal','Controle de Parcelamentos','envio','ENVIADO','success',2)
+on conflict do nothing;
