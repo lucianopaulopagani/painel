@@ -58,6 +58,7 @@ import {
   useStatusOptions,
   useStatusTone,
 } from "@/hooks/use-tributacao-status";
+import { useColumnLabel } from "@/hooks/use-fiscal-colunas";
 import { isLucroTributacao } from "@/lib/fiscal-lucro-real";
 import { LucroRealPresumidoTable } from "./LucroRealPresumido";
 import { MEI_TRIBUTACAO, MeiTable } from "./Mei";

@@ -37,6 +37,7 @@ import {
   useStatusOptions,
   useStatusTone,
 } from "@/hooks/use-tributacao-status";
+import { useColumnLabel } from "@/hooks/use-fiscal-colunas";
 import { CompanyNumber } from "@/components/company-number";
 import type {
   CompanyWithDepartments,
