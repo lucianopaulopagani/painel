@@ -46,7 +46,7 @@ a{color:var(--azul)}
 /* topo */
 .topo{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:18px;border-bottom:1px solid var(--linha);margin-bottom:44px}
 .topo .marca{display:flex;align-items:center;gap:12px;color:var(--mudo);font-weight:700;font-size:14px}
-.topo img{height:30px}
+.topo img{height:38px;width:auto}
 .topo .acoes{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .topo .alt{display:inline-flex;border:1px solid var(--linha);border-radius:999px;overflow:hidden}
 .topo .alt a{text-decoration:none;color:var(--ink2);font-size:13px;font-weight:700;padding:6px 14px}
@@ -220,18 +220,22 @@ footer{margin-top:60px;border-top:1px solid var(--linha);padding-top:18px;color:
   details{display:none}
 }
 
-  /* P4: logo claro no tema escuro e logo azul no tema claro */
-  .marca img.logo-claro{display:none}
-  :root[data-theme="light"] .marca img.logo-claro{display:block}
-  :root[data-theme="light"] .marca img.logo-escuro{display:none}
+  /* P4: logo azul sem fundo no tema claro e logo branca sem fundo no tema escuro */
+  .marca img.logo-escuro{display:none}
+  :root[data-theme="dark"] .marca img.logo-claro{display:none}
+  :root[data-theme="dark"] .marca img.logo-escuro{display:block}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .marca img.logo-claro{display:none}
+    :root:not([data-theme="light"]) .marca img.logo-escuro{display:block}
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
 <header class="topo">
   <div class="marca">
-    <img class="logo-claro" src="/brand/logo-blue-horizontal.png" alt="P4 Contabilidade">
-    <img class="logo-escuro" src="/brand/logo-white-horizontal.png" alt="P4 Contabilidade">
+    <img class="logo-claro" src="/brand/logo-azul-transparente.png" alt="P4 Contabilidade">
+    <img class="logo-escuro" src="/brand/logo-branca-transparente.png" alt="P4 Contabilidade">
     <span>P4 Contabilidade · Simulador da Reforma · Simples Nacional 2027</span>
   </div>
   <div class="acoes"><nav class="alt"><a href="index.html" class="on">Serviços</a><a href="comercio.html">Comércio e indústria</a></nav><a class="voltar" href="/app" target="_top">Voltar ao sistema</a><button id="tema" type="button">Tema escuro</button></div>
