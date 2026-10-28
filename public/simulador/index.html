@@ -210,6 +210,7 @@ footer{margin-top:60px;border-top:1px solid var(--linha);padding-top:18px;color:
   .form .lista{grid-column:1 / span 2}
   .eixos,.kpis{grid-template-columns:1fr 1fr}
 }
+@media (max-width:700px){.topo{flex-wrap:wrap;gap:12px;margin-bottom:32px}.topo .marca span{display:none}.topo .acoes{width:100%;justify-content:space-between}}
 @media (max-width:480px){.eixos,.kpis,.form{grid-template-columns:1fr}.form .slider,.form .lista,.form .lista.latvs{grid-column:1}.form .lrow{flex-wrap:wrap}.form .lrow select{flex:1 1 100%}}
 @media (prefers-reduced-motion:no-preference){.caso{transition:box-shadow .2s}}
 @media print{
@@ -233,17 +234,17 @@ footer{margin-top:60px;border-top:1px solid var(--linha);padding-top:18px;color:
     <img class="logo-escuro" src="/brand/logo-white-horizontal.png" alt="P4 Contabilidade">
     <span>P4 Contabilidade · Simulador da Reforma · Simples Nacional 2027</span>
   </div>
-  <div class="acoes"><a class="voltar" href="/app" target="_top">Voltar ao sistema</a><button id="tema" type="button">Tema escuro</button></div>
+  <div class="acoes"><nav class="alt"><a href="index.html" class="on">Serviços</a><a href="comercio.html">Comércio e indústria</a></nav><a class="voltar" href="/app" target="_top">Voltar ao sistema</a><button id="tema" type="button">Tema escuro</button></div>
 </header>
 
 <div class="abre">
   <div>
     <div class="eyebrow">Simples Nacional em 2027</div>
-    <h1>Híbrido ou <span class="ouro">DAS integral</span>: o que muda no preço e no custo do contratante</h1>
-    <p class="sub">Seis casos de prestadores de serviço optantes do Simples, com a mesma pergunta: ao apurar IBS e CBS pelo regime regular, quanto crédito a empresa passa a ter, quanto o preço final sobe com a CBS por fora, quanto sai do preço com a exclusão da parcela do DAS e quanto dá para devolver ao cliente com o crédito de insumos.</p>
+    <h1>Híbrido ou <span class="ouro">DAS integral</span>: o que a decisão de 2027 muda no seu preço</h1>
+    <p class="sub">Levamos seis prestadores de serviço do Simples para a mesma mesa de cálculo, com a pergunta que chega ao escritório em toda reunião de planejamento: ao levar IBS e CBS ao regime regular, quanto crédito a empresa passa a gerar, quanto a nota sobe com a CBS destacada por fora, quanto o preço recua com a parcela que deixou de existir e quanto disso cabe devolver ao cliente. Os números de cada caso são editáveis — comece pelo seu.</p>
   </div>
   <aside class="premissas">
-    <h4>Premissas da aula</h4>
+    <h4>Premissas do cálculo</h4>
     <dl>
       <dt>CBS 2027</dt><dd><input id="p-cbs" class="prem-in" type="text" inputmode="decimal" aria-label="Alíquota da CBS em %"> % (referência de 9% menos o 0,1 p.p. do IBS; art. 347 LC 214)</dd>
       <dt>IBS 2027</dt><dd><input id="p-ibs" class="prem-in" type="text" inputmode="decimal" aria-label="Alíquota do IBS em %"> % (0,05% estadual + 0,05% municipal, art. 344)</dd>
@@ -251,53 +252,53 @@ footer{margin-top:60px;border-top:1px solid var(--linha);padding-top:18px;color:
       <dt>Base</dt><dd>IBS/CBS por fora do preço (art. 12, § 2º, I)</dd>
       <dt>Partilha do DAS</dt><dd>Res. CGSN 190/2026, Anexos I a V, tabela 2027-2028</dd>
       <dt>Crédito do cliente</dt><dd>DAS integral: montante cobrado no regime único (art. 58, § 4º, Res. 140); híbrido: alíquota cheia</dd>
-      <dt>Compras</dt><dd>do regime regular, informadas pelo valor líquido: sem IBS/CBS e sem o ICMS/ISS destacado na nota, que de 2026 a 2032 não entram na base (art. 12, § 2º, V, da LC 214); o crédito é o imposto destacado por fora. Do fornecedor do Simples, pelo valor da nota, com o ICMS dentro. Custo de hoje não serve, porque ainda carrega PIS/Cofins por dentro</dd>
+      <dt>Compras</dt><dd>A compra de fornecedor do regime regular entra pelo valor líquido: sem IBS/CBS e sem o ICMS ou o ISS destacado, que de 2026 a 2032 não compõem a base (art. 12, § 2º, V, da LC 214). O crédito é o imposto destacado por fora. A compra de fornecedor do Simples entra pelo valor da nota, com o ICMS dentro. Custo atual não serve: ele ainda carrega PIS/Cofins por dentro</dd>
       <dt>Fornecedor Simples</dt><dd>credita a parcela de CBS+IBS do DAS dele, informada na nota (0,6% a 3,7%, conforme anexo e faixa)</dd>
       <dt>Opção p/ 2027</dt><dd>setembro a novembro de 2026 (Res. CGSN 186); depois, semestral (art. 40-D)</dd>
     </dl>
-    <p class="prem-nota">Campos com borda são editáveis e recalculam a página inteira. As edições ficam guardadas neste navegador. <label class="modo">Despesas em <select id="modo"><option value="pct">% da receita</option><option value="rs">R$ por mês</option></select></label> <button type="button" id="restaurar-tudo" class="restaurar">Restaurar tudo</button></p>
+    <p class="prem-nota">Os campos com borda são editáveis e recalculam a página inteira. Suas alterações ficam salvas neste navegador. <label class="modo">Despesas em <select id="modo"><option value="pct">% da receita</option><option value="rs">R$ por mês</option></select></label> <button type="button" id="restaurar-tudo" class="restaurar">Restaurar tudo</button></p>
   </aside>
 </div>
 
 <section id="mecanica">
-  <div class="sec-h"><div class="eyebrow">A mecânica</div><h2>O que sai do DAS e o que entra na nota</h2>
-  <p>Nos dois regimes a empresa continua no Simples para IRPJ, CSLL, CPP, ISS e ICMS. A diferença está só em IBS e CBS: dentro do DAS, com uma parcela pequena, ou fora dele, com alíquota cheia, crédito de insumos e crédito integral para o contratante.</p></div>
+  <div class="sec-h"><div class="eyebrow">A conta</div><h2>O que sai do DAS e o que passa a entrar na nota</h2>
+  <p>Nos dois caminhos a empresa permanece no Simples para IRPJ, CSLL, CPP, ISS e ICMS. A escolha é apenas sobre IBS e CBS: manter a parcela pequena dentro do DAS ou levá-los ao regime regular, com alíquota cheia, crédito de insumos na compra e crédito integral para quem compra da empresa.</p></div>
   <div class="mec">
     <div class="col"><h3>A · Simples no DAS integral</h3><div class="tag">Regime único, art. 13 da LC 123</div>
       <ul>
-        <li>Alíquota do DAS <b>não muda</b> em 2027. PIS e Cofins saem da partilha, a CBS entra; a fatia do ICMS/ISS só migra para o IBS a partir de 2029.</li>
-        <li>A parcela de CBS+IBS dentro do DAS varia por anexo e faixa (tabela de referência ao final). <b>Exemplo:</b> na 4ª faixa do Anexo III ela é 16,60% da alíquota efetiva, algo perto de 2,3% da receita.</li>
-        <li>O contratante credita <b>só esse montante</b> (art. 58, § 4º, da Res. 140, na redação da Res. 190; art. 47, § 9º, II, da LC 214). A alíquota do crédito vai informada na nota.</li>
-        <li>CBS/IBS das compras <b>não gera crédito</b>: vira custo.</li>
-        <li>Preço permanece por dentro: a nota de 100 é 100.</li>
+        <li>A alíquota do DAS <b>não muda</b> em 2027. PIS e Cofins deixam a partilha e a CBS entra; a fatia do ICMS e do ISS só migra para o IBS em 2029.</li>
+        <li>A parcela de CBS+IBS embutida no DAS muda com o anexo e a faixa (a tabela de referência fecha a página). <b>Para dimensionar:</b> na 4ª faixa do Anexo III são 16,60% da alíquota efetiva, algo perto de 2,3% da receita.</li>
+        <li>Quem compra da empresa credita <b>apenas esse valor</b> (art. 58, § 4º, da Res. 140, na redação da Res. 190; art. 47, § 9º, II, da LC 214). O percentual do crédito vai destacado na nota.</li>
+        <li>O IBS e a CBS das compras <b>não geram crédito</b>: entram como custo.</li>
+        <li>O preço segue por dentro: nota de 100 continua 100.</li>
       </ul></div>
     <div class="col"><h3>B · Simples híbrido</h3><div class="tag">Art. 41, § 3º, da LC 214; arts. 40-C a 40-E e 22-A da Res. 140</div>
       <ul>
-        <li>O DAS é calculado normalmente e <b>deduzido das parcelas de CBS e IBS</b> da faixa (art. 22-A). O resto do DAS fica igual.</li>
-        <li>IBS e CBS passam a ser apurados pelo regime regular: <b>débito de <span data-prem="t">9,0%</span> por fora</b> na nota (<span data-prem="split">8,9% CBS + 0,1% IBS</span>), apuração mensal, NFS-e nacional com destaque.</li>
-        <li><b>Crédito integral</b> nas compras de fornecedores do regime regular: os <span data-prem="t">9,0%</span> destacados por fora sobre o valor da compra; de fornecedor no Simples integral, só a parcela de CBS+IBS do DAS dele.</li>
-        <li>A receita bruta do Simples <b>exclui o IBS e a CBS</b> apurados e recolhidos pelo regime regular (art. 2º, § 5º, VIII, da Res. 140). No DAS integral nada sai da receita bruta.</li>
-        <li>O contratante credita <b><span data-prem="t">9,0%</span> cheios</b>. Quem não credita (PF, Simples integral, isentos) paga o preço final.</li>
-        <li>Trava: quem recebeu ressarcimento de créditos no ano ou no anterior <b>não volta</b> ao DAS integral (art. 40-E; art. 41, § 5º, LC 214).</li>
+        <li>O DAS continua sendo calculado e as parcelas de CBS e IBS da faixa são <b>deduzidas dele</b> (art. 22-A); o restante segue igual.</li>
+        <li>IBS e CBS passam ao regime regular: <b>débito de <span data-prem="t">9,0%</span> por fora</b> na nota (<span data-prem="split">8,9% CBS + 0,1% IBS</span>), apuração mensal e NFS-e nacional com destaque.</li>
+        <li><b>Crédito integral</b> nas compras de fornecedor do regime regular: os <span data-prem="t">9,0%</span> destacados por fora sobre o valor da compra. De fornecedor no Simples integral, só a parcela de CBS+IBS do DAS dele.</li>
+        <li>A receita bruta do Simples <b>deixa de fora o IBS e a CBS</b> apurados pelo regime regular (art. 2º, § 5º, VIII, da Res. 140). No DAS integral nada é excluído.</li>
+        <li>Quem compra da empresa credita os <b><span data-prem="t">9,0%</span> cheios</b>. Quem não credita — pessoa física, Simples integral, isento — paga o preço final.</li>
+        <li>Atenção à trava: quem recebeu ressarcimento de crédito no ano ou no anterior <b>não retorna</b> ao DAS integral (art. 40-E; art. 41, § 5º, da LC 214).</li>
       </ul></div>
   </div>
   <div class="eixos">
-    <div class="eixo"><div class="n">1</div><h4>Volume de crédito</h4><p>Quanto de IBS/CBS a empresa passa a apropriar sobre as compras, em R$ por mês e em % da receita.</p></div>
+    <div class="eixo"><div class="n">1</div><h4>Volume de crédito</h4><p>Quanto de IBS/CBS a sua empresa passa a gerar de crédito sobre as compras, em reais por mês e em % da receita.</p></div>
     <div class="eixo"><div class="n">2</div><h4>Preço final com CBS+IBS</h4><p>Quanto a nota sobe em janeiro de 2027 com os <span data-prem="t">9,0%</span> destacados por fora, depois de todo o repasse.</p></div>
-    <div class="eixo"><div class="n">3</div><h4>Sai do preço: parcela do DAS</h4><p>Quanto o preço base cai porque a CBS/IBS deixou de ser cobrada dentro do DAS, mantendo o mesmo líquido.</p></div>
-    <div class="eixo"><div class="n">4</div><h4>Sai do preço: crédito de insumos</h4><p>Quanto mais o preço pode cair se o crédito das compras for devolvido integralmente ao contratante.</p></div>
+    <div class="eixo"><div class="n">3</div><h4>Sai do preço: parcela do DAS</h4><p>Quanto o preço base recua quando a CBS/IBS deixa de ser cobrada dentro do DAS, mantendo o mesmo líquido.</p></div>
+    <div class="eixo"><div class="n">4</div><h4>Sai do preço: crédito de insumos</h4><p>Quanto mais o preço recua se o crédito das compras for devolvido integralmente a quem compra.</p></div>
   </div>
 </section>
 
 <section id="casos-sec">
   <div class="sec-h"><div class="eyebrow">Casos</div><h2>Seis empresas, a mesma conta</h2>
-  <p>Base 100 é o preço praticado hoje, no DAS integral. B, C e D são três pontos do híbrido: em B a empresa mantém o preço base e retém todo o ganho; em C devolve ao cliente só o que saiu do DAS; em D devolve também o crédito de insumos. Em regra o crédito entra na formação do preço, por isso a leitura e o veredito comparam A com D. Todos os campos de cada caso são editáveis: mova a barra de "receita de quem credita" e veja o veredito virar. O último card é livre para o caso do aluno.</p></div>
+  <p>A base 100 é o preço praticado hoje, no DAS integral. B, C e D são três pontos da mesma decisão: em B a empresa mantém o preço e fica com todo o ganho; em C repassa ao cliente apenas o que saiu do DAS; em D repassa também o crédito de insumos. Como o crédito entra na formação do preço na prática, o diagnóstico e o veredito comparam A com D. Todos os campos são editáveis: mova a barra de receita de quem credita e o veredito muda na hora. O último cartão está livre para a sua empresa.</p></div>
   <div id="casos"></div>
 </section>
 
 <section id="sintese-sec">
   <div class="sec-h"><div class="eyebrow">Síntese</div><h2>Os seis casos lado a lado</h2>
-  <p>"Preço final D" está em base 100 = preço no DAS integral de 2027, a alternativa real ao híbrido. A coluna "mínimo de quem credita" é a fatia da receita que precisa vir de contratantes que apuram IBS/CBS para o impacto médio nos clientes ser zero. Compare com a fatia real de cada caso.</p></div>
+  <p>"Preço final D" está em base 100, isto é, no preço do DAS integral de 2027 — a alternativa real ao híbrido. A coluna "mínimo de quem credita" mostra a fatia da receita que precisa vir de clientes que apuram IBS/CBS para que o impacto médio na carteira fique em zero. Compare com a fatia real de cada caso.</p></div>
   <div class="tabela-wrap"><table id="sintese" class="sintese">
     <thead><tr><th>Caso</th><th>Anexo</th><th>DAS efetivo</th><th>Parcela CBS+IBS no DAS</th><th>Crédito/mês</th><th>Crédito % receita</th><th>Preço final D</th><th>Custo p/ quem credita</th><th>Preço p/ quem não credita</th><th>Mínimo de quem credita</th><th>Fatia real</th><th>Veredito</th></tr></thead>
     <tbody></tbody></table></div>
@@ -306,7 +307,7 @@ footer{margin-top:60px;border-top:1px solid var(--linha);padding-top:18px;color:
 
 <section id="regua-sec">
   <div class="sec-h"><div class="eyebrow">Referência</div><h2>Parcela de CBS+IBS dentro do DAS em 2027</h2>
-  <p>Calculada no teto de cada faixa. É o que sai do DAS ao optar pelo híbrido e, no DAS integral, é o crédito que o contratante recebe. A última coluna mostra quanto crédito a mais o contratante ganha quando o fornecedor migra para o híbrido.</p></div>
+  <p>Calculada no teto de cada faixa. É exatamente o que deixa o DAS na opção pelo híbrido e, no DAS integral, o crédito que o cliente recebe. A última coluna mede o crédito adicional que o cliente ganha quando o fornecedor migra para o híbrido.</p></div>
   <div class="tabela-wrap"><table id="regua">
     <thead><tr><th>Anexo</th><th>Faixa</th><th>Nominal</th><th>Efetiva no teto</th><th>% CBS partilha</th><th>% IBS partilha</th><th>Parcela CBS+IBS</th><th>Crédito extra no híbrido</th></tr></thead>
     <tbody></tbody></table></div>
@@ -317,24 +318,24 @@ footer{margin-top:60px;border-top:1px solid var(--linha);padding-top:18px;color:
 <section id="notas">
   <div class="sec-h"><div class="eyebrow">Para fechar</div><h2>Pontos que decidem a conta na prática</h2></div>
   <div class="notas">
-    <div class="nota"><h4>Quem é o cliente decide, não a alíquota</h4><p>O híbrido só faz sentido quando a receita vem de quem apura IBS/CBS pelo regime regular. Para PF, Simples integral e imunes o preço sobe <span data-prem="t">9,0%</span> sobre a base, e nenhum crédito compensa isso.</p><span class="ref">Art. 47 da LC 214 · art. 58, §§ 4º a 6º, da Res. 140</span></div>
-    <div class="nota"><h4>O custo de hoje não é a base do crédito</h4><p>O simulador pede a compra do regime regular pelo valor líquido: sem o IBS/CBS e sem o ICMS ou o ISS destacado, porque de 2026 a 2032 esses impostos não entram na base, e o crédito é <span data-prem="t">9,0%</span> sobre o que sobra. Uma nota de 100 com ICMS de 17% gera crédito sobre 83. O custo atual carrega PIS/Cofins por dentro (9,25% na não cumulativa, 3,65% na cumulativa) e vai ser reprecificado pelo fornecedor. Peça o preço líquido de tributo antes de simular.</p><span class="ref">Art. 12, § 2º, I e V, da LC 214</span></div><div class="nota"><h4>O ICMS e o ISS do DAS não saem da base da venda</h4><p>No híbrido, o IBS/CBS por fora incide sobre o preço inteiro: o ICMS e o ISS pagos dentro do DAS não são destacados na nota e não saem da base. Só sai o que for destacado, como o ISS retido pelo tomador. A regra da NF-e para o optante ainda espera nota técnica própria; a NT 2026.008 retirou a validação da base aguardando orientação normativa.</p><span class="ref">Art. 12, § 2º, V, da LC 214 · NT 2025.002 v1.52 · NT 2026.008</span></div>
-    <div class="nota"><h4>Fornecedor no Simples corrói o crédito</h4><p>Freelancer, subempreiteiro e distribuidor optantes no DAS integral entregam só a parcela de CBS+IBS do DAS deles: 1,46% no Anexo I 4ª faixa, 2,33% no Anexo III 4ª, 3,74% no Anexo V 4ª. Hoje o comprador não cumulativo credita 9,25% de PIS/Cofins nessa mesma compra. Mapear a carteira de fornecedores por regime antes de decidir.</p><span class="ref">Art. 47, § 9º, II, da LC 214 · Anexos da Res. 190</span></div>
-    <div class="nota"><h4>A receita bruta do Simples fica menor</h4><p>No híbrido, IBS e CBS apurados por fora não entram na receita bruta. O DAS reduzido incide sobre a base sem os <span data-prem="t">9,0%</span>, e o RBT12 para faixa também.</p><span class="ref">Art. 2º, § 5º, VIII, da Res. 140 (Res. 190) · art. 13, § 9º, da LC 123</span></div>
-    <div class="nota"><h4>Alíquota reduzida entra na conta</h4><p>Contabilistas, engenheiros, advogados e demais profissões do art. 127 têm redução de 30%; serviços de saúde e educação, 60% (arts. 128 a 130). A redução só alcança o IBS/CBS por fora da saída: o crédito das compras continua cheio e a parcela dentro do DAS não muda. Cada caso aceita várias fatias de receita com reduções diferentes, e também compras de fornecedor do regime regular com alíquota reduzida, cujo crédito é o imposto reduzido destacado por ele.</p><span class="ref">Arts. 127, 128 e 130 da LC 214</span></div>
-    <div class="nota"><h4>Janela e trava</h4><p>Para 2027 a opção vai de setembro a novembro de 2026 e vale o ano; depois é semestral, com desistência até o fim do 2º mês seguinte. Quem receber ressarcimento de crédito não volta ao DAS integral no ano seguinte.</p><span class="ref">Res. CGSN 186/2026 · arts. 40-D e 40-E da Res. 140 · art. 41, § 5º, da LC 214</span></div>
-    <div class="nota"><h4>Custo de conformidade entra na conta</h4><p>NFS-e nacional com destaque, apuração mensal de IBS/CBS, split payment na liquidação e escrituração do regime regular. Em empresas pequenas o custo do contador pode comer o ganho do Anexo III de baixa faixa.</p><span class="ref">Res. CGSN 191/2026 · art. 45-B da Res. 140 · arts. 31 a 35 da LC 214</span></div>
+    <div class="nota"><h4>A carteira decide antes da alíquota</h4><p>O híbrido só se sustenta quando a receita vem de quem apura IBS/CBS pelo regime regular. Para pessoa física, Simples integral e imunes, o preço sobe <span data-prem="t">9,0%</span> sobre a base e crédito nenhum compensa isso.</p><span class="ref">Art. 47 da LC 214 · art. 58, §§ 4º a 6º, da Res. 140</span></div>
+    <div class="nota"><h4>Custo atual não é base de crédito</h4><p>Peça ao fornecedor do regime regular o valor líquido: sem o IBS/CBS e sem o ICMS ou o ISS destacado, que de 2026 a 2032 ficam fora da base, e o crédito é <span data-prem="t">9,0%</span> sobre o que sobra. Nota de 100 com ICMS de 17% gera crédito sobre 83. O custo de hoje ainda traz PIS/Cofins por dentro (9,25% na não cumulativa, 3,65% na cumulativa) e será reprecificado pelo fornecedor. Traga o preço líquido de tributo para a simulação.</p><span class="ref">Art. 12, § 2º, I e V, da LC 214</span></div><div class="nota"><h4>ICMS e ISS do DAS não reduzem a base da venda</h4><p>No híbrido, o IBS/CBS por fora incide sobre o preço inteiro: o ICMS e o ISS recolhidos no DAS não são destacados na nota e não saem da base. Só sai o que for destacado, como o ISS retido pelo tomador. A regra da NF-e para o optante ainda depende de nota técnica própria; a NT 2026.008 retirou a validação da base até nova orientação normativa.</p><span class="ref">Art. 12, § 2º, V, da LC 214 · NT 2025.002 v1.52 · NT 2026.008</span></div>
+    <div class="nota"><h4>Fornecedor do Simples reduz o crédito</h4><p>Freelancer, subempreiteiro e distribuidor no DAS integral entregam apenas a parcela de CBS+IBS do DAS deles: 1,46% no Anexo I 4ª faixa, 2,33% no Anexo III 4ª e 3,74% no Anexo V 4ª. Hoje o comprador não cumulativo credita 9,25% de PIS/Cofins na mesma compra. Levante o regime de cada fornecedor antes de decidir.</p><span class="ref">Art. 47, § 9º, II, da LC 214 · Anexos da Res. 190</span></div>
+    <div class="nota"><h4>A receita bruta do Simples diminui</h4><p>No híbrido, IBS e CBS apurados por fora não compõem a receita bruta. O DAS reduzido incide sobre a base sem os <span data-prem="t">9,0%</span>, e o RBT12 usado na faixa também.</p><span class="ref">Art. 2º, § 5º, VIII, da Res. 140 (Res. 190) · art. 13, § 9º, da LC 123</span></div>
+    <div class="nota"><h4>Alíquota reduzida também entra na conta</h4><p>Contabilistas, engenheiros, advogados e as demais profissões do art. 127 têm redução de 30%; saúde e educação, 60% (arts. 128 a 130). A redução alcança apenas o IBS/CBS por fora da saída: o crédito das compras segue cheio e a parcela dentro do DAS não muda. Cada caso aceita várias fatias de receita com reduções diferentes e compras de fornecedor do regime regular com alíquota reduzida, cujo crédito é o imposto reduzido destacado por ele.</p><span class="ref">Arts. 127, 128 e 130 da LC 214</span></div>
+    <div class="nota"><h4>Janela de opção e trava</h4><p>Para 2027 a opção corre de setembro a novembro de 2026 e vale o ano inteiro; depois passa a ser semestral, com desistência até o fim do 2º mês seguinte. Quem recebeu ressarcimento de crédito não retorna ao DAS integral no ano seguinte.</p><span class="ref">Res. CGSN 186/2026 · arts. 40-D e 40-E da Res. 140 · art. 41, § 5º, da LC 214</span></div>
+    <div class="nota"><h4>Custo de conformidade também pesa</h4><p>NFS-e nacional com destaque, apuração mensal de IBS/CBS, split payment na liquidação e escrituração do regime regular. Em empresas pequenas, o honorário do contador pode consumir o ganho do Anexo III de faixa baixa.</p><span class="ref">Res. CGSN 191/2026 · art. 45-B da Res. 140 · arts. 31 a 35 da LC 214</span></div>
   </div>
 </section>
 
-<footer><span>P4 Contabilidade · Simulador da Reforma Tributária, premissas explícitas acima</span><span>Modelo: mesmo líquido para o prestador em C e D; contratante que credita paga a base; quem não credita paga o preço final</span></footer>
+<footer><span>P4 Contabilidade · Simulador da Reforma Tributária — premissas explícitas acima</span><span>Modelo: mesmo líquido para o prestador em C e D; quem credita paga a base; quem não credita paga o preço final</span></footer>
 </div>
 <script>
 const TAB = {"I": [[180000, 0.04, 0, 0.1533, 0.0017], [360000, 0.073, 5940, 0.1533, 0.0017], [720000, 0.095, 13860, 0.1533, 0.0017], [1800000, 0.107, 22500, 0.1533, 0.0017], [3600000, 0.143, 87300, 0.1533, 0.0017], [4800000, 0.189, 378000, 0.3402, 0]], "II": [[180000, 0.045, 0, 0.1385, 0.0015], [360000, 0.078, 5940, 0.1385, 0.0015], [720000, 0.1, 13860, 0.1385, 0.0015], [1800000, 0.112, 22500, 0.1385, 0.0015], [3600000, 0.147, 85500, 0.1385, 0.0015], [4800000, 0.299, 720000, 0.2522, 0]], "III": [[180000, 0.06, 0, 0.1543, 0.0017], [360000, 0.112, 9360, 0.1691, 0.0019], [720000, 0.135, 17640, 0.1641, 0.0019], [1800000, 0.16, 35640, 0.1641, 0.0019], [3600000, 0.21, 125640, 0.1543, 0.0017], [4800000, 0.329, 648000, 0.1929, 0]], "IV": [[180000, 0.045, 0, 0.2126, 0.0024], [360000, 0.09, 8100, 0.2473, 0.0027], [720000, 0.102, 12420, 0.2374, 0.0026], [1800000, 0.14, 39780, 0.2275, 0.0025], [3600000, 0.22, 183780, 0.2176, 0.0024], [4800000, 0.329, 828000, 0.247, 0]], "V": [[180000, 0.155, 0, 0.1696, 0.0019], [360000, 0.18, 4500, 0.1696, 0.0019], [720000, 0.195, 9900, 0.1795, 0.002], [1800000, 0.205, 17100, 0.1894, 0.0021], [3600000, 0.23, 62100, 0.1696, 0.0019], [4800000, 0.304, 540000, 0.1978, 0]]};
-const CASOS_BASE = [{"id": "contabil", "nome": "Escritório contábil", "anexo": "III", "rbt12": 1200000, "insReg": 0.12, "insSN": 0.03, "fornAnexo": "III", "fornFaixa": 2, "folha": 0.45, "pjReg": 0.35, "reds": [{"fatia": 1.0, "pct": 0.3}], "perfil": "Serviços contábeis, 14 funcionários, carteira de 180 clientes, a maioria empresas do Simples.", "nota": "Contabilidade tem redução de 30% na alíquota (art. 127, VII, da LC 214), o que suaviza a alta para quem não credita. Mesmo assim a carteira decide: cliente do Simples integral não credita nada."}, {"id": "clinica", "nome": "Clínica odontológica", "anexo": "III", "rbt12": 2400000, "insReg": 0.22, "insSN": 0.05, "fornAnexo": "I", "fornFaixa": 4, "folha": 0.2, "pjReg": 0.05, "reds": [{"fatia": 1.0, "pct": 0.6}], "perfil": "Cinco cadeiras, materiais e laboratório comprados de distribuidores do regime regular, atendimento a pessoa física.", "nota": "Serviço de saúde tem redução de 60% (art. 130 da LC 214): o IBS/CBS por fora cai bastante. Mesmo assim o paciente não credita, e o crédito de insumos precisa cobrir a diferença."}, {"id": "software", "nome": "Software house", "anexo": "III", "rbt12": 3000000, "insReg": 0.15, "insSN": 0.08, "fornAnexo": "V", "fornFaixa": 1, "folha": 0.4, "pjReg": 0.95, "perfil": "Fator R acima de 28% (Anexo III). Nuvem e licenças de fornecedores do regime regular, freelancers no Simples, clientes indústrias e bancos.", "nota": "Caso clássico do híbrido: quase toda a receita vem de quem credita, e o custo efetivo do cliente cai mesmo com o preço nominal maior."}, {"id": "engenharia", "nome": "Consultoria de engenharia", "anexo": "V", "rbt12": 900000, "insReg": 0.1, "insSN": 0.05, "fornAnexo": "V", "fornFaixa": 1, "folha": 0.2, "pjReg": 0.9, "fatorR": true, "reds": [{"fatia": 1.0, "pct": 0.3}], "perfil": "Sócios técnicos, folha baixa (fator R abaixo de 28%, Anexo V), projetos para indústrias e incorporadoras.", "nota": "Engenharia tem redução de 30% (art. 127, XI). Anexo V tem a maior parcela de CBS/IBS dentro do DAS entre os anexos de serviço: é a que mais sai do preço ao optar."}, {"id": "construtora", "nome": "Construtora de reformas", "anexo": "IV", "rbt12": 3400000, "insReg": 0.45, "insSN": 0.1, "fornAnexo": "IV", "fornFaixa": 3, "folha": 0.2, "pjReg": 0.8, "perfil": "Anexo IV (CPP fora do DAS). Materiais de construção de fornecedores do regime regular, subempreiteiros no Simples, contratantes PJ.", "nota": "Maior volume de crédito da aula: quase metade da receita vira nota com CBS/IBS destacado. O preço final pode cair abaixo do atual."}, {"id": "manutencao", "nome": "Manutenção industrial", "anexo": "III", "rbt12": 1800000, "insReg": 0.25, "insSN": 0.05, "fornAnexo": "I", "fornFaixa": 3, "folha": 0.35, "pjReg": 1.0, "perfil": "Montagem e manutenção em plantas industriais. Peças, EPI e ferramentas de fornecedores do regime regular. 100% da receita de indústrias.", "nota": "Todo contratante credita. Não existe cenário em que o DAS integral vença; a pergunta passa a ser quanto do ganho repassar."}];
+const CASOS_BASE = [{"id": "contabil", "nome": "Escritório contábil", "anexo": "III", "rbt12": 1200000, "insReg": 0.12, "insSN": 0.03, "fornAnexo": "III", "fornFaixa": 2, "folha": 0.45, "pjReg": 0.35, "reds": [{"fatia": 1.0, "pct": 0.3}], "perfil": "Serviços contábeis, 14 funcionários, carteira de 180 clientes, a maioria empresas do Simples.", "nota": "A contabilidade tem redução de 30% na alíquota (art. 127, VII, da LC 214), o que suaviza a alta para quem não credita. Ainda assim a carteira manda: cliente no Simples integral não credita nada."}, {"id": "clinica", "nome": "Clínica odontológica", "anexo": "III", "rbt12": 2400000, "insReg": 0.22, "insSN": 0.05, "fornAnexo": "I", "fornFaixa": 4, "folha": 0.2, "pjReg": 0.05, "reds": [{"fatia": 1.0, "pct": 0.6}], "perfil": "Cinco cadeiras, materiais e laboratório comprados de distribuidores do regime regular, atendimento a pessoa física.", "nota": "Saúde tem redução de 60% (art. 130 da LC 214): o IBS/CBS por fora cai bastante. Mesmo assim o paciente não credita, e o crédito de insumos precisa cobrir a diferença."}, {"id": "software", "nome": "Software house", "anexo": "III", "rbt12": 3000000, "insReg": 0.15, "insSN": 0.08, "fornAnexo": "V", "fornFaixa": 1, "folha": 0.4, "pjReg": 0.95, "perfil": "Fator R acima de 28% (Anexo III). Nuvem e licenças de fornecedores do regime regular, freelancers no Simples, clientes indústrias e bancos.", "nota": "É o retrato do híbrido: quase toda a receita vem de quem credita, e o custo efetivo do cliente cai mesmo com o preço nominal maior."}, {"id": "engenharia", "nome": "Consultoria de engenharia", "anexo": "V", "rbt12": 900000, "insReg": 0.1, "insSN": 0.05, "fornAnexo": "V", "fornFaixa": 1, "folha": 0.2, "pjReg": 0.9, "fatorR": true, "reds": [{"fatia": 1.0, "pct": 0.3}], "perfil": "Sócios técnicos, folha baixa (fator R abaixo de 28%, Anexo V), projetos para indústrias e incorporadoras.", "nota": "Engenharia tem redução de 30% (art. 127, XI). O Anexo V carrega a maior parcela de CBS/IBS dentro do DAS entre os anexos de serviço: é a que mais sai do preço na opção."}, {"id": "construtora", "nome": "Construtora de reformas", "anexo": "IV", "rbt12": 3400000, "insReg": 0.45, "insSN": 0.1, "fornAnexo": "IV", "fornFaixa": 3, "folha": 0.2, "pjReg": 0.8, "perfil": "Anexo IV (CPP fora do DAS). Materiais de construção de fornecedores do regime regular, subempreiteiros no Simples, contratantes PJ.", "nota": "O maior volume de crédito deste conjunto: quase metade da receita vira nota com CBS/IBS destacado. O preço final pode cair abaixo do atual."}, {"id": "manutencao", "nome": "Manutenção industrial", "anexo": "III", "rbt12": 1800000, "insReg": 0.25, "insSN": 0.05, "fornAnexo": "I", "fornFaixa": 3, "folha": 0.35, "pjReg": 1.0, "perfil": "Montagem e manutenção em plantas industriais. Peças, EPI e ferramentas de fornecedores do regime regular. 100% da receita de indústrias.", "nota": "Todo cliente credita. Não há cenário em que o DAS integral vença; a pergunta passa a ser quanto do ganho repassar."}];
 const PERFIL = "serv";   // "serv" | "com"
 const LBL = PERFIL === "com" ? {reg:"CMV/insumos reg. regular", sn:"CMV/insumos do Simples", regRed:"CMV/insumos do regime regular com alíquota reduzida"} : {reg:"Compras reg. regular", sn:"Compras Simples", regRed:"Serviços/compras do regime regular com alíquota reduzida"};
-CASOS_BASE.push(Object.assign({"id": "seu", "nome": "Seu caso", "anexo": "III", "rbt12": 1200000, "insReg": 0.15, "insSN": 0.05, "fornAnexo": "III", "fornFaixa": 4, "folha": 0.35, "pjReg": 0.6, "fatorR": true, "preco": 100}, {perfil:"Card livre para o caso do aluno. Edite os campos e a conta refaz na hora.", nota:""}));
+CASOS_BASE.push(Object.assign({"id": "seu", "nome": "Sua empresa", "anexo": "III", "rbt12": 1200000, "insReg": 0.15, "insSN": 0.05, "fornAnexo": "III", "fornFaixa": 4, "folha": 0.35, "pjReg": 0.6, "fatorR": true, "preco": 100}, {perfil:"Cartão livre para a sua empresa. Ajuste os campos e a conta refaz na hora.", nota:""}));
 // reds: fatias da receita com alíquota reduzida [{fatia, pct}]; compRed: compras do regime regular com redução [{fatia, pct}] (fatia em % da receita)
 function normalizar(c){
   if (!Array.isArray(c.reds)) c.reds = (c.redFatia > 0 && c.redPct > 0) ? [{fatia:+c.redFatia, pct:+c.redPct}] : [];
@@ -466,7 +467,7 @@ function calc(i){
 function chip(v){
   if (v==='bom') return '<span class="chip bom">Híbrido compensa</span>';
   if (v==='ruim') return '<span class="chip ruim">Manter DAS integral</span>';
-  return '<span class="chip meio">No zero: depende da negociação</span>';
+  return '<span class="chip meio">Na virada: depende da negociação</span>';
 }
 
 const NOME_ANEXO = {I:'I · Comércio e indústria', II:'II · Indústria com IPI mantido (ZFM)', III:'III · Serviços', IV:'IV · Serviços (CPP fora)', V:'V · Serviços (fator R < 28%)'};
@@ -700,7 +701,7 @@ function ligarImport(art, c){
     catch(e){ const m = String(e && e.message || ''); msg.innerHTML = `<p class="aviso">${esc(m.startsWith('!') ? m.slice(1) : 'Não consegui ler este PDF. Confira se é o Extrato do Simples Nacional gerado pelo PGDAS-D.')}</p>`; return; }
     const aplicar = () => { aplicarImport(c, imp); art.querySelector('.form').outerHTML = formulario(c); ligarForm(art, c, art._atualizar); art._atualizar(); sintese(); salvar(); msg.innerHTML = relatorioImport(imp); };
     if (igualBase(c)) return aplicar();
-    msg.innerHTML = `<div class="impconf"><p>Substituir RBT12, folha e atividades do Seu caso pelos do extrato?</p><button type="button" class="ibtn" data-impsim>Substituir</button><button type="button" class="ibtn" data-impnao>Cancelar</button></div>`;
+    msg.innerHTML = `<div class="impconf"><p>Substituir RBT12, folha e atividades da sua empresa pelas do extrato?</p><button type="button" class="ibtn" data-impsim>Substituir</button><button type="button" class="ibtn" data-impnao>Cancelar</button></div>`;
     msg.querySelector('[data-impsim]').addEventListener('click', aplicar);
     msg.querySelector('[data-impnao]').addEventListener('click', () => { msg.innerHTML = ''; });
   });
@@ -736,14 +737,14 @@ function formulario(c){
     ${lista(c, 'compRed', LBL.regRed, 'da receita, líquido de IBS/CBS, ICMS e ISS,')}
     ${PERFIL==='com' ? `<label>Revenda com PIS/Cofins monofásico hoje %<input data-k="mono" type="text" inputmode="decimal" value="${fmtCampo(r2(c.mono*100))}"><small>Farmácia, autopeças, perfumaria, bebidas: parte da receita que hoje sai do DAS sem PIS/Cofins. Em 2027 essa segregação acaba e o DAS integral sobe. Fabricante e importador não segregam.</small></label>` : ''}
     ${('preco' in c) ? `<label>Preço de referência (R$)<input data-k="preco" type="text" inputmode="decimal" value="${fmtCampo(c.preco)}"><small>Preço atual de um serviço ou produto; os quadros passam a mostrar valores em R$ sobre ele.</small></label>` : ''}
-    <label class="slider">Receita de quem credita: <b data-out="pjReg">${Math.round(c.pjReg*100)}%</b><input data-k="pjReg" type="range" min="0" max="100" step="1" value="${Math.round(c.pjReg*100)}"><small>Move a régua, o impacto médio e o veredito; a tabela de preço não depende da carteira.</small></label>
+    <label class="slider">Receita de quem credita: <b data-out="pjReg">${Math.round(c.pjReg*100)}%</b><input data-k="pjReg" type="range" min="0" max="100" step="1" value="${Math.round(c.pjReg*100)}"><small>O impacto médio e o veredito acompanham a barra; a tabela de preço não depende da carteira.</small></label>
     <button type="button" class="restaurar" data-restaurar>Restaurar caso</button>
   </div>`;
 }
 
 function caminho(c, r){
   const liq = r.liq, das = r2(r.P*r.aeHoje), P = r.P, C=r.C, D=r.D;
-  return `<div class="caminho"><div class="cl">Como chegamos ao preço: parte do líquido de hoje e fecha no mesmo líquido</div>
+  return `<div class="caminho"><div class="cl">Como o preço se forma: do líquido de hoje ao preço que fecha no mesmo líquido</div>
     <div class="tiles">
       <div class="t"><div class="l">Preço hoje</div><div class="v num">${fmtN(P)}</div><div class="s">DAS embutido ${fmtP(r.aeHoje)} = ${fmtN(das)}</div></div>
       <div class="ar">→</div>
@@ -757,8 +758,8 @@ function caminho(c, r){
       <div class="ar">→</div>
       <div class="t dest"><div class="l">Preço D</div><div class="v num">${fmtN(D.base)}</div><div class="s">(${fmtN(liq)} − ${fmtN(r.kv)} de crédito) ÷ (1 − ${fmtP(r.dasH)})</div></div>
     </div>
-    <p class="legenda">Prova real: ${fmtN(C.base)} × (1 − ${fmtP(r.dasH)}) = ${fmtN(r2(C.base*(1-r.dasH)))}, o mesmo líquido de hoje. Cada real tirado do preço custa só ${fmtN(1-r.dasH)} de líquido, porque o DAS deixa de incidir sobre ele; por isso${r.mono ? `, sobre o preço do DAS integral 2027 (${fmtN(r.A.base)}),` : ''} a parcela de ${fmtP(r.parc)} vira ${fmtP((r.A.base-C.base)/r.A.base)} de redução.</p>
-    <p class="legenda">Crédito do preço D: ${fmtR(r.compraReg)} de compras do regime regular × ${fmtP(r.t,1)} = ${fmtR(r.credRegRS)}; ${r.compRedRS.filter(x=>x.valor>0).map(x => `${fmtR(x.valor)} de compras com redução de ${fmtP(x.pct,0)} × ${fmtP(x.aliq,2)} = ${fmtR(x.cred)}; `).join('')}${fmtR(r.compraSN)} de compras do Simples × ${fmtP(r.cSN)} informado na nota = ${fmtR(r.credSNRS)}; total ${fmtR(r.credMes)} ÷ receita de ${fmtR(r.R)} = ${fmtP(r.k)}, os ${fmtN(r.kv)} tirados do líquido antes de dividir. Prova real: ${fmtN(D.base)} × (1 − ${fmtP(r.dasH)}) = ${fmtN(r2(D.base*(1-r.dasH)))} = ${fmtN(r.liq)} − ${fmtN(r.kv)}.</p></div>`;
+    <p class="legenda">Conferência: ${fmtN(C.base)} × (1 − ${fmtP(r.dasH)}) = ${fmtN(r2(C.base*(1-r.dasH)))}, o mesmo líquido de hoje. Cada real tirado do preço custa só ${fmtN(1-r.dasH)} de líquido, porque o DAS deixa de incidir sobre ele; por isso${r.mono ? `, sobre o preço do DAS integral 2027 (${fmtN(r.A.base)}),` : ''} a parcela de ${fmtP(r.parc)} vira ${fmtP((r.A.base-C.base)/r.A.base)} de redução.</p>
+    <p class="legenda">Crédito embutido no preço D: ${fmtR(r.compraReg)} de compras do regime regular × ${fmtP(r.t,1)} = ${fmtR(r.credRegRS)}; ${r.compRedRS.filter(x=>x.valor>0).map(x => `${fmtR(x.valor)} de compras com redução de ${fmtP(x.pct,0)} × ${fmtP(x.aliq,2)} = ${fmtR(x.cred)}; `).join('')}${fmtR(r.compraSN)} de compras do Simples × ${fmtP(r.cSN)} informado na nota = ${fmtR(r.credSNRS)}; total ${fmtR(r.credMes)} ÷ receita de ${fmtR(r.R)} = ${fmtP(r.k)}, os ${fmtN(r.kv)} tirados do líquido antes de dividir. Conferência: ${fmtN(D.base)} × (1 − ${fmtP(r.dasH)}) = ${fmtN(r2(D.base*(1-r.dasH)))} = ${fmtN(r.liq)} − ${fmtN(r.kv)}.</p></div>`;
 }
 
 function regua(c, r){
@@ -769,7 +770,7 @@ function regua(c, r){
   const zero = semZero ? '' : `<div class="zero" style="left:${x*100}%"><span>zero em ${fmtP(r.xEq,0)}</span></div>`;
   const rot = semZero==='todo' ? 'compensa com qualquer carteira' : (semZero==='nunca' ? 'não compensa nem com 100% de clientes que creditam' :
     (r.inv ? `abaixo de ${fmtP(r.xEq,0)} o híbrido barateia a carteira; acima, encarece` : `abaixo de ${fmtP(r.xEq,0)} o híbrido encarece a carteira; acima, barateia`));
-  return `<div class="regua"><div class="rl">Régua de equilíbrio · fatia da receita vinda de quem credita</div>
+  return `<div class="regua"><div class="rl">Ponto de equilíbrio · fatia da receita vinda de quem credita</div>
     <div class="track" style="background:${grad}">${zero}<div class="marca" style="left:${atual*100}%"><span>${fmtP(atual,0)}</span></div></div>
     <div class="rr"><span>0%</span><span>${rot} · impacto médio na carteira <b class="${r.impMedio<0?'bom':'ruim'}">${sinal(r.impMedio)}</b></span><span>100%</span></div></div>`;
 }
@@ -843,9 +844,9 @@ Equilíbrio: custo p/ quem credita ${sinal(r.dPJ)} | p/ quem não credita ${sina
       <tr><td>Crédito do contratante que apura IBS/CBS</td><td class="num">${fmtN(A.credPJ)}</td><td class="num">${fmtN(B.credPJ)}</td><td class="num">${fmtN(C.credPJ)}</td><td class="num">${fmtN(D.credPJ)}</td></tr>
       <tr class="total"><td>Custo efetivo p/ quem credita</td><td class="num">${fmtN(A.custoPJ)}</td><td class="num ${cls(B.custoPJ,A.custoPJ)}">${fmtN(B.custoPJ)}</td><td class="num ${cls(C.custoPJ,A.custoPJ)}">${fmtN(C.custoPJ)}</td><td class="num ${cls(D.custoPJ,A.custoPJ)}">${fmtN(D.custoPJ)}</td></tr>
       <tr class="total"><td>Custo p/ quem não credita (PF, Simples integral)</td><td class="num">${fmtN(A.custoPF)}</td><td class="num ${cls(B.custoPF,A.custoPF)}">${fmtN(B.custoPF)}</td><td class="num ${cls(C.custoPF,A.custoPF)}">${fmtN(C.custoPF)}</td><td class="num ${cls(D.custoPF,A.custoPF)}">${fmtN(D.custoPF)}</td></tr>
-      <tr><td>Líquido do prestador após DAS e crédito</td><td class="num">${fmtN(r.liq)}</td><td class="num">${fmtN(r.liqB)}</td><td class="num">${fmtN(r2(r.liq + r.kv))}</td><td class="num">${fmtN(r.liq)}</td></tr>
+      <tr><td>Seu líquido após DAS e crédito</td><td class="num">${fmtN(r.liq)}</td><td class="num">${fmtN(r.liqB)}</td><td class="num">${fmtN(r2(r.liq + r.kv))}</td><td class="num">${fmtN(r.liq)}</td></tr>
     </tbody></table></div>
-  <p class="legenda">Em B o prestador retém ${fmtR(r.ganhoRetem)} por mês (DAS menor + crédito) e o contratante que credita paga ${fmtN(B.final)} por ${fmtN(B.custoPJ)} de custo efetivo. Em D todo o ganho vai para o preço e o líquido do prestador é o de hoje. Entre B e D fica a negociação.</p>
+  <p class="legenda">Em B a empresa retém ${fmtR(r.ganhoRetem)} por mês (DAS menor + crédito) e o contratante que credita paga ${fmtN(B.final)} por ${fmtN(B.custoPJ)} de custo efetivo. Em D todo o ganho vai para o preço e o líquido do prestador é o de hoje. Entre B e D fica a negociação.</p>
   <div class="leitura">${leitura(c, r)}</div>
   <details><summary>Memória de cálculo</summary><div class="memo">${memo}</div></details>`;
 }
@@ -860,13 +861,13 @@ function igualBase(c){
 
 function leitura(c, r){
   const D=r.D, A=r.A;
-  const custoPJ = `Comparando A (DAS integral 2027) com D (híbrido com o crédito já repassado no preço): para o contratante que credita, o custo efetivo vai de ${fmtN(A.custoPJ)} para ${fmtN(D.custoPJ)} (${sinal(r.dPJ)}).`;
-  const custoPF = `Para quem não credita, o preço vai de ${fmtN(A.final)}${r.mono ? ' (DAS integral 2027, já sem a segregação)' : ''} para ${fmtN(D.final)} (${sinal(r.dPF)}).`;
+  const custoPJ = `Quem credita sai de ${fmtN(A.custoPJ)} para ${fmtN(D.custoPJ)} de custo efetivo, na comparação entre o DAS integral de 2027 e o híbrido que já repassa o crédito no preço (${sinal(r.dPJ)}).`;
+  const custoPF = `Quem não credita vê o preço ir de ${fmtN(A.final)}${r.mono ? ' (DAS integral 2027, já sem a segregação)' : ''} para ${fmtN(D.final)} (${sinal(r.dPF)}).`;
   const eq = r.xEq > 0 && r.xEq < 1
-    ? `O híbrido fecha no zero quando <b>${fmtP(r.xEq,0)}</b> da receita vem de quem credita; neste caso são <b>${fmtP(c.pjReg,0)}</b>.`
-    : (r.xEq <= 0 ? `Mesmo quem não credita paga menos que no DAS integral de 2027: o híbrido vence com qualquer carteira.` : `Nem 100% de contratantes que creditam compensa a alta para os demais.`);
-  const ponto = (c.nota && igualBase(c)) ? '<br><b>Ponto de aula.</b> ' + c.nota : '';
-  return `<b>Leitura.</b> ${custoPJ} ${custoPF} ${eq} ${ponto}`;
+    ? `O híbrido empata quando <b>${fmtP(r.xEq,0)}</b> da receita vem de quem credita; neste caso são <b>${fmtP(c.pjReg,0)}</b>.`
+    : (r.xEq <= 0 ? `Mesmo quem não credita paga menos que no DAS integral de 2027: aqui o híbrido vence com qualquer carteira.` : `Nem com 100% de clientes que creditam a alta para os demais se compensa.`);
+  const ponto = (c.nota && igualBase(c)) ? '<br><b>Nota da P4.</b> ' + c.nota : '';
+  return `<b>Diagnóstico.</b> ${custoPJ} ${custoPF} ${eq} ${ponto}`;
 }
 
 // ---------- cards editáveis
@@ -874,7 +875,7 @@ const elCasos = document.getElementById('casos');
 function montarCard(n){
   const c = CASOS[n];
   const art = document.createElement('article'); art.className='caso'; art.id='caso-'+c.id;
-  art.innerHTML = `<div class="caso-h"><div><div class="eyebrow">${n < CASOS.length-1 ? 'Caso '+(n+1)+' de '+(CASOS.length-1) : 'Ao vivo'}</div>
+  art.innerHTML = `<div class="caso-h"><div><div class="eyebrow">${n < CASOS.length-1 ? 'Caso '+(n+1)+' de '+(CASOS.length-1) : 'Simulação livre'}</div>
     <h3 contenteditable="true" spellcheck="false" data-nome>${c.nome}</h3><p class="perfil">${c.perfil}</p></div><div data-chip></div></div>
     ${formulario(c)}${BUSCA_ON && c.id === 'seu' ? IMP_HTML : ''}<div data-saida></div>`;
   elCasos.appendChild(art);
