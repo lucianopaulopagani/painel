@@ -7,6 +7,7 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import AgendaPage from "./pages/agenda/AgendaPage";
 import ChatPage from "./pages/chat/ChatPage";
 import TarefasPage from "./pages/tarefas/TarefasPage";
+import SimuladorReforma from "./pages/app/SimuladorReforma";
 import ProtectedRoute from "./components/guards/protected-route";
 import AppAccessRoute from "./components/guards/app-access-route";
 import AdminRoute from "./components/guards/admin-route";
@@ -76,6 +77,15 @@ export const routers = [
       <AppAccessRoute app="tarefas">
         <TarefasPage />
       </AppAccessRoute>
+    ),
+  },
+  {
+    path: "/simulador",
+    name: "simulador",
+    element: (
+      <ProtectedRoute>
+        <SimuladorReforma />
+      </ProtectedRoute>
     ),
   },
   /* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */

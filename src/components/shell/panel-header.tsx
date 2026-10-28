@@ -2,6 +2,7 @@ import { useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   CalendarDays,
+  Calculator,
   Camera,
   ChevronDown,
   KeyRound,
@@ -172,6 +173,12 @@ export function PanelHeader({ title, subtitle, children }: PanelHeaderProps) {
             </Button>
           </a>
           )}
+          <Link to="/simulador" className="shrink-0">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <Calculator className="h-4 w-4" />
+              <span className="hidden sm:inline">Simulador</span>
+            </Button>
+          </Link>
           <Link to="/app" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2">
               <LayoutDashboard className="h-4 w-4" />
