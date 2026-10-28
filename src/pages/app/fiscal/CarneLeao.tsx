@@ -1,5 +1,16 @@
 import { useState } from "react";
+import { Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -79,6 +90,13 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
     envio: "",
     observacoes: "",
   });
+  /* Diálogo do botão de Ações da coluna Observações. */
+  const [obsDialog, setObsDialog] = useState<{
+    companyId: string;
+    empresa: string;
+    numero: string;
+  } | null>(null);
+  const [obsText, setObsText] = useState("");
 
   const setBuscaField = (key: keyof typeof busca, value: string) => {
     setBusca((prev) => ({ ...prev, [key]: value }));
@@ -266,7 +284,7 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
         Carne Leão — empresas com tributação {CARNE_LEAO_TRIBUTACAO}
       </p>
       <div className="overflow-x-auto rounded-lg border">
-        <Table className="table-fixed min-w-[1424px]">
+        <Table className="table-fixed min-w-[1344px]">
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
               <TableHead className={`${HEAD} w-12 align-bottom`}>
@@ -341,9 +359,9 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
                   "envio_guia",
                   CARNE_LEAO_ENVIO_OPTIONS
                 ),
-                "w-28"
+                "w-40"
               )}
-              {renderFilterInput("observacoes", columnLabel("observacoes", "Observações"), "w-[26rem]")}
+              {renderFilterInput("observacoes", columnLabel("observacoes", "Observações"), "w-72")}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -412,7 +430,7 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
                       "carne_leao"
                     )}
                   </TableCell>
-                  <TableCell className={`${CELL} w-28`}>
+                  <TableCell className={`${CELL} w-40`}>
                     {renderSelectCell(
                       company.id,
                       record?.envio_guia ?? "",
@@ -420,18 +438,32 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
                       "envio_guia"
                     )}
                   </TableCell>
-                  <TableCell className={`${CELL} w-[26rem]`}>
-                    <Input
-                      key={`${company.id}:${mes}:obs`}
-                      defaultValue={effectiveObservacoes(company.id) ?? ""}
-                      title={effectiveObservacoes(company.id) ?? ""}
-                      onBlur={(event) =>
-                        save(company.id, {
-                          observacoes: event.target.value.trim() || null,
-                        })
-                      }
-                      className="h-7 w-full min-w-0 px-1 text-[11px]"
-                    />
+                  <TableCell className={`${CELL} w-72`}>
+                    <div className="flex items-center gap-1">
+                      <span
+                        className="block h-7 flex-1 truncate py-1"
+                        title={effectiveObservacoes(company.id) ?? ""}
+                      >
+                        {effectiveObservacoes(company.id) || "—"}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 shrink-0"
+                        title="Ações — Observações"
+                        onClick={() => {
+                          setObsText(effectiveObservacoes(company.id) ?? "");
+                          setObsDialog({
+                            companyId: company.id,
+                            empresa: company.name,
+                            numero: company.numero ?? "",
+                          });
+                        }}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               );
@@ -451,6 +483,54 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
           </TableBody>
         </Table>
       </div>
+
+      <Dialog
+        open={obsDialog !== null}
+        onOpenChange={(open) => {
+          if (!open) setObsDialog(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Observações</DialogTitle>
+            <DialogDescription>
+              {obsDialog?.numero ? `${obsDialog.numero} — ` : ""}
+              {obsDialog?.empresa} — {mes}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={obsText}
+            onChange={(event) => setObsText(event.target.value)}
+            placeholder="Escreva a observação desta empresa"
+            rows={5}
+            autoFocus
+          />
+          <p className="text-xs text-muted-foreground">
+            A observação é levada para os meses seguintes até ser alterada.
+          </p>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setObsDialog(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (!obsDialog) return;
+                save(obsDialog.companyId, {
+                  observacoes: obsText.trim() || null,
+                });
+                setObsDialog(null);
+              }}
+            >
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

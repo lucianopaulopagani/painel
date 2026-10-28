@@ -26,9 +26,24 @@ export type MovimentoFiscalFieldKey =
   | "envio_sn"
   | "envio_icms";
 
-/** OK e OK-SM contam como empresa finalizada; o restante é pendente. */
+/** Situações que contam como finalizada (comparadas sem acento, em caixa alta). */
+const SITUACOES_FINALIZADAS = ["OK", "OK-SM", "CONCLUIDO"];
+
+/** Compara a situação sem acentos e sem diferença de caixa. */
+function normalizarSituacao(situacao: string | null): string {
+  return (situacao ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLocaleUpperCase("pt-BR");
+}
+
+/**
+ * OK, OK-SM e Concluído contam como empresa finalizada; o restante (incluindo
+ * em branco) conta como pendente.
+ */
 export function isSituacaoFinalizada(situacao: string | null): boolean {
-  return situacao === "OK" || situacao === "OK-SM";
+  return SITUACOES_FINALIZADAS.includes(normalizarSituacao(situacao));
 }
 
 export interface MovimentoFiscalFieldDef {

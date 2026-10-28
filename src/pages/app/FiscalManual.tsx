@@ -31,7 +31,7 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Cartões",
         detail:
-          "Finalizadas, Pendentes e Total de empresas, cada um com a quantidade e a porcentagem abaixo. Considera a coluna Status: OK e OK-SM contam como finalizadas; as demais como pendentes — em todas as tributações.",
+          "Finalizadas, Pendentes e Total de empresas, cada um com a quantidade e a porcentagem abaixo. Considera a coluna Status: OK, OK-SM e Concluído contam como finalizadas; as demais como pendentes — em todas as tributações.",
       },
       {
         label: "Gráfico por responsável",
@@ -167,12 +167,17 @@ const SECTIONS: ManualSection[] = [
       {
         label: "Colunas",
         detail:
-          "N, UF, Empresa, CPF, Status (OK/FAZENDO/OK-ENT/OK-SM), Prestados e Tomados (OK/SM), ISS Fixo, Carne Leão e Envio/Guia (OK/OK-SM) e Observações (texto).",
+          "N, UF, Empresa, CPF, Status (OK/FAZENDO/OK-ENT/OK-SM), Prestados e Tomados (OK/SM), ISS Fixo, Carne Leão e Envio/Guia (OK/OK-SM) e Observações — editada pelo botão de Ações (lápis), que abre um diálogo; o texto é levado para os meses seguintes até ser alterado.",
       },
       {
         label: "Cores",
         detail:
           "OK e OK-SM em verde, OK-ENT em âmbar, FAZENDO em vermelho e SM em azul, seguindo o padrão dos departamentos.",
+      },
+      {
+        label: "Dashboard",
+        detail:
+          "O Status do Carne Leão alimenta os dashboards do Fiscal: a opção Concluído conta como finalizada e as demais (Andamento, Entradas, Saídas, Pendências e em branco) como pendentes.",
       },
       {
         label: "Filtros",
