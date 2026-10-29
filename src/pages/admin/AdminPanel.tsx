@@ -10,6 +10,7 @@ import CadastroTabelasTab from "./CadastroTabelasTab";
 import CompaniesTab from "./CompaniesTab";
 import DashboardsSection from "./DashboardsSection";
 import DepartmentsTab from "./DepartmentsTab";
+import PermissoesTab from "./PermissoesTab";
 import UsersTab from "./UsersTab";
 import AcessoriasTab from "./AcessoriasTab";
 
@@ -28,6 +29,7 @@ export default function AdminPanel() {
     ? [
         "overview",
         "users",
+        "permissions",
         "departments",
         "companies",
         "tabelas",
@@ -64,6 +66,7 @@ export default function AdminPanel() {
           <div className="min-w-0 flex-1">
             {section === "overview" && <AdminOverview />}
             {section === "users" && <UsersTab />}
+            {section === "permissions" && <PermissoesTab />}
             {section === "departments" && <DepartmentsTab />}
             {section === "companies" && <CompaniesTab />}
             {isTabelas && (

@@ -4773,6 +4773,64 @@ export type Database = {
           },
         ]
       }
+      perfil_permissoes: {
+        Row: {
+          created_at: string
+          permissao_id: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          permissao_id: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string
+          permissao_id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "perfil_permissoes_permissao_id_fkey"
+            columns: ["permissao_id"]
+            referencedRelation: "permissoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "perfil_permissoes_profile_id_fkey"
+            columns: ["profile_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      permissoes: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          id: string
+          nome: string
+          opcoes: string[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome: string
+          opcoes?: string[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome?: string
+          opcoes?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ponto: {
         Row: {
           company_id: string

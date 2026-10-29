@@ -1,0 +1,45 @@
+-- Permissões configuráveis (menu "Permissões" do painel de administração)
+create table if not exists public.permissoes (
+  id uuid primary key default gen_random_uuid(),
+  nome text not null,
+  descricao text,
+  opcoes text[] not null default '{}'::text[],
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create unique index if not exists permissoes_nome_key
+  on public.permissoes (lower(nome));
+
+alter table public.permissoes enable row level security;
+create policy permissoes_admin_all on public.permissoes
+  for all using (public.is_admin()) with check (public.is_admin());
+
+create table if not exists public.perfil_permissoes (
+  profile_id uuid not null references public.profiles(id) on delete cascade,
+  permissao_id uuid not null references public.permissoes(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (profile_id, permissao_id)
+);
+
+create index if not exists perfil_permissoes_permissao_idx
+  on public.perfil_permissoes (permissao_id);
+
+alter table public.perfil_permissoes enable row level security;
+create policy perfil_permissoes_admin_all on public.perfil_permissoes
+  for all using (public.is_admin()) with check (public.is_admin());
+
+-- Permissão inicial: Administrador (as demais entram depois)
+insert into public.permissoes (nome, descricao, opcoes)
+select 'Administrador', 'Acesso total ao painel de administração, usuários e permissões.', array['admin']::text[]
+where not exists (select 1 from public.permissoes);
+
+-- Liga os administradores atuais à permissão Administrador
+insert into public.perfil_permissoes (profile_id, permissao_id)
+select p.id, m.id
+from public.profiles p
+cross join (
+  select id from public.permissoes where 'admin' = any(opcoes) order by created_at limit 1
+) m
+where p.role = 'admin'
+on conflict do nothing;

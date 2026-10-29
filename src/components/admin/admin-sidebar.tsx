@@ -7,6 +7,7 @@ import {
   CloudDownload,
   FileSpreadsheet,
   LayoutDashboard,
+  ShieldCheck,
   Table,
   Users,
   type LucideIcon,
@@ -18,6 +19,7 @@ import { cn } from "@/lib/utils";
 export type AdminSection =
   | "overview"
   | "users"
+  | "permissions"
   | "departments"
   | "companies"
   | "acessorias"
@@ -45,6 +47,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { key: "overview", label: "Visão geral", icon: LayoutDashboard },
   { key: "users", label: "Usuários", icon: Users },
+  { key: "permissions", label: "Permissões", icon: ShieldCheck },
   { key: "departments", label: "Departamentos", icon: Building2 },
   {
     key: "companies",

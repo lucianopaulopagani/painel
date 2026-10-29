@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,22 +12,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DashboardAccessSection } from "@/components/admin/DashboardAccessSection";
-import type { DashboardKey } from "@/lib/dashboards";
-import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { DepartmentMultiSelect } from "@/components/admin/department-multi-select";
-import { AppAccessSection } from "@/components/admin/AppAccessSection";
-import { EmpresasPermissionSection } from "@/components/admin/EmpresasPermissionSection";
+import { PermissoesMultiSelect } from "@/components/admin/PermissoesMultiSelect";
+import {
+  salvarPermissoesDoUsuario,
+  usePermissoes,
+  vinculosKey,
+} from "@/hooks/use-permissoes";
+import { temOpcaoAdmin } from "@/lib/permissoes";
 import { useCreateUser } from "@/hooks/use-users";
-import type { AppAccessKey } from "@/lib/app-access";
-import type { Role } from "@/lib/types";
 
 interface UserFormDialogProps {
   open: boolean;
@@ -38,44 +32,28 @@ export default function UserFormDialog({
   onOpenChange,
 }: UserFormDialogProps) {
   const createMutation = useCreateUser();
+  const queryClient = useQueryClient();
+  const { data: permissoes } = usePermissoes();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<Role>("member");
   const [departmentIds, setDepartmentIds] = useState<string[]>([]);
-  const [dashboardAccess, setDashboardAccess] = useState(false);
-  const [dashboardDepartments, setDashboardDepartments] = useState<
-    DashboardKey[]
-  >([]);
-  const [empresasAccess, setEmpresasAccess] = useState(false);
-  const [empresasFields, setEmpresasFields] = useState<string[]>([]);
-  const [empresasCriar, setEmpresasCriar] = useState(false);
-  const [empresasImportar, setEmpresasImportar] = useState(false);
-  const [empresasBulk, setEmpresasBulk] = useState(false);
-  const [apps, setApps] = useState<Record<AppAccessKey, boolean>>({
-    chat: false,
-    tarefas: false,
-    agenda: false,
-  });
+  const [permissaoIds, setPermissaoIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (open) {
       setFullName("");
       setEmail("");
       setPassword("");
-      setRole("member");
       setDepartmentIds([]);
-      setDashboardAccess(false);
-      setDashboardDepartments([]);
-      setEmpresasAccess(false);
-      setEmpresasFields([]);
-      setEmpresasCriar(false);
-      setEmpresasImportar(false);
-      setEmpresasBulk(false);
-      setApps({ chat: false, tarefas: false, agenda: false });
+      setPermissaoIds([]);
     }
   }, [open]);
+
+  const isAdminSelecionado = (permissoes ?? [])
+    .filter((permissao) => permissaoIds.includes(permissao.id))
+    .some((permissao) => temOpcaoAdmin(permissao.opcoes));
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -88,23 +66,17 @@ export default function UserFormDialog({
       return;
     }
     try {
-      await createMutation.mutateAsync({
+      const userId = await createMutation.mutateAsync({
         full_name: fullName.trim(),
         email: email.trim(),
         password,
-        role,
+        role: isAdminSelecionado ? "admin" : "member",
         department_ids: departmentIds,
-        dashboard_access: dashboardAccess,
-        dashboard_departments: dashboardDepartments,
-        empresas_access: empresasAccess,
-        empresas_fields: empresasFields,
-        empresas_criar: empresasCriar,
-        empresas_importar: empresasImportar,
-        empresas_bulk: empresasBulk,
-        chat_access: apps.chat,
-        tarefas_access: apps.tarefas,
-        agenda_access: apps.agenda,
       });
+      if (userId) {
+        await salvarPermissoesDoUsuario(userId, permissaoIds);
+        await queryClient.invalidateQueries({ queryKey: vinculosKey });
+      }
       toast.success("Usuário criado com sucesso.");
       onOpenChange(false);
     } catch (err) {
@@ -120,8 +92,8 @@ export default function UserFormDialog({
         <DialogHeader>
           <DialogTitle>Novo usuário</DialogTitle>
           <DialogDescription>
-            Cria o acesso (e-mail e senha) e vincula o usuário a um ou mais
-            departamentos.
+            Cria o acesso (e-mail e senha) e vincula as permissões e os
+            departamentos do usuário.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -158,18 +130,6 @@ export default function UserFormDialog({
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label>Papel</Label>
-            <Select value={role} onValueChange={(v) => setRole(v as Role)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="member">Membro</SelectItem>
-                <SelectItem value="admin">Administrador</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-1.5">
             <Label>Departamentos de acesso</Label>
             <DepartmentMultiSelect
               value={departmentIds}
@@ -180,43 +140,9 @@ export default function UserFormDialog({
               acessa nenhum departamento.
             </p>
           </div>
-          <div className="flex items-center justify-between gap-4 rounded-md border p-3">
-            <div>
-              <Label htmlFor="user-dashboard" className="text-sm font-medium">
-                Dashboard geral
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                Permite visualizar o dashboard geral com a visão de cada
-                departamento (Fiscal, Pessoal e Societário).
-              </p>
-            </div>
-            <Switch
-              id="user-dashboard"
-              checked={dashboardAccess}
-              onCheckedChange={setDashboardAccess}
-            />
-          </div>
-          <DashboardAccessSection
-            value={dashboardDepartments}
-            onChange={setDashboardDepartments}
-          />
-          <EmpresasPermissionSection
-            access={empresasAccess}
-            fields={empresasFields}
-            criar={empresasCriar}
-            importar={empresasImportar}
-            bulk={empresasBulk}
-            onAccessChange={setEmpresasAccess}
-            onFieldsChange={setEmpresasFields}
-            onCriarChange={setEmpresasCriar}
-            onImportarChange={setEmpresasImportar}
-            onBulkChange={setEmpresasBulk}
-          />
-          <AppAccessSection
-            apps={apps}
-            onChange={(key, value) =>
-              setApps((prev) => ({ ...prev, [key]: value }))
-            }
+          <PermissoesMultiSelect
+            value={permissaoIds}
+            onChange={setPermissaoIds}
           />
           <DialogFooter>
             <Button

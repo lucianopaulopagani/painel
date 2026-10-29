@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Camera } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/components/ui/sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -13,23 +14,20 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { DepartmentMultiSelect } from "@/components/admin/department-multi-select";
-import { AppAccessSection } from "@/components/admin/AppAccessSection";
-import { EmpresasPermissionSection } from "@/components/admin/EmpresasPermissionSection";
-import { DashboardAccessSection } from "@/components/admin/DashboardAccessSection";
-import type { DashboardKey } from "@/lib/dashboards";
+import { PermissoesMultiSelect } from "@/components/admin/PermissoesMultiSelect";
+import {
+  permissoesKeys,
+  salvarPermissoesDoUsuario,
+  usePermissoes,
+  usePermissoesDoUsuario,
+  vinculosKey,
+} from "@/hooks/use-permissoes";
+import { temOpcaoAdmin } from "@/lib/permissoes";
 import { useUpdateUser } from "@/hooks/use-users";
 import { fileToDataUrl } from "@/hooks/use-own-profile";
 import { getInitials } from "@/lib/utils";
-import type { ProfileWithDepartments, Role } from "@/lib/types";
+import type { ProfileWithDepartments } from "@/lib/types";
 
 interface UserEditDialogProps {
   user: ProfileWithDepartments | null;
@@ -43,25 +41,15 @@ export default function UserEditDialog({
   onOpenChange,
 }: UserEditDialogProps) {
   const updateMutation = useUpdateUser();
+  const queryClient = useQueryClient();
+
+  const { data: permissoes } = usePermissoes();
+  const { data: permissoesDoUsuario } = usePermissoesDoUsuario(user?.id);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<Role>("member");
   const [departmentIds, setDepartmentIds] = useState<string[]>([]);
-  const [dashboardAccess, setDashboardAccess] = useState(false);
-  const [dashboardDepartments, setDashboardDepartments] = useState<
-    DashboardKey[]
-  >([]);
-  const [empresasAccess, setEmpresasAccess] = useState(false);
-  const [empresasFields, setEmpresasFields] = useState<string[]>([]);
-  const [empresasCriar, setEmpresasCriar] = useState(false);
-  const [empresasImportar, setEmpresasImportar] = useState(false);
-  const [empresasBulk, setEmpresasBulk] = useState(false);
-  const [apps, setApps] = useState<Record<AppAccessKey, boolean>>({
-    chat: false,
-    tarefas: false,
-    agenda: false,
-  });
+  const [permissaoIds, setPermissaoIds] = useState<string[]>([]);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -69,25 +57,22 @@ export default function UserEditDialog({
     if (open && user) {
       setFullName(user.full_name);
       setEmail(user.email);
-      setRole(user.role);
       setDepartmentIds(user.departments.map((d) => d.id));
-      setDashboardAccess(user.dashboard_access);
-      setDashboardDepartments(
-        (user.dashboard_departments ?? []) as DashboardKey[]
-      );
-      setEmpresasAccess(user.empresas_access);
-      setEmpresasFields(user.empresas_fields ?? []);
-      setEmpresasCriar(user.empresas_criar);
-      setEmpresasImportar(user.empresas_importar);
-      setEmpresasBulk(user.empresas_bulk);
-      setApps({
-        chat: user.chat_access,
-        tarefas: user.tarefas_access,
-        agenda: user.agenda_access,
-      });
       setAvatarUrl(user.avatar_url ?? null);
+      setPermissaoIds([]);
     }
   }, [open, user]);
+
+  // Permissões salvas; administradores antigos entram com a permissão Admin marcada.
+  useEffect(() => {
+    if (!open || !user || !permissoes || !permissoesDoUsuario) return;
+    const ids = [...permissoesDoUsuario];
+    if (ids.length === 0 && user.role === "admin") {
+      const admin = permissoes.find((item) => temOpcaoAdmin(item.opcoes));
+      if (admin) ids.push(admin.id);
+    }
+    setPermissaoIds(ids);
+  }, [open, user, permissoes, permissoesDoUsuario]);
 
   const handlePhotoChange = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -104,6 +89,10 @@ export default function UserEditDialog({
     event.target.value = "";
   };
 
+  const isAdminSelecionado = (permissoes ?? [])
+    .filter((permissao) => permissaoIds.includes(permissao.id))
+    .some((permissao) => temOpcaoAdmin(permissao.opcoes));
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -116,20 +105,15 @@ export default function UserEditDialog({
         id: user.id,
         full_name: fullName.trim(),
         email: email.trim(),
-        role,
+        role: isAdminSelecionado ? "admin" : "member",
         department_ids: departmentIds,
-        dashboard_access: dashboardAccess,
-        dashboard_departments: dashboardDepartments,
-        empresas_access: empresasAccess,
-        empresas_fields: empresasFields,
-        empresas_criar: empresasCriar,
-        empresas_importar: empresasImportar,
-        empresas_bulk: empresasBulk,
-        chat_access: apps.chat,
-        tarefas_access: apps.tarefas,
-        agenda_access: apps.agenda,
         avatar_url: avatarUrl || null,
       });
+      await salvarPermissoesDoUsuario(user.id, permissaoIds);
+      await queryClient.invalidateQueries({
+        queryKey: permissoesKeys.doUsuario(user.id),
+      });
+      await queryClient.invalidateQueries({ queryKey: vinculosKey });
       toast.success("Usuário atualizado.");
       onOpenChange(false);
     } catch (err) {
@@ -145,7 +129,7 @@ export default function UserEditDialog({
         <DialogHeader>
           <DialogTitle>Editar usuário</DialogTitle>
           <DialogDescription>
-            Ajuste o papel e os departamentos de acesso do usuário.
+            Ajuste os dados, as permissões e os departamentos de acesso.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -211,18 +195,6 @@ export default function UserEditDialog({
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label>Papel</Label>
-            <Select value={role} onValueChange={(v) => setRole(v as Role)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="member">Membro</SelectItem>
-                <SelectItem value="admin">Administrador</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-1.5">
             <Label>Departamentos de acesso</Label>
             <DepartmentMultiSelect
               value={departmentIds}
@@ -233,43 +205,9 @@ export default function UserEditDialog({
               acessa nenhum departamento.
             </p>
           </div>
-          <div className="flex items-center justify-between gap-4 rounded-md border p-3">
-            <div>
-              <Label htmlFor="edit-dashboard" className="text-sm font-medium">
-                Dashboard geral
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                Permite visualizar o dashboard geral com a visão de cada
-                departamento (Fiscal, Pessoal e Societário).
-              </p>
-            </div>
-            <Switch
-              id="edit-dashboard"
-              checked={dashboardAccess}
-              onCheckedChange={setDashboardAccess}
-            />
-          </div>
-          <DashboardAccessSection
-            value={dashboardDepartments}
-            onChange={setDashboardDepartments}
-          />
-          <EmpresasPermissionSection
-            access={empresasAccess}
-            fields={empresasFields}
-            criar={empresasCriar}
-            importar={empresasImportar}
-            bulk={empresasBulk}
-            onAccessChange={setEmpresasAccess}
-            onFieldsChange={setEmpresasFields}
-            onCriarChange={setEmpresasCriar}
-            onImportarChange={setEmpresasImportar}
-            onBulkChange={setEmpresasBulk}
-          />
-          <AppAccessSection
-            apps={apps}
-            onChange={(key, value) =>
-              setApps((prev) => ({ ...prev, [key]: value }))
-            }
+          <PermissoesMultiSelect
+            value={permissaoIds}
+            onChange={setPermissaoIds}
           />
           <DialogFooter>
             <Button

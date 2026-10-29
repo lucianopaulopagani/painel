@@ -23,6 +23,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useUsers, useDeleteUser } from "@/hooks/use-users";
+import {
+  usePermissoes,
+  useVinculosPermissoes,
+} from "@/hooks/use-permissoes";
 import { getInitials } from "@/lib/utils";
 import UserFormDialog from "@/components/admin/UserFormDialog";
 import UserEditDialog from "@/components/admin/UserEditDialog";
@@ -37,7 +41,20 @@ type DialogState =
 
 export default function UsersTab() {
   const { data: users, isLoading, isError } = useUsers();
+  const { data: permissoes } = usePermissoes();
+  const { data: vinculos } = useVinculosPermissoes();
   const deleteMutation = useDeleteUser();
+
+  /** Permissões de cada usuário, para a coluna da listagem. */
+  const permissoesPorUsuario = new Map<string, string[]>();
+  (vinculos ?? []).forEach((vinculo) => {
+    const nomes = permissoesPorUsuario.get(vinculo.profile_id) ?? [];
+    const nome = permissoes?.find(
+      (permissao) => permissao.id === vinculo.permissao_id
+    )?.nome;
+    if (nome) nomes.push(nome);
+    permissoesPorUsuario.set(vinculo.profile_id, nomes);
+  });
 
   const [dialog, setDialog] = useState<DialogState>(null);
   const [deleteTarget, setDeleteTarget] =
@@ -90,7 +107,7 @@ export default function UsersTab() {
               <TableRow>
                 <TableHead>Usuário</TableHead>
                 <TableHead>Departamento</TableHead>
-                <TableHead>Papel</TableHead>
+                <TableHead>Permissões</TableHead>
                 <TableHead>Criado em</TableHead>
                 <TableHead className="w-32 text-right">Ações</TableHead>
               </TableRow>
@@ -131,11 +148,19 @@ export default function UsersTab() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant={u.role === "admin" ? "default" : "secondary"}
-                      >
-                        {u.role === "admin" ? "Admin" : "Membro"}
-                      </Badge>
+                      {(permissoesPorUsuario.get(u.id) ?? []).length === 0 ? (
+                        <span className="text-muted-foreground">—</span>
+                      ) : (
+                        <div className="flex flex-wrap gap-1">
+                          {(permissoesPorUsuario.get(u.id) ?? []).map(
+                            (nome) => (
+                              <Badge key={nome} variant="secondary">
+                                {nome}
+                              </Badge>
+                            )
+                          )}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {new Date(u.created_at).toLocaleDateString("pt-BR")}

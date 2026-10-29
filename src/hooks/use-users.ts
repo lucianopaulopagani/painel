@@ -10,6 +10,7 @@ export const profilesKeys = {
 interface FunctionResponse {
   ok: boolean;
   error?: string;
+  user_id?: string;
 }
 
 /** Extrai a mensagem devolvida pela função de backend quando a chamada falha. */
@@ -100,6 +101,7 @@ export function useCreateUser() {
       if (!data?.ok) {
         throw new Error(data?.error ?? "Não foi possível criar o usuário.");
       }
+      return data.user_id ?? null;
     },
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: profilesKeys.all }),
