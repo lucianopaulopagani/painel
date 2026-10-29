@@ -1,15 +1,12 @@
 import { useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  CalendarDays,
   Calculator,
   Camera,
   ChevronDown,
   KeyRound,
   LayoutDashboard,
-  ListChecks,
   LogOut,
-  MessageCircle,
   Palette,
   RefreshCw,
   ShieldCheck,
@@ -33,7 +30,6 @@ import { APP_VERSION } from "@/lib/app-version";
 import { fileToDataUrl, useUpdateOwnProfile } from "@/hooks/use-own-profile";
 import { ChangePasswordDialog } from "@/components/user/ChangePasswordDialog";
 import { getInitials } from "@/lib/utils";
-import { hasAppAccess } from "@/lib/app-access";
 
 interface PanelHeaderProps {
   title: string;
@@ -131,48 +127,6 @@ export function PanelHeader({ title, subtitle, children }: PanelHeaderProps) {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          {hasAppAccess(profile, "chat") && (
-          <a
-            href="/chat"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0"
-            title="Abrir o Chat interno em nova janela"
-          >
-            <Button variant="ghost" size="sm" className="gap-2">
-              <MessageCircle className="h-4 w-4" />
-              <span className="hidden sm:inline">Chat</span>
-            </Button>
-          </a>
-          )}
-          {hasAppAccess(profile, "tarefas") && (
-          <a
-            href="/tarefas"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0"
-            title="Abrir o Controle de Tarefas em nova janela"
-          >
-            <Button variant="ghost" size="sm" className="gap-2">
-              <ListChecks className="h-4 w-4" />
-              <span className="hidden sm:inline">Tarefas</span>
-            </Button>
-          </a>
-          )}
-          {hasAppAccess(profile, "agenda") && (
-          <a
-            href="/agenda"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0"
-            title="Abrir a Agenda em nova janela"
-          >
-            <Button variant="ghost" size="sm" className="gap-2">
-              <CalendarDays className="h-4 w-4" />
-              <span className="hidden sm:inline">Agenda</span>
-            </Button>
-          </a>
-          )}
           <Link to="/simulador" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2">
               <Calculator className="h-4 w-4" />
