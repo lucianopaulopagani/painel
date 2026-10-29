@@ -70,13 +70,19 @@ interface CarneLeaoTableProps {
    * Responsável e mês). A subtabela apenas separa as de Carne Leão.
    */
   companies: CompanyWithDepartments[];
+  /** Permissão "somente visualizar": desabilita a edição das células. */
+  canEdit?: boolean;
 }
 
 /**
  * Subtabela do Carne Leão — exibida dentro do Movimento Fiscal quando a
  * tributação "Carne Leão" é selecionada no filtro.
  */
-export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
+export function CarneLeaoTable({
+  mes,
+  companies,
+  canEdit = true,
+}: CarneLeaoTableProps) {
   const [busca, setBusca] = useState({
     numero: "",
     uf: "",
@@ -201,6 +207,20 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
     patchKey: string,
     toneOverride?: string
   ) => {
+    if (!canEdit) {
+      return (
+        <span
+          className={cn(
+            "block h-7 truncate rounded px-1 py-1 text-xs font-semibold",
+            toneOverride ??
+              resolveFieldTone(CARNE_LEAO_TRIBUTACAO, patchKey, value) ??
+              TONE[value]
+          )}
+        >
+          {value || "—"}
+        </span>
+      );
+    }
     return (
     <Select
       value={value === "" ? "none" : value}
@@ -452,6 +472,7 @@ export function CarneLeaoTable({ mes, companies }: CarneLeaoTableProps) {
                         size="icon"
                         className="h-6 w-6 shrink-0"
                         title="Ações — Observações"
+                        disabled={!canEdit}
                         onClick={() => {
                           setObsText(effectiveObservacoes(company.id) ?? "");
                           setObsDialog({

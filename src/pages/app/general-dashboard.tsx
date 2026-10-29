@@ -9,6 +9,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/context/auth";
+import { useMeusAcessos } from "@/hooks/use-permissoes";
+import { useAllDepartmentSubmenus } from "@/hooks/use-department-submenus";
+import { useDepartments } from "@/hooks/use-departments";
 import {
   CONTABIL_DEPARTMENT_NAME,
   FISCAL_DEPARTMENT_NAME,
@@ -60,13 +63,64 @@ const DEPT_SUBMENUS: Record<DashboardKey, { key: string; label: string }[]> = {
 export default function GeneralDashboard() {
   const { profile } = useAuth();
   const isAdmin = profile?.role === "admin";
+  const acessos = useMeusAcessos();
+  const { data: allSubmenus } = useAllDepartmentSubmenus();
+  const { data: departments } = useDepartments();
   // Dashboard liberado por usuário no cadastro (profiles.dashboard_departments).
   const allowedDashboards = new Set(profile?.dashboard_departments ?? []);
 
-  // Dashboards visíveis: admin vê todos; os demais, os liberados no cadastro.
-  const visibleDashboards = DASHBOARDS.filter(
-    (dashboard) => isAdmin || allowedDashboards.has(dashboard.key)
-  );
+  /** Departamento do cadastro (id) de cada dashboard. */
+  const departmentIdByDashboard = (key: DashboardKey) => {
+    const nome = {
+      fiscal: FISCAL_DEPARTMENT_NAME,
+      pessoal: PESSOAL_DEPARTMENT_NAME,
+      societario: SOCIETARIO_DEPARTMENT_NAME,
+      contabil: CONTABIL_DEPARTMENT_NAME,
+      "nota-fiscal": NOTA_FISCAL_DEPARTMENT_NAME,
+    }[key];
+    return (departments ?? []).find((item) => item.name === nome)?.id;
+  };
+
+  /** Departamentos com dashboard geral ou de subdepartamento liberado. */
+  const liberadosPorPermissao = new Set<DashboardKey>();
+  for (const dashboard of DASHBOARDS) {
+    const departmentId = departmentIdByDashboard(dashboard.key);
+    const acesso = departmentId
+      ? acessos.porDepartamento.get(departmentId)
+      : undefined;
+    if (acesso && (acesso.dashboardGeral || acesso.dashboards.size > 0)) {
+      liberadosPorPermissao.add(dashboard.key);
+    }
+  }
+
+  // Dashboards visíveis: admin vê todos; demais, os liberados na permissão
+  // (ou, sem permissões cadastradas, os liberados no cadastro antigo).
+  const visibleDashboards = isAdmin
+    ? DASHBOARDS
+    : acessos.temPermissoes
+      ? DASHBOARDS.filter((dashboard) =>
+          liberadosPorPermissao.has(dashboard.key)
+        )
+      : DASHBOARDS.filter((dashboard) =>
+          allowedDashboards.has(dashboard.key)
+        );
+
+  /** Nomes dos submenus com dashboard liberado. */
+  const submenusLiberados = new Set<string>();
+  for (const acesso of acessos.porDepartamento.values()) {
+    for (const submenuId of acesso.dashboards) {
+      const nome = (allSubmenus ?? []).find(
+        (submenu) => submenu.id === submenuId
+      )?.name;
+      if (nome) submenusLiberados.add(nome);
+    }
+  }
+
+  const submenusDoDashboard = (key: DashboardKey) => {
+    const lista = DEPT_SUBMENUS[key];
+    if (isAdmin || !acessos.temPermissoes) return lista;
+    return lista.filter((submenu) => submenusLiberados.has(submenu.label));
+  };
 
   const [activeDept, setActiveDept] = useState<DashboardKey | null>(null);
   const [activeSubmenu, setActiveSubmenu] = useState<
@@ -77,8 +131,10 @@ export default function GeneralDashboard() {
   const activeLabel = active
     ? (DASHBOARDS.find((dashboard) => dashboard.key === active)?.label ?? "")
     : "";
-  const submenus = active ? DEPT_SUBMENUS[active] : [];
-  const submenuKey = active ? (activeSubmenu[active] ?? submenus[0].key) : null;
+  const submenus = active ? submenusDoDashboard(active) : [];
+  const submenuKey = active
+    ? (activeSubmenu[active] ?? submenus[0]?.key ?? null)
+    : null;
   const submenuLabel =
     submenus.find((submenu) => submenu.key === submenuKey)?.label ?? "";
 

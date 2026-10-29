@@ -1,0 +1,72 @@
+-- Permissões por departamento: vínculo da permissão com o departamento
+alter table public.permissoes
+  add column if not exists department_id uuid references public.departments(id) on delete set null;
+
+create index if not exists permissoes_department_idx on public.permissoes (department_id);
+
+-- O usuário precisa ler as próprias permissões para o painel respeitá-las
+create policy perfil_permissoes_own_read on public.perfil_permissoes
+  for select using (profile_id = auth.uid());
+
+create policy permissoes_own_read on public.permissoes
+  for select using (
+    exists (
+      select 1 from public.perfil_permissoes pp
+      where pp.permissao_id = permissoes.id and pp.profile_id = auth.uid()
+    )
+  );
+
+-- Quem tem a marcação de responsabilidade só enxerga as empresas em que é responsável
+create or replace function public.user_so_responsavel()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.perfil_permissoes pp
+    join public.permissoes p on p.id = pp.permissao_id
+    where pp.profile_id = auth.uid()
+      and 'empresas:responsavel' = any (p.opcoes)
+  );
+$$;
+
+create policy companies_responsavel_only on public.companies
+  as restrictive
+  for select
+  using (
+    public.is_admin()
+    or not public.user_so_responsavel()
+    or exists (
+      select 1
+      from public.company_departments cd
+      join public.profile_departments pd on pd.department_id = cd.department_id
+      where cd.company_id = companies.id
+        and pd.profile_id = auth.uid()
+        and (
+          auth.uid() = any (cd.responsible_profile_ids)
+          or exists (
+            select 1
+            from jsonb_each(coalesce(cd.subdepartment_responsibles, '{}'::jsonb)) e
+            where e.value ? auth.uid()::text
+          )
+        )
+    )
+  );
+
+-- Permissão pronta: Departamento Fiscal
+insert into public.permissoes (nome, descricao, opcoes, department_id)
+select
+  'Departamento Fiscal',
+  'Acesso ao Departamento Fiscal: submenus liberados, dashboards do departamento e somente empresas em que o usuário é responsável.',
+  array['dash:geral', 'empresas:responsavel']
+    || coalesce(array_agg(distinct 'sub:' || s.id || ':edit') filter (where s.id is not null), '{}'::text[])
+    || coalesce(array_agg(distinct 'dash:sub:' || s.id) filter (where s.id is not null), '{}'::text[]),
+  d.id
+from public.departments d
+left join public.department_submenus s on s.department_id = d.id
+where d.name = 'Depart. Fiscal'
+group by d.id
+on conflict (lower(nome)) do nothing;

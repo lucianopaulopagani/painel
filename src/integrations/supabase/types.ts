@@ -4807,6 +4807,7 @@ export type Database = {
       permissoes: {
         Row: {
           created_at: string
+          department_id: string | null
           descricao: string | null
           id: string
           nome: string
@@ -4815,6 +4816,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          department_id?: string | null
           descricao?: string | null
           id?: string
           nome: string
@@ -4823,13 +4825,21 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          department_id?: string | null
           descricao?: string | null
           id?: string
           nome?: string
           opcoes?: string[]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "permissoes_department_id_fkey"
+            columns: ["department_id"]
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ponto: {
         Row: {
@@ -5110,6 +5120,10 @@ export type Database = {
         Returns: boolean
       }
       user_can_edit_companies: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      user_so_responsavel: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }

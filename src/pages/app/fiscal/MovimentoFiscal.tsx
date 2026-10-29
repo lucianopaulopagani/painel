@@ -1,3 +1,4 @@
+import { useSomenteLeitura } from "@/context/acesso-modulo";
 import { useState } from "react";
 import { Check, FilePlus2, Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
@@ -145,12 +146,13 @@ export function MovimentoFiscal() {
   const generateMutation = useGenerateMovimentoFiscal(mesSeguinte);
 
   const isAdmin = profile?.role === "admin";
+  // Permissão "somente visualizar" no submenu Fiscal.
+  const somenteLeitura = useSomenteLeitura();
   // Usuários editam meses até a referência (anterior ao mês em curso) e o
   // mês em curso depois que ele é liberado pelo administrador.
   const canEdit =
-    isAdmin ||
-    mes <= mesAtual ||
-    (mes === mesSeguinte && !!nextMonthExists);
+    !somenteLeitura &&
+    (isAdmin || mes <= mesAtual || (mes === mesSeguinte && !!nextMonthExists));
 
   const fiscal = findDepartmentByName(departments, FISCAL_DEPARTMENT_NAME);
 
@@ -535,13 +537,17 @@ export function MovimentoFiscal() {
       {!isLoading &&
         !isError &&
         tributacaoSelecionada === CARNE_LEAO_TRIBUTACAO && (
-          <CarneLeaoTable mes={mes} companies={responsavelFiltered} />
+          <CarneLeaoTable mes={mes} companies={responsavelFiltered} canEdit={canEdit} />
         )}
 
       {!isLoading &&
         !isError &&
         tributacaoSelecionada === SIMPLES_NACIONAL_TRIBUTACAO && (
-          <SimplesNacionalTable mes={mes} companies={responsavelFiltered} />
+          <SimplesNacionalTable
+            mes={mes}
+            companies={responsavelFiltered}
+            canEdit={canEdit}
+          />
         )}
 
       {!isLoading &&

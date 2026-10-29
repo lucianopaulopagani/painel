@@ -100,6 +100,8 @@ interface SimplesNacionalTableProps {
    * Responsável e mês). A subtabela apenas separa as de Simples Nacional.
    */
   companies: CompanyWithDepartments[];
+  /** Permissão "somente visualizar": desabilita a edição das células. */
+  canEdit?: boolean;
 }
 
 /**
@@ -110,6 +112,7 @@ interface SimplesNacionalTableProps {
 export function SimplesNacionalTable({
   mes,
   companies,
+  canEdit = true,
 }: SimplesNacionalTableProps) {
   const [busca, setBusca] = useState<Record<string, string>>({
     numero: "",
@@ -286,6 +289,18 @@ export function SimplesNacionalTable({
     patchKey: string,
     toneOverride?: string
   ) => {
+    if (!canEdit) {
+      return (
+        <span
+          className={cn(
+            "block h-7 truncate rounded px-1 py-1 text-[11px] font-semibold",
+            toneOverride ?? TONE[value]
+          )}
+        >
+          {value || "—"}
+        </span>
+      );
+    }
     return (
     <Select
       value={value === "" ? "none" : value}
@@ -534,6 +549,7 @@ export function SimplesNacionalTable({
                                 size="icon"
                                 className="h-6 w-6 shrink-0"
                                 title="Ações — valores (R$)"
+                                disabled={!canEdit}
                                 onClick={() => openMoneyDialog(company, record)}
                               >
                                 <Banknote className="h-3.5 w-3.5" />
@@ -544,6 +560,7 @@ export function SimplesNacionalTable({
                                 size="icon"
                                 className="h-6 w-6 shrink-0"
                                 title="Ações — observações"
+                                disabled={!canEdit}
                                 onClick={() => {
                                   setObsText(
                                     effectiveObservacoes(company.id) ?? ""

@@ -10,6 +10,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PanelHeader } from "@/components/shell/panel-header";
+import { AcessoModuloProvider } from "@/context/acesso-modulo";
+import { useMeusAcessos } from "@/hooks/use-permissoes";
+import { nivelDoSubmenu, type PermissaoNivel } from "@/lib/permissoes";
 import { useAuth } from "@/context/auth";
 import { useDepartments } from "@/hooks/use-departments";
 import { useAllDepartmentSubmenus } from "@/hooks/use-department-submenus";
@@ -53,6 +56,8 @@ interface ModuleDef {
   key: string;
   label: string;
   render: () => JSX.Element;
+  /** Nível do usuário no módulo (padrão: edição). */
+  nivel?: PermissaoNivel;
 }
 
 /** Nome do departamento (cadastro) de cada painel. */
@@ -93,6 +98,7 @@ export default function DepartmentPanel() {
   const { profile } = useAuth();
   const { data: departments } = useDepartments();
   const { data: allSubmenus } = useAllDepartmentSubmenus();
+  const acessos = useMeusAcessos();
   const [activePanel, setActivePanel] = useState<AvailablePanelKey | null>(null);
   const [activeModule, setActiveModule] = useState<
     Partial<Record<AvailablePanelKey, string>>
@@ -100,25 +106,35 @@ export default function DepartmentPanel() {
 
   if (!profile) return null;
 
-  const hasFiscalAccess =
+  /** Departamento do cadastro (id) a partir do nome usado nos painéis. */
+  const departmentIdByName = (name: string) =>
+    (departments ?? []).find((department) => department.name === name)?.id;
+
+  /** Acesso ao painel: admin, vínculo no cadastro de usuários ou permissão. */
+  const hasDepartmentAccess = (name: string) => {
+    if (profile.role === "admin") return true;
+    if (profile.departments.some((d) => d.name === name)) return true;
+    const departmentId = departmentIdByName(name);
+    return Boolean(departmentId && acessos.porDepartamento.has(departmentId));
+  };
+
+  const hasFiscalAccess = hasDepartmentAccess(FISCAL_DEPARTMENT_NAME);
+  const hasSocietarioAccess = hasDepartmentAccess(SOCIETARIO_DEPARTMENT_NAME);
+  const hasPessoalAccess = hasDepartmentAccess(PESSOAL_DEPARTMENT_NAME);
+  const hasContabilAccess = hasDepartmentAccess(CONTABIL_DEPARTMENT_NAME);
+  const hasNotaFiscalAccess = hasDepartmentAccess(NOTA_FISCAL_DEPARTMENT_NAME);
+
+  /** O dashboard geral aparece se o usuário tem algum dashboard liberado. */
+  const hasDashboardAccess =
     profile.role === "admin" ||
-    profile.departments.some((d) => d.name === FISCAL_DEPARTMENT_NAME);
-  const hasSocietarioAccess =
-    profile.role === "admin" ||
-    profile.departments.some((d) => d.name === SOCIETARIO_DEPARTMENT_NAME);
-  const hasPessoalAccess =
-    profile.role === "admin" ||
-    profile.departments.some((d) => d.name === PESSOAL_DEPARTMENT_NAME);
-  const hasContabilAccess =
-    profile.role === "admin" ||
-    profile.departments.some((d) => d.name === CONTABIL_DEPARTMENT_NAME);
-  const hasNotaFiscalAccess =
-    profile.role === "admin" ||
-    profile.departments.some((d) => d.name === NOTA_FISCAL_DEPARTMENT_NAME);
+    !acessos.temPermissoes ||
+    Array.from(acessos.porDepartamento.values()).some(
+      (acesso) => acesso.dashboardGeral || acesso.dashboards.size > 0
+    );
 
   const availablePanels: { key: AvailablePanelKey; label: string }[] = [
-    // Dashboard geral — acessível a todos; mostra os departamentos do usuário.
-    { key: "dashboard", label: "Dashboard geral" },
+    // Dashboard geral — conforme os dashboards liberados na permissão.
+    hasDashboardAccess && { key: "dashboard", label: "Dashboard geral" },
     hasFiscalAccess && { key: "fiscal", label: "Fiscal" },
     hasPessoalAccess && { key: "pessoal", label: "Pessoal" },
     hasSocietarioAccess && { key: "societario", label: "Societário" },
@@ -146,16 +162,30 @@ export default function DepartmentPanel() {
           (department) => department.name === deptName
         )?.id
       : undefined;
+    // Administrador enxerga todos os submenus, com ou sem permissões.
+    const permissoesDoDepartamento =
+      profile.role === "admin" || !deptId
+        ? undefined
+        : acessos.porDepartamento.get(deptId);
     const submenus = (allSubmenus ?? [])
       .filter((submenu) => submenu.department_id === deptId)
+      // Com permissões cadastradas, só entram os submenus liberados.
+      .filter(
+        (submenu) =>
+          !permissoesDoDepartamento ||
+          permissoesDoDepartamento.submenus.has(submenu.id)
+      )
       .sort((a, b) => a.position - b.position);
     for (const submenu of submenus) {
       const render = SUBMENU_RENDERERS[submenu.name];
+      const nivel = permissoesDoDepartamento?.submenus.get(submenu.id) ?? "edit";
       modules.push({
         key: submenu.id,
         label: submenu.name,
         // Subdepartamentos sem tela própria ficam como "em desenvolvimento".
-        render: render ?? (() => <DepartmentDashboard title={submenu.name} />),
+        render: render ??
+          (() => <DepartmentDashboard title={submenu.name} />),
+        nivel,
       });
     }
     modules.push({
@@ -229,6 +259,10 @@ export default function DepartmentPanel() {
   const currentModuleKey = activeModule[active] ?? modules[0].key;
   const currentModule =
     modules.find((module) => module.key === currentModuleKey) ?? modules[0];
+  const nivelModulo =
+    currentModule.nivel ??
+    nivelDoSubmenu(acessos, departmentIdByName(PANEL_DEPARTMENT_NAME[active] ?? ""), currentModule.key) ??
+    "edit";
 
   const selectDepartment = (key: AvailablePanelKey) => {
     setActivePanel(key);
@@ -289,7 +323,9 @@ export default function DepartmentPanel() {
       </nav>
 
       <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-8 sm:px-6">
-        {currentModule.render()}
+        <AcessoModuloProvider nivel={nivelModulo}>
+          {currentModule.render()}
+        </AcessoModuloProvider>
       </main>
     </div>
   );

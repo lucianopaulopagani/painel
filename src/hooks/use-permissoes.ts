@@ -1,11 +1,19 @@
+import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/context/auth";
+import {
+  resolverAcessos,
+  type Acessos,
+  type PermissaoRegistro,
+} from "@/lib/permissoes";
 
 export interface Permissao {
   id: string;
   nome: string;
   descricao: string | null;
+  department_id: string | null;
   opcoes: string[];
   created_at: string;
   updated_at: string;
@@ -37,6 +45,29 @@ export interface PermissaoInput {
   nome: string;
   descricao: string | null;
   opcoes: string[];
+  department_id: string | null;
+}
+
+/** Permissões do usuário logado, já resolvidas em acessos por departamento. */
+export function useMeusAcessos(): Acessos {
+  const { profile } = useAuth();
+  const { data } = useQuery({
+    queryKey: ["meus-acessos", profile?.id ?? ""],
+    enabled: Boolean(profile?.id),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("perfil_permissoes")
+        .select("permissoes(id, nome, descricao, opcoes, department_id)")
+        .eq("profile_id", profile?.id as string);
+      if (error) throw error;
+      const lista = (data ?? [])
+        .map((row) => row.permissoes as PermissaoRegistro | null)
+        .filter((item): item is PermissaoRegistro => Boolean(item));
+      return lista;
+    },
+  });
+
+  return useMemo(() => resolverAcessos(data ?? []), [data]);
 }
 
 export function useCreatePermissao() {
