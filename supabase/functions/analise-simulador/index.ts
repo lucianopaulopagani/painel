@@ -88,7 +88,12 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => null);
     const perfil = body?.perfil === "comercio" ? "comercio" : "servicos";
     const dados = body?.dados;
-    if (!dados || typeof dados !== "object" || !dados.caso) {
+    if (
+      !dados ||
+      typeof dados !== "object" ||
+      Array.isArray(dados) ||
+      Object.keys(dados as Record<string, unknown>).length === 0
+    ) {
       return json(
         { error: { message: "Envie o caso do simulador para a análise." } },
         400
@@ -144,6 +149,7 @@ Deno.serve(async (req) => {
       } catch {
         /* mantém a mensagem padrão */
       }
+      console.error("analise-simulador: IA respondeu", response.status, message);
       return json({ error: { message } }, response.status);
     }
 
@@ -158,6 +164,7 @@ Deno.serve(async (req) => {
             .trim();
 
     if (!texto) {
+      console.error("analise-simulador: resposta sem texto", JSON.stringify(data).slice(0, 400));
       return json(
         { error: { message: "A IA não devolveu texto. Tente novamente." } },
         502
@@ -166,6 +173,7 @@ Deno.serve(async (req) => {
 
     return json({ analise: texto });
   } catch (error) {
+    console.error("analise-simulador:", error);
     return json(
       {
         error: {
