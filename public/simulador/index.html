@@ -94,6 +94,10 @@ td.dest{font-weight:800;color:var(--ouro-forte)}
 .caso{background:var(--bg2);border:1px solid var(--linha);border-radius:16px;padding:26px 28px;margin-bottom:22px;box-shadow:var(--sombra)}
 .caso-h{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px;align-items:flex-start;margin-bottom:14px}
 .caso-h .perfil{color:var(--ink2);font-size:15px;max-width:66ch;margin-top:6px}
+.caso-lado{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.ia-caso{font:inherit;font-size:12px;font-weight:800;border:1px solid var(--ouro);background:var(--bg2);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap}
+.ia-caso:hover{border-color:var(--ouro-forte);background:var(--bg)}
+.ia-caso[hidden]{display:none}
 .chip{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:800;white-space:nowrap}
 .chip.bom{background:var(--bom-suave);color:var(--bom)}
 .chip.ruim{background:var(--ruim-suave);color:var(--ruim)}
@@ -766,6 +770,37 @@ function caminho(c, r){
     <p class="legenda">Crédito embutido no preço D: ${fmtR(r.compraReg)} de compras do regime regular × ${fmtP(r.t,1)} = ${fmtR(r.credRegRS)}; ${r.compRedRS.filter(x=>x.valor>0).map(x => `${fmtR(x.valor)} de compras com redução de ${fmtP(x.pct,0)} × ${fmtP(x.aliq,2)} = ${fmtR(x.cred)}; `).join('')}${fmtR(r.compraSN)} de compras do Simples × ${fmtP(r.cSN)} informado na nota = ${fmtR(r.credSNRS)}; total ${fmtR(r.credMes)} ÷ receita de ${fmtR(r.R)} = ${fmtP(r.k)}, os ${fmtN(r.kv)} tirados do líquido antes de dividir. Conferência: ${fmtN(D.base)} × (1 − ${fmtP(r.dasH)}) = ${fmtN(r2(D.base*(1-r.dasH)))} = ${fmtN(r.liq)} − ${fmtN(r.kv)}.</p></div>`;
 }
 
+// números do caso no formato da análise por IA (a leitura é feita no sistema)
+function dadosIA(c, r){
+  const brl = v => 'R$ ' + fmtN(v);
+  const pct = v => fmtP(v);
+  return {
+    'Caso': c.nome,
+    'Anexo': r.multi ? r.ativs.map(a => a.anexoEf).join(' + ') : r.anexoEf,
+    'Faixa do Simples': nomeFaixa[r.f],
+    'Receita bruta dos 12 meses (RBT12)': brl(c.rbt12),
+    'Receita média por mês': brl(r.R),
+    'DAS efetivo': pct(r.ae),
+    'Parcela de CBS+IBS dentro do DAS': pct(r.parc),
+    'DAS no híbrido': pct(r.dasH),
+    'CBS+IBS por fora': pct(r.t),
+    'Alíquota média de saída': pct(r.tOut),
+    'Crédito de insumos por mês': brl(r.credMes) + ' (' + pct(r.k) + ' da receita)',
+    'Preço final A (DAS integral 2027)': brl(r.A.final),
+    'Preço final B (híbrido, preço mantido)': brl(r.B.final),
+    'Preço final C (híbrido, tira a CBS/IBS do DAS)': brl(r.C.final),
+    'Preço final D (híbrido, repassa o crédito)': brl(r.D.final),
+    'Custo efetivo de quem credita - A': brl(r.A.custoPJ),
+    'Custo efetivo de quem credita - D': brl(r.D.custoPJ),
+    'Preço de quem não credita - A': brl(r.A.final),
+    'Preço de quem não credita - D': brl(r.D.final),
+    'Receita vinda de quem credita': pct(c.pjReg),
+    'Ponto de equilíbrio da carteira': r.xEq <= 0 ? 'compensa com qualquer carteira' : (r.xEq >= 1 ? 'não compensa nem com 100% de quem credita' : pct(r.xEq)),
+    'Impacto médio na carteira': sinal(r.impMedio),
+    'Veredito da ferramenta': r.veredito === 'bom' ? 'híbrido compensa' : (r.veredito === 'ruim' ? 'manter DAS integral' : 'no zero, depende da negociação')
+  };
+}
+
 function regua(c, r){
   const x = Math.min(Math.max(r.xEq,0),1), atual = c.pjReg;
   const semZero = r.xEq <= 0 ? 'todo' : (r.xEq >= 1 ? 'nunca' : null);
@@ -880,7 +915,7 @@ function montarCard(n){
   const c = CASOS[n];
   const art = document.createElement('article'); art.className='caso'; art.id='caso-'+c.id;
   art.innerHTML = `<div class="caso-h"><div><div class="eyebrow">${n < CASOS.length-1 ? 'Caso '+(n+1)+' de '+(CASOS.length-1) : 'Simulação livre'}</div>
-    <h3 contenteditable="true" spellcheck="false" data-nome>${c.nome}</h3><p class="perfil">${c.perfil}</p></div><div data-chip></div></div>
+    <h3 contenteditable="true" spellcheck="false" data-nome>${c.nome}</h3><p class="perfil">${c.perfil}</p></div><div class="caso-lado"><div data-chip></div><button type="button" class="ia-caso" data-ia${window.parent === window ? ' hidden' : ''}>Analisar com IA</button></div></div>
     ${formulario(c)}${BUSCA_ON && c.id === 'seu' ? IMP_HTML : ''}<div data-saida></div>`;
   elCasos.appendChild(art);
   const atualizar = () => { const r = calc(c); const a0 = r.ativs.find(a => a.i === 0);
@@ -890,6 +925,11 @@ function montarCard(n){
     const mo = art.querySelector('[data-k="mono"]'); if (mo){ mo.disabled = !r.ativs.some(a => PC2026[a.anexoEf]); mo.title = mo.disabled ? 'A segregação do PIS/Cofins monofásico é da revenda, tributada no Anexo I' : ''; }
     art.querySelector('[data-chip]').innerHTML = chip(r.veredito); art.querySelector('[data-saida]').innerHTML = saida(c, r); };
   art.querySelector('[data-nome]').addEventListener('input', e => { c.nome = e.target.textContent.trim() || c.nome; sintese(); salvar(); });
+  const btnIA = art.querySelector('[data-ia]');
+  if (btnIA) btnIA.addEventListener('click', () => {
+    if (window.parent === window) return;
+    window.parent.postMessage({ origem: 'p4-simulador', tipo: 'analise-ia', perfil: PERFIL === 'com' ? 'comercio' : 'servicos', dados: dadosIA(c, calc(c)) }, window.location.origin);
+  });
   ligarForm(art, c, atualizar);
   art._atualizar = atualizar;
   ligarImport(art, c);
