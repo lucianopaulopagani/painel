@@ -1,3 +1,4 @@
+import { useSomenteLeitura } from "@/context/acesso-modulo";
 import { useState, type ReactNode } from "react";
 import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -287,6 +288,9 @@ export default function ControleParcelamentos() {
     </TableHead>
   );
 
+  /** Permissão "somente visualizar": desabilita a edição das células. */
+  const somenteLeitura = useSomenteLeitura();
+
   /** Célula com comentário (botão direito) para todas as colunas. */
   const commentable = (
     companyId: string,
@@ -297,6 +301,7 @@ export default function ControleParcelamentos() {
     <CommentableCell
       comment={commentOf(companyId, campo)}
       label={label}
+      disabled={somenteLeitura}
       onSave={(text) =>
         saveComentario.mutate({ company_id: companyId, campo, comentario: text })
       }
@@ -320,6 +325,15 @@ export default function ControleParcelamentos() {
       PARCELAMENTO_OPTIONS
     );
     const tom = cadastro.tone(field.key, value) ?? PARCELAMENTO_TONE[value];
+    if (somenteLeitura) {
+      return (
+        <span
+          className={cn("block h-7 truncate rounded px-1 py-1 text-[11px]", tom)}
+        >
+          {value || "—"}
+        </span>
+      );
+    }
     return commentable(
       companyId,
       field.key,
@@ -514,7 +528,17 @@ export default function ControleParcelamentos() {
                       </TableCell>
                     ))}
                     <TableCell className={`${CELL} w-24`}>
-                      {commentable(
+                      {somenteLeitura ? (
+                        <span
+                          className={cn(
+                            "block h-7 truncate rounded px-1 py-1 text-[11px] font-semibold",
+                            cadastro.tone("envio", envio) ??
+                              PARCELAMENTO_ENVIO_TONE[envio]
+                          )}
+                        >
+                          {envio || "—"}
+                        </span>
+                      ) : commentable(
                         company.id,
                         "envio",
                         `ENVIO — ${mes} — ${company.name}`,
