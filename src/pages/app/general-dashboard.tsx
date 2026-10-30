@@ -55,19 +55,13 @@ export default function GeneralDashboard() {
   const { profile } = useAuth();
   const isAdmin = profile?.role === "admin";
   const acessos = useMeusAcessos();
-  // Dashboard liberado por usuário no cadastro (profiles.dashboard_departments).
-  const allowedDashboards = new Set(profile?.dashboard_departments ?? []);
 
-  // Com o acesso aos dashboards liberado na permissão, todos ficam visíveis.
-  const dashboardsLiberados = isAdmin || acessos.dashboards;
-
-  // Dashboards visíveis: admin e permissão veem todos; demais, os liberados no
-  // cadastro antigo (quando não há permissões cadastradas).
-  const visibleDashboards = dashboardsLiberados
-    ? DASHBOARDS
-    : acessos.temPermissoes
-      ? []
-      : DASHBOARDS.filter((dashboard) => allowedDashboards.has(dashboard.key));
+  // Admin, permissão com "Acesso aos dashboards" ou usuário sem permissões
+  // cadastradas veem todos os dashboards. Só fica oculto quando o usuário tem
+  // permissões e nenhuma delas libera os dashboards.
+  const dashboardsLiberados =
+    isAdmin || acessos.dashboards || !acessos.temPermissoes;
+  const visibleDashboards = dashboardsLiberados ? DASHBOARDS : [];
 
   const [activeDept, setActiveDept] = useState<DashboardKey | null>(null);
   const [activeSubmenu, setActiveSubmenu] = useState<
