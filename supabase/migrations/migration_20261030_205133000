@@ -1,0 +1,4 @@
+-- Remove a restrição de leitura de empresas criada para a permissão.
+-- A marcação passa a valer apenas nas tabelas do sistema, não no banco.
+-- Nenhum dado é apagado: só a política de acesso é removida.
+drop policy if exists companies_responsavel_only on public.companies;
