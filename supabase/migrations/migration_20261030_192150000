@@ -1,0 +1,45 @@
+-- Acessos do usuário logado já calculados no banco (sem depender de RLS nem de parse no cliente)
+create or replace function public.meus_acessos()
+returns table (
+  admin boolean,
+  departamentos uuid[],
+  dashboards boolean,
+  somente_responsavel boolean,
+  total_permissoes integer
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  with perms as (
+    select p.department_id, p.opcoes
+    from public.perfil_permissoes pp
+    join public.permissoes p on p.id = pp.permissao_id
+    where pp.profile_id = auth.uid()
+  )
+  select
+    coalesce(bool_or('admin' = any (opcoes)), false) as admin,
+    coalesce(
+      array_agg(distinct department_id) filter (
+        where department_id is not null
+          and (
+            'dept:acesso' = any (opcoes)
+            or exists (select 1 from unnest(opcoes) as o where o like 'sub:%')
+          )
+      ),
+      '{}'::uuid[]
+    ) as departamentos,
+    coalesce(
+      bool_or(
+        'dash:acesso' = any (opcoes)
+        or exists (select 1 from unnest(opcoes) as o where o like 'dash:%')
+      ),
+      false
+    ) as dashboards,
+    coalesce(bool_or('empresas:responsavel' = any (opcoes)), false) as somente_responsavel,
+    count(*)::int as total_permissoes
+  from perms;
+$$;
+
+grant execute on function public.meus_acessos() to authenticated;

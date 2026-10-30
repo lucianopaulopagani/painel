@@ -3,11 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/auth";
-import {
-  resolverAcessos,
-  type Acessos,
-  type PermissaoRegistro,
-} from "@/lib/permissoes";
+import type { Acessos } from "@/lib/permissoes";
 
 export interface Permissao {
   id: string;
@@ -55,26 +51,31 @@ export function useMeusAcessos(): Acessos {
     queryKey: ["meus-acessos", profile?.id ?? ""],
     enabled: Boolean(profile?.id),
     queryFn: async () => {
-      // Função no backend devolve as permissões do usuário logado sem depender
-      // das políticas de leitura das tabelas.
-      const { data, error } = await supabase.rpc("minhas_permissoes");
+      // A função devolve os acessos já calculados para o usuário logado.
+      const { data, error } = await supabase.rpc("meus_acessos");
       if (error) throw error;
-      return ((data ?? []) as {
-        permissao_id: string;
-        nome: string;
-        department_id: string | null;
-        opcoes: string[];
-      }[]).map<PermissaoRegistro>((row) => ({
-        id: row.permissao_id,
-        nome: row.nome,
-        descricao: null,
-        opcoes: row.opcoes ?? [],
-        department_id: row.department_id,
-      }));
+      return data?.[0] ?? null;
     },
   });
 
-  return useMemo(() => resolverAcessos(data ?? []), [data]);
+  return useMemo<Acessos>(() => {
+    if (!data) {
+      return {
+        admin: false,
+        somenteResponsavel: false,
+        dashboards: false,
+        departamentos: new Set<string>(),
+        temPermissoes: false,
+      };
+    }
+    return {
+      admin: Boolean(data.admin),
+      somenteResponsavel: Boolean(data.somente_responsavel),
+      dashboards: Boolean(data.dashboards),
+      departamentos: new Set<string>(data.departamentos ?? []),
+      temPermissoes: (data.total_permissoes ?? 0) > 0,
+    };
+  }, [data]);
 }
 
 export function useCreatePermissao() {
