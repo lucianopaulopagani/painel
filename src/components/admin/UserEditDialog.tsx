@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DepartmentMultiSelect } from "@/components/admin/department-multi-select";
 import { PermissoesMultiSelect } from "@/components/admin/PermissoesMultiSelect";
 import {
   permissoesKeys,
@@ -48,7 +47,6 @@ export default function UserEditDialog({
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [departmentIds, setDepartmentIds] = useState<string[]>([]);
   const [permissaoIds, setPermissaoIds] = useState<string[]>([]);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -57,7 +55,6 @@ export default function UserEditDialog({
     if (open && user) {
       setFullName(user.full_name);
       setEmail(user.email);
-      setDepartmentIds(user.departments.map((d) => d.id));
       setAvatarUrl(user.avatar_url ?? null);
       setPermissaoIds([]);
     }
@@ -89,6 +86,16 @@ export default function UserEditDialog({
     event.target.value = "";
   };
 
+  /** Departamentos vêm das permissões marcadas. */
+  const departmentIds = Array.from(
+    new Set(
+      (permissoes ?? [])
+        .filter((permissao) => permissaoIds.includes(permissao.id))
+        .map((permissao) => permissao.department_id)
+        .filter((id): id is string => Boolean(id))
+    )
+  );
+
   const isAdminSelecionado = (permissoes ?? [])
     .filter((permissao) => permissaoIds.includes(permissao.id))
     .some((permissao) => temOpcaoAdmin(permissao.opcoes));
@@ -96,6 +103,10 @@ export default function UserEditDialog({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    if (!permissoes) {
+      toast.error("Aguarde o carregamento das permissões.");
+      return;
+    }
     if (!fullName.trim() || !email.trim()) {
       toast.error("Preencha nome e e-mail.");
       return;
@@ -193,17 +204,6 @@ export default function UserEditDialog({
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label>Departamentos de acesso</Label>
-            <DepartmentMultiSelect
-              value={departmentIds}
-              onChange={setDepartmentIds}
-            />
-            <p className="text-xs text-muted-foreground">
-              Marque um ou mais departamentos. Sem vínculo, o usuário não
-              acessa nenhum departamento.
-            </p>
           </div>
           <PermissoesMultiSelect
             value={permissaoIds}

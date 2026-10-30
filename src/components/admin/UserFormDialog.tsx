@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DepartmentMultiSelect } from "@/components/admin/department-multi-select";
 import { PermissoesMultiSelect } from "@/components/admin/PermissoesMultiSelect";
 import {
   salvarPermissoesDoUsuario,
@@ -38,7 +37,6 @@ export default function UserFormDialog({
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [departmentIds, setDepartmentIds] = useState<string[]>([]);
   const [permissaoIds, setPermissaoIds] = useState<string[]>([]);
 
   useEffect(() => {
@@ -46,10 +44,19 @@ export default function UserFormDialog({
       setFullName("");
       setEmail("");
       setPassword("");
-      setDepartmentIds([]);
       setPermissaoIds([]);
     }
   }, [open]);
+
+  /** Departamentos vêm das permissões marcadas. */
+  const departmentIds = Array.from(
+    new Set(
+      (permissoes ?? [])
+        .filter((permissao) => permissaoIds.includes(permissao.id))
+        .map((permissao) => permissao.department_id)
+        .filter((id): id is string => Boolean(id))
+    )
+  );
 
   const isAdminSelecionado = (permissoes ?? [])
     .filter((permissao) => permissaoIds.includes(permissao.id))
@@ -57,6 +64,10 @@ export default function UserFormDialog({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!permissoes) {
+      toast.error("Aguarde o carregamento das permissões.");
+      return;
+    }
     if (!fullName.trim() || !email.trim() || !password) {
       toast.error("Preencha nome, e-mail e senha.");
       return;
@@ -128,17 +139,6 @@ export default function UserFormDialog({
               placeholder="Mínimo de 6 caracteres"
               required
             />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label>Departamentos de acesso</Label>
-            <DepartmentMultiSelect
-              value={departmentIds}
-              onChange={setDepartmentIds}
-            />
-            <p className="text-xs text-muted-foreground">
-              Marque um ou mais departamentos. Sem vínculo, o usuário não
-              acessa nenhum departamento.
-            </p>
           </div>
           <PermissoesMultiSelect
             value={permissaoIds}
