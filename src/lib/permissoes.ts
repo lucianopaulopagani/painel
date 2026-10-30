@@ -4,22 +4,20 @@
  * Cada permissão pertence a um departamento e guarda em `opcoes` as chaves do
  * que libera:
  *   - "admin"                  → painel de administração inteiro
+ *   - "dept:acesso"            → acesso ao departamento (todos os submenus)
  *   - "empresas:responsavel"   → só as empresas em que o usuário é responsável
- *   - "sub:<id>:view"          → submenu em modo somente leitura
- *   - "sub:<id>:edit"          → submenu com edição
- *   - "dash:geral"             → dashboard geral do departamento
- *   - "dash:sub:<id>"          → dashboard do subdepartamento
- *
- * Submenus criados depois entram automaticamente no cadastro sem acesso.
+ *   - "dash:acesso"            → todos os dashboards (geral e subdepartamentos)
  */
+export const CHAVE_ADMIN = "admin";
+export const CHAVE_DEPARTAMENTO = "dept:acesso";
+export const CHAVE_EMPRESAS_RESPONSAVEL = "empresas:responsavel";
+export const CHAVE_DASHBOARDS = "dash:acesso";
+
+/** Nível de edição usado pelos módulos (o modelo atual libera edição). */
 export type PermissaoNivel = "view" | "edit";
 
-export const CHAVE_ADMIN = "admin";
-export const CHAVE_EMPRESAS_RESPONSAVEL = "empresas:responsavel";
-export const CHAVE_DASH_GERAL = "dash:geral";
-
 export interface PermissaoOpcao {
-  key: typeof CHAVE_ADMIN;
+  key: string;
   label: string;
   descricao: string;
 }
@@ -33,12 +31,6 @@ export const PERMISSAO_OPCOES: PermissaoOpcao[] = [
   },
 ];
 
-export const chaveSubmenu = (submenuId: string, nivel: PermissaoNivel) =>
-  `sub:${submenuId}:${nivel}`;
-
-export const chaveDashboardSub = (submenuId: string) =>
-  `dash:sub:${submenuId}`;
-
 export interface PermissaoRegistro {
   id: string;
   nome: string;
@@ -47,99 +39,58 @@ export interface PermissaoRegistro {
   department_id: string | null;
 }
 
-export interface AcessoDepartamento {
-  /** Dashboard geral do departamento liberado. */
-  dashboardGeral: boolean;
-  /** Nível por submenu (id do submenu). */
-  submenus: Map<string, PermissaoNivel>;
-  /** Ids dos submenus com dashboard liberado. */
-  dashboards: Set<string>;
-}
-
 export interface Acessos {
   admin: boolean;
   somenteResponsavel: boolean;
-  porDepartamento: Map<string, AcessoDepartamento>;
-  /** Alguma permissão cadastrada (fora as de administrador). */
+  /** Acesso a todos os dashboards (geral e subdepartamentos). */
+  dashboards: boolean;
+  /** Ids dos departamentos liberados. */
+  departamentos: Set<string>;
+  /** Alguma permissão cadastrada. */
   temPermissoes: boolean;
 }
 
 export function resolverAcessos(permissoes: PermissaoRegistro[]): Acessos {
-  const porDepartamento = new Map<string, AcessoDepartamento>();
+  const departamentos = new Set<string>();
   let admin = false;
   let somenteResponsavel = false;
+  let dashboards = false;
 
   for (const permissao of permissoes) {
+    let departamentoLiberado = false;
+
     for (const opcao of permissao.opcoes ?? []) {
       if (opcao === CHAVE_ADMIN) admin = true;
       if (opcao === CHAVE_EMPRESAS_RESPONSAVEL) somenteResponsavel = true;
+      if (opcao === CHAVE_DASHBOARDS) dashboards = true;
+      if (opcao === CHAVE_DEPARTAMENTO) departamentoLiberado = true;
+
+      // Compatibilidade com o modelo antigo (por submenu/dashboard).
+      if (opcao.startsWith("sub:")) departamentoLiberado = true;
+      if (opcao.startsWith("dash:")) dashboards = true;
     }
 
-    if (!permissao.department_id) continue;
-
-    const acesso =
-      porDepartamento.get(permissao.department_id) ??
-      ({
-        dashboardGeral: false,
-        submenus: new Map<string, PermissaoNivel>(),
-        dashboards: new Set<string>(),
-      } satisfies AcessoDepartamento);
-
-    for (const opcao of permissao.opcoes ?? []) {
-      if (opcao === CHAVE_DASH_GERAL) acesso.dashboardGeral = true;
-      if (opcao.startsWith("dash:sub:")) {
-        acesso.dashboards.add(opcao.slice("dash:sub:".length));
-      }
-      if (opcao.startsWith("sub:")) {
-        const [, submenuId, nivel] = opcao.split(":");
-        if (!submenuId || (nivel !== "view" && nivel !== "edit")) continue;
-        const atual = acesso.submenus.get(submenuId);
-        acesso.submenus.set(
-          submenuId,
-          atual === "edit" || nivel === "edit" ? "edit" : "view"
-        );
-      }
+    if (departamentoLiberado && permissao.department_id) {
+      departamentos.add(permissao.department_id);
     }
-
-    porDepartamento.set(permissao.department_id, acesso);
   }
 
   return {
     admin,
     somenteResponsavel,
-    porDepartamento,
+    dashboards,
+    departamentos,
     temPermissoes: permissoes.length > 0,
   };
 }
 
-/** Nível do usuário em um submenu (undefined = sem acesso liberado por permissão). */
-export function nivelDoSubmenu(
-  acessos: Acessos,
-  departamentoId: string | undefined,
-  submenuId: string
-): PermissaoNivel | undefined {
-  if (!departamentoId) return undefined;
-  return acessos.porDepartamento.get(departamentoId)?.submenus.get(submenuId);
-}
-
-export function temAcessoAoDepartamento(
-  acessos: Acessos,
-  departamentoId: string | undefined
-): boolean {
-  if (!departamentoId) return false;
-  return acessos.porDepartamento.has(departamentoId);
-}
-
 export function rotuloOpcao(key: string): string {
   if (key === CHAVE_ADMIN) return "Administrador";
+  if (key === CHAVE_DEPARTAMENTO) return "Acesso ao departamento";
   if (key === CHAVE_EMPRESAS_RESPONSAVEL) return "Somente empresas do responsável";
-  if (key === CHAVE_DASH_GERAL) return "Dashboard geral do departamento";
-  if (key.startsWith("dash:sub:")) return "Dashboard de subdepartamento";
-  if (key.startsWith("sub:")) {
-    return key.endsWith(":edit")
-      ? "Submenu · alterar"
-      : "Submenu · visualizar";
-  }
+  if (key === CHAVE_DASHBOARDS) return "Acesso aos dashboards";
+  if (key.startsWith("sub:")) return "Acesso ao submenu";
+  if (key.startsWith("dash:")) return "Acesso aos dashboards";
   return key;
 }
 

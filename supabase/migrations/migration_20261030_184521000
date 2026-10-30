@@ -1,0 +1,21 @@
+-- Normaliza as opções das permissões para o modelo simplificado:
+-- acesso ao departamento (todos os submenus) e acesso aos dashboards.
+with normalizado as (
+  select p.id,
+         array(
+           select distinct
+             case
+               when o like 'sub:%' then 'dept:acesso'
+               when o = 'dash:geral' or o like 'dash:sub:%' then 'dash:acesso'
+               else o
+             end
+           from unnest(p.opcoes) as o
+         ) as novas
+  from public.permissoes p
+)
+update public.permissoes p
+set opcoes = n.novas,
+    updated_at = now()
+from normalizado n
+where n.id = p.id
+  and p.opcoes <> n.novas;

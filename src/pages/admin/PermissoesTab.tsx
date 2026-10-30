@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Loader2, Pencil, Plus, ShieldCheck, Trash2 } from "lucide-react";
 
 import { toast } from "@/components/ui/sonner";
@@ -48,20 +48,13 @@ import {
   useUpdatePermissao,
   type Permissao,
 } from "@/hooks/use-permissoes";
-import {
-  useAllDepartmentSubmenus,
-  useDepartmentSubmenus,
-} from "@/hooks/use-department-submenus";
 import { useDepartments } from "@/hooks/use-departments";
 import {
   CHAVE_ADMIN,
-  CHAVE_DASH_GERAL,
+  CHAVE_DASHBOARDS,
+  CHAVE_DEPARTAMENTO,
   CHAVE_EMPRESAS_RESPONSAVEL,
-  chaveDashboardSub,
-  chaveSubmenu,
   rotuloOpcao,
-  temOpcaoAdmin,
-  type PermissaoNivel,
 } from "@/lib/permissoes";
 
 interface FormState {
@@ -78,13 +71,11 @@ const FORM_VAZIO: FormState = {
   opcoes: [],
 };
 
-type NivelEscolhido = "none" | PermissaoNivel;
-
 /** Opções que dependem do departamento escolhido. */
-const ehOpcaoDeDepartamento = (opcao: string) =>
-  opcao.startsWith("sub:") ||
-  opcao.startsWith("dash:") ||
-  opcao === CHAVE_EMPRESAS_RESPONSAVEL;
+const OPCOES_DO_DEPARTAMENTO = [
+  CHAVE_DEPARTAMENTO,
+  CHAVE_EMPRESAS_RESPONSAVEL,
+] as const;
 
 export default function PermissoesTab() {
   const { data: permissoes, isLoading, isError } = usePermissoes();
@@ -97,16 +88,6 @@ export default function PermissoesTab() {
   const [editando, setEditando] = useState<Permissao | null>(null);
   const [form, setForm] = useState<FormState>(FORM_VAZIO);
   const [excluirAlvo, setExcluirAlvo] = useState<Permissao | null>(null);
-
-  const { data: submenus } = useDepartmentSubmenus(form.departmentId ?? "");
-  const { data: todosSubmenus } = useAllDepartmentSubmenus();
-
-  /** Nomes de todos os submenus, para as etiquetas da listagem. */
-  const nomesSubmenus = useMemo(() => {
-    const mapa: Record<string, string> = {};
-    for (const item of todosSubmenus ?? []) mapa[item.id] = item.name;
-    return mapa;
-  }, [todosSubmenus]);
 
   useEffect(() => {
     if (!dialogOpen) return;
@@ -132,16 +113,13 @@ export default function PermissoesTab() {
     setDialogOpen(true);
   };
 
-  const alterarOpcoes = (transformar: (opcoes: string[]) => string[]) => {
-    setForm((prev) => ({ ...prev, opcoes: transformar(prev.opcoes) }));
-  };
-
   const alternar = (chave: string) => {
-    alterarOpcoes((opcoes) =>
-      opcoes.includes(chave)
-        ? opcoes.filter((item) => item !== chave)
-        : [...opcoes, chave]
-    );
+    setForm((prev) => ({
+      ...prev,
+      opcoes: prev.opcoes.includes(chave)
+        ? prev.opcoes.filter((item) => item !== chave)
+        : [...prev.opcoes, chave],
+    }));
   };
 
   const trocarDepartamento = (valor: string) => {
@@ -149,28 +127,12 @@ export default function PermissoesTab() {
     setForm((prev) => ({
       ...prev,
       departmentId,
-      // Opções de submenu/dash pertencem ao departamento anterior.
-      opcoes: prev.opcoes.filter((opcao) => !ehOpcaoDeDepartamento(opcao)),
-    }));
-  };
-
-  const nivelDoSubmenu = (submenuId: string): NivelEscolhido => {
-    if (form.opcoes.includes(chaveSubmenu(submenuId, "edit"))) return "edit";
-    if (form.opcoes.includes(chaveSubmenu(submenuId, "view"))) return "view";
-    return "none";
-  };
-
-  const definirNivel = (submenuId: string, nivel: NivelEscolhido) => {
-    alterarOpcoes((opcoes) => {
-      const limpas = opcoes.filter(
+      // Opções do departamento anterior não se aplicam ao novo.
+      opcoes: prev.opcoes.filter(
         (opcao) =>
-          opcao !== chaveSubmenu(submenuId, "edit") &&
-          opcao !== chaveSubmenu(submenuId, "view")
-      );
-      return nivel === "none"
-        ? limpas
-        : [...limpas, chaveSubmenu(submenuId, nivel)];
-    });
+          !(OPCOES_DO_DEPARTAMENTO as readonly string[]).includes(opcao)
+      ),
+    }));
   };
 
   const salvar = async (e: FormEvent) => {
@@ -224,18 +186,6 @@ export default function PermissoesTab() {
     setExcluirAlvo(null);
   };
 
-  const rotuloCompleto = useMemo(() => {
-    return (opcao: string) => {
-      if (opcao.startsWith("sub:")) {
-        const [, id, nivel] = opcao.split(":");
-        const nome = nomesSubmenus[id];
-        if (!nome) return rotuloOpcao(opcao);
-        return `${nome} · ${nivel === "edit" ? "alterar" : "visualizar"}`;
-      }
-      return rotuloOpcao(opcao);
-    };
-  }, [nomesSubmenus]);
-
   const nomeDepartamento = (id: string | null) =>
     departments?.find((item) => item.id === id)?.name ?? "Sem departamento";
 
@@ -245,8 +195,8 @@ export default function PermissoesTab() {
         <div>
           <h2 className="text-lg font-semibold">Permissões</h2>
           <p className="text-sm text-muted-foreground">
-            Cada permissão libera submenus (visualizar ou alterar), dashboards e
-            o escopo de empresas de um departamento.
+            Cada permissão libera o acesso a um departamento inteiro e, se
+            marcado, aos dashboards e às empresas do responsável.
           </p>
         </div>
         <Button onClick={abrirNova}>
@@ -311,7 +261,7 @@ export default function PermissoesTab() {
                               opcao === CHAVE_ADMIN ? "default" : "secondary"
                             }
                           >
-                            {rotuloCompleto(opcao)}
+                            {rotuloOpcao(opcao)}
                           </Badge>
                         ))}
                       </div>
@@ -413,108 +363,58 @@ export default function PermissoesTab() {
 
             {form.departmentId && (
               <div className="flex flex-col gap-2 rounded-md border p-3">
-                <Label className="text-sm font-medium">
-                  Submenus do departamento
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Submenus criados depois aparecem aqui automaticamente, sem
-                  acesso até serem marcados.
-                </p>
-                {(submenus ?? []).length === 0 && (
-                  <p className="py-1 text-sm text-muted-foreground">
-                    Este departamento ainda não tem submenus cadastrados.
-                  </p>
-                )}
-                <div className="flex flex-col gap-2">
-                  {(submenus ?? []).map((submenu) => {
-                    const nivel = nivelDoSubmenu(submenu.id);
-                    const dash = form.opcoes.includes(
-                      chaveDashboardSub(submenu.id)
-                    );
-                    return (
-                      <div
-                        key={submenu.id}
-                        className="flex flex-wrap items-center justify-between gap-3 rounded-md border p-2.5"
-                      >
-                        <span className="text-sm font-medium">
-                          {submenu.name}
-                        </span>
-                        <div className="flex flex-wrap items-center gap-3">
-                          <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
-                            <Checkbox
-                              checked={dash}
-                              onCheckedChange={() =>
-                                alternar(chaveDashboardSub(submenu.id))
-                              }
-                            />
-                            Dashboard
-                          </label>
-                          <Select
-                            value={nivel}
-                            onValueChange={(valor) =>
-                              definirNivel(
-                                submenu.id,
-                                valor as NivelEscolhido
-                              )
-                            }
-                          >
-                            <SelectTrigger className="h-8 w-[150px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">Sem acesso</SelectItem>
-                              <SelectItem value="view">Visualizar</SelectItem>
-                              <SelectItem value="edit">Alterar</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {form.departmentId && (
-              <div className="flex flex-col gap-2 rounded-md border p-3">
-                <Label className="text-sm font-medium">Dashboards</Label>
-                <label className="flex cursor-pointer items-start gap-3 rounded-md border p-3 hover:bg-accent/40">
+                <label className="flex cursor-pointer items-start gap-3">
                   <Checkbox
-                    checked={form.opcoes.includes(CHAVE_DASH_GERAL)}
-                    onCheckedChange={() => alternar(CHAVE_DASH_GERAL)}
+                    checked={form.opcoes.includes(CHAVE_DEPARTAMENTO)}
+                    onCheckedChange={() => alternar(CHAVE_DEPARTAMENTO)}
                     className="mt-0.5"
                   />
-                  <span className="text-sm">
-                    Dashboard geral do departamento
-                  </span>
+                  <div>
+                    <span className="text-sm font-medium">
+                      Acesso ao departamento
+                    </span>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Libera todos os submenus do departamento.
+                    </p>
+                  </div>
                 </label>
-                <p className="text-xs text-muted-foreground">
-                  Os dashboards de cada subdepartamento são marcados na lista de
-                  submenus acima.
-                </p>
+                <label className="flex cursor-pointer items-start gap-3">
+                  <Checkbox
+                    checked={form.opcoes.includes(CHAVE_EMPRESAS_RESPONSAVEL)}
+                    onCheckedChange={() =>
+                      alternar(CHAVE_EMPRESAS_RESPONSAVEL)
+                    }
+                    className="mt-0.5"
+                  />
+                  <div>
+                    <span className="text-sm font-medium">
+                      Somente empresas em que é responsável
+                    </span>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      O usuário só enxerga as empresas em que está como
+                      responsável no departamento.
+                    </p>
+                  </div>
+                </label>
               </div>
             )}
 
-            {form.departmentId && (
-              <label className="flex cursor-pointer items-start gap-3 rounded-md border p-3 hover:bg-accent/40">
-                <Checkbox
-                  checked={form.opcoes.includes(
-                    CHAVE_EMPRESAS_RESPONSAVEL
-                  )}
-                  onCheckedChange={() => alternar(CHAVE_EMPRESAS_RESPONSAVEL)}
-                  className="mt-0.5"
-                />
-                <div>
-                  <span className="text-sm font-medium">
-                    Somente empresas em que é responsável
-                  </span>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    O usuário só enxerga as empresas em que está como
-                    responsável no departamento.
-                  </p>
-                </div>
-              </label>
-            )}
+            <label className="flex cursor-pointer items-start gap-3 rounded-md border p-3 hover:bg-accent/40">
+              <Checkbox
+                checked={form.opcoes.includes(CHAVE_DASHBOARDS)}
+                onCheckedChange={() => alternar(CHAVE_DASHBOARDS)}
+                className="mt-0.5"
+              />
+              <div>
+                <span className="text-sm font-medium">
+                  Acesso aos dashboards
+                </span>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Libera o dashboard geral e os dashboards de todos os
+                  subdepartamentos.
+                </p>
+              </div>
+            </label>
 
             <label className="flex cursor-pointer items-start gap-3 rounded-md border p-3 hover:bg-accent/40">
               <Checkbox
@@ -523,12 +423,7 @@ export default function PermissoesTab() {
                 className="mt-0.5"
               />
               <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-medium">Administrador</span>
-                  {temOpcaoAdmin(form.opcoes) && (
-                    <Badge variant="default">Acesso total</Badge>
-                  )}
-                </div>
+                <span className="text-sm font-medium">Administrador</span>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Libera o painel de administração inteiro (usuários,
                   permissões, departamentos, empresas e dashboards).
