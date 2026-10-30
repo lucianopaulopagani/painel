@@ -120,13 +120,9 @@ export default function DepartmentPanel() {
   const hasContabilAccess = hasDepartmentAccess(CONTABIL_DEPARTMENT_NAME);
   const hasNotaFiscalAccess = hasDepartmentAccess(NOTA_FISCAL_DEPARTMENT_NAME);
 
-  /** O dashboard geral aparece se o usuário tem algum dashboard liberado. */
-  const hasDashboardAccess =
-    profile.role === "admin" || !acessos.temPermissoes || acessos.dashboards;
-
   const availablePanels: { key: AvailablePanelKey; label: string }[] = [
-    // Dashboard geral — conforme os dashboards liberados na permissão.
-    hasDashboardAccess && { key: "dashboard", label: "Dashboard geral" },
+    // Dashboard geral — visível para todos os usuários.
+    { key: "dashboard", label: "Dashboard geral" },
     hasFiscalAccess && { key: "fiscal", label: "Fiscal" },
     hasPessoalAccess && { key: "pessoal", label: "Pessoal" },
     hasSocietarioAccess && { key: "societario", label: "Societário" },

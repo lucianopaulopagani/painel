@@ -8,8 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useAuth } from "@/context/auth";
-import { useMeusAcessos } from "@/hooks/use-permissoes";
 import { DEPARTMENT_DASHBOARDS } from "@/lib/dashboards";
 import { cn } from "@/lib/utils";
 import FiscalMovimentoDashboard from "./fiscal/FiscalMovimentoDashboard";
@@ -52,16 +50,8 @@ const DEPT_SUBMENUS: Record<DashboardKey, { key: string; label: string }[]> = {
 };
 
 export default function GeneralDashboard() {
-  const { profile } = useAuth();
-  const isAdmin = profile?.role === "admin";
-  const acessos = useMeusAcessos();
-
-  // Admin, permissão com "Acesso aos dashboards" ou usuário sem permissões
-  // cadastradas veem todos os dashboards. Só fica oculto quando o usuário tem
-  // permissões e nenhuma delas libera os dashboards.
-  const dashboardsLiberados =
-    isAdmin || acessos.dashboards || !acessos.temPermissoes;
-  const visibleDashboards = dashboardsLiberados ? DASHBOARDS : [];
+  // Todos os dashboards ficam visíveis para qualquer usuário logado.
+  const visibleDashboards = DASHBOARDS;
 
   const [activeDept, setActiveDept] = useState<DashboardKey | null>(null);
   const [activeSubmenu, setActiveSubmenu] = useState<
