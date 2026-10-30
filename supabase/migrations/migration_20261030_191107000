@@ -1,0 +1,20 @@
+-- Permissões do usuário logado (independe de RLS de leitura nas tabelas)
+create or replace function public.minhas_permissoes()
+returns table (
+  permissao_id uuid,
+  nome text,
+  department_id uuid,
+  opcoes text[]
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select p.id, p.nome, p.department_id, p.opcoes
+  from public.perfil_permissoes pp
+  join public.permissoes p on p.id = pp.permissao_id
+  where pp.profile_id = auth.uid();
+$$;
+
+grant execute on function public.minhas_permissoes() to authenticated;

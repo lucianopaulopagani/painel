@@ -5099,6 +5099,15 @@ export type Database = {
         Args: { p_conversation_id: string }
         Returns: boolean
       }
+      minhas_permissoes: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          department_id: string
+          nome: string
+          opcoes: string[]
+          permissao_id: string
+        }[]
+      }
       month_is_released: {
         Args: { mes: string }
         Returns: boolean

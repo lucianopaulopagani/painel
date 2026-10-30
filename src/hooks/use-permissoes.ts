@@ -55,15 +55,22 @@ export function useMeusAcessos(): Acessos {
     queryKey: ["meus-acessos", profile?.id ?? ""],
     enabled: Boolean(profile?.id),
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("perfil_permissoes")
-        .select("permissoes(id, nome, descricao, opcoes, department_id)")
-        .eq("profile_id", profile?.id as string);
+      // Função no backend devolve as permissões do usuário logado sem depender
+      // das políticas de leitura das tabelas.
+      const { data, error } = await supabase.rpc("minhas_permissoes");
       if (error) throw error;
-      const lista = (data ?? [])
-        .map((row) => row.permissoes as PermissaoRegistro | null)
-        .filter((item): item is PermissaoRegistro => Boolean(item));
-      return lista;
+      return ((data ?? []) as {
+        permissao_id: string;
+        nome: string;
+        department_id: string | null;
+        opcoes: string[];
+      }[]).map<PermissaoRegistro>((row) => ({
+        id: row.permissao_id,
+        nome: row.nome,
+        descricao: null,
+        opcoes: row.opcoes ?? [],
+        department_id: row.department_id,
+      }));
     },
   });
 
