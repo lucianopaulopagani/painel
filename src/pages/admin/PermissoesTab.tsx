@@ -51,7 +51,6 @@ import {
 import { useDepartments } from "@/hooks/use-departments";
 import {
   CHAVE_ADMIN,
-  CHAVE_DASHBOARDS,
   CHAVE_DEPARTAMENTO,
   CHAVE_EMPRESAS_RESPONSAVEL,
   rotuloOpcao,
@@ -196,7 +195,8 @@ export default function PermissoesTab() {
           <h2 className="text-lg font-semibold">Permissões</h2>
           <p className="text-sm text-muted-foreground">
             Cada permissão libera o acesso a um departamento inteiro e, se
-            marcado, aos dashboards e às empresas do responsável.
+            marcado, às empresas em que o usuário é responsável. Os dashboards
+            ficam visíveis para todos.
           </p>
         </div>
         <Button onClick={abrirNova}>
@@ -398,23 +398,6 @@ export default function PermissoesTab() {
                 </label>
               </div>
             )}
-
-            <label className="flex cursor-pointer items-start gap-3 rounded-md border p-3 hover:bg-accent/40">
-              <Checkbox
-                checked={form.opcoes.includes(CHAVE_DASHBOARDS)}
-                onCheckedChange={() => alternar(CHAVE_DASHBOARDS)}
-                className="mt-0.5"
-              />
-              <div>
-                <span className="text-sm font-medium">
-                  Acesso aos dashboards
-                </span>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Libera o dashboard geral e os dashboards de todos os
-                  subdepartamentos.
-                </p>
-              </div>
-            </label>
 
             <label className="flex cursor-pointer items-start gap-3 rounded-md border p-3 hover:bg-accent/40">
               <Checkbox

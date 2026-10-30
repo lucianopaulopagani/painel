@@ -1,0 +1,16 @@
+-- Dashboards ficaram visíveis para todos: remove a opção das permissões existentes.
+update public.permissoes
+set opcoes = coalesce(
+      array(
+        select o from unnest(opcoes) as o
+        where o <> 'dash:acesso'
+          and o <> 'dash:geral'
+          and o not like 'dash:sub:%'
+      ),
+      '{}'::text[]
+    ),
+    updated_at = now()
+where exists (
+  select 1 from unnest(opcoes) as o
+  where o = 'dash:acesso' or o = 'dash:geral' or o like 'dash:sub:%'
+);
