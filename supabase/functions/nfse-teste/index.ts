@@ -157,10 +157,15 @@ Deno.serve(async (req) => {
     try {
       const criar = (
         Deno as unknown as {
-          createHttpClient: (options: { cert: string; key: string }) => unknown;
+          createHttpClient: (options: {
+            cert: string;
+            key: string;
+            http1?: boolean;
+          }) => unknown;
         }
       ).createHttpClient;
-      client = criar({ cert: certPem, key: keyPem });
+      // O Sefin Nacional exige HTTP/1.1 — o fetch do Deno usa HTTP/2 por padrão.
+      client = criar({ cert: certPem, key: keyPem, http1: true });
       await registrar(companyId, "tls", true, "Cliente TLS criado com o A1");
     } catch (erro) {
       const mensagem = erro instanceof Error ? erro.message : String(erro);
