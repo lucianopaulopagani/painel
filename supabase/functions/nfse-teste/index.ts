@@ -6,8 +6,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import forge from "npm:node-forge@1.3.1";
-import https from "node:https";
-import { Buffer } from "node:buffer";
+
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -155,30 +154,59 @@ Deno.serve(async (req) => {
         ? "https://sefin.nfse.gov.br/SefinNacional"
         : "https://sefin.producaorestrita.nfse.gov.br/API/SefinNacional";
 
-    // O Sefin exige HTTP/1.1 com o certificado no handshake. O cliente HTTP do
-    // Node (usado pelo runtime) aceita o .pfx direto e fala HTTP/1.1.
-    const chamarSefin = (url: string) =>
-      new Promise<number>((resolve, reject) => {
-        const requisicao = https.request(
-          url,
-          {
-            method: "GET",
-            cert: certPem,
-            key: keyPem,
-            timeout: 20000,
-          },
-          (resposta) => {
-            resposta.resume();
-            resposta.on("end", () => resolve(resposta.statusCode ?? 0));
-            resposta.on("error", reject);
-          }
-        );
-        requisicao.on("timeout", () => {
-          requisicao.destroy(new Error("tempo esgotado ao falar com o Sefin"));
-        });
-        requisicao.on("error", reject);
-        requisicao.end();
+    // O Sefin exige HTTP/1.1 e o certificado no handshake TLS. Abrimos o socket
+    // TLS com ALPN fixo em http/1.1 e escrevemos a requisição manualmente.
+    const chamarSefin = async (url: string): Promise<number> => {
+      const alvo = new URL(url);
+      const encoder = new TextEncoder();
+      const decoder = new TextDecoder();
+
+      const conexao = await Deno.connectTls({
+        hostname: alvo.hostname,
+        port: 443,
+        cert: certPem,
+        key: keyPem,
+        alpnProtocols: ["http/1.1"],
       });
+
+      try {
+        const caminho = `${alvo.pathname}${alvo.search}`;
+        const requisicao =
+          `GET ${caminho} HTTP/1.1\r\n` +
+          `Host: ${alvo.hostname}\r\n` +
+          `User-Agent: P4-NFSe/1.0\r\n` +
+          `Accept: */*\r\n` +
+          `Connection: close\r\n\r\n`;
+
+        await conexao.write(encoder.encode(requisicao));
+
+        let texto = "";
+        const buffer = new Uint8Array(4096);
+        const limite = Date.now() + 20000;
+
+        while (Date.now() < limite) {
+          const lido = await Promise.race([
+            conexao.read(buffer),
+            new Promise<null>((resolve) =>
+              setTimeout(() => resolve(null), 5000)
+            ),
+          ]);
+          if (lido === null || lido <= 0) break;
+          texto += decoder.decode(buffer.subarray(0, lido));
+        }
+
+        const primeiraLinha = texto.split("\r\n")[0] ?? "";
+        const partes = primeiraLinha.split(" ");
+        const status = Number(partes[1] ?? 0);
+        return Number.isFinite(status) ? status : 0;
+      } finally {
+        try {
+          conexao.close();
+        } catch {
+          /* já fechado */
+        }
+      }
+    };
 
     try {
       const status = await chamarSefin(`${base}/docs/index`);
