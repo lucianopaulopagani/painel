@@ -6,6 +6,8 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import forge from "npm:node-forge@1.3.1";
+import https from "node:https";
+import { Buffer } from "node:buffer";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -153,43 +155,45 @@ Deno.serve(async (req) => {
         ? "https://sefin.nfse.gov.br/SefinNacional"
         : "https://sefin.producaorestrita.nfse.gov.br/API/SefinNacional";
 
-    let client: unknown;
-    try {
-      const criar = (
-        Deno as unknown as {
-          createHttpClient: (options: {
-            cert: string;
-            key: string;
-            http1?: boolean;
-          }) => unknown;
-        }
-      ).createHttpClient;
-      // O Sefin Nacional exige HTTP/1.1 — o fetch do Deno usa HTTP/2 por padrão.
-      client = criar({ cert: certPem, key: keyPem, http1: true });
-      await registrar(companyId, "tls", true, "Cliente TLS criado com o A1");
-    } catch (erro) {
-      const mensagem = erro instanceof Error ? erro.message : String(erro);
-      await registrar(companyId, "tls", false, "Falha ao criar cliente TLS", mensagem);
-      return json({ error: `Falha ao preparar a conexão TLS: ${mensagem}` }, 500);
-    }
+    // O Sefin exige HTTP/1.1 com o certificado no handshake. O cliente HTTP do
+    // Node (usado pelo runtime) aceita o .pfx direto e fala HTTP/1.1.
+    const chamarSefin = (url: string) =>
+      new Promise<number>((resolve, reject) => {
+        const requisicao = https.request(
+          url,
+          {
+            method: "GET",
+            cert: certPem,
+            key: keyPem,
+            timeout: 20000,
+          },
+          (resposta) => {
+            resposta.resume();
+            resposta.on("end", () => resolve(resposta.statusCode ?? 0));
+            resposta.on("error", reject);
+          }
+        );
+        requisicao.on("timeout", () => {
+          requisicao.destroy(new Error("tempo esgotado ao falar com o Sefin"));
+        });
+        requisicao.on("error", reject);
+        requisicao.end();
+      });
 
     try {
-      const resposta = await fetch(`${base}/docs/index`, {
-        // @ts-expect-error opção específica do Deno para TLS com certificado
-        client,
-      });
+      const status = await chamarSefin(`${base}/docs/index`);
 
       await registrar(
         companyId,
         "http",
-        resposta.ok,
-        `Sefin respondeu HTTP ${resposta.status}`,
+        status > 0 && status < 400,
+        `Sefin respondeu HTTP ${status}`,
         config.ambiente
       );
 
       return json({
-        ok: resposta.ok,
-        status: resposta.status,
+        ok: status > 0 && status < 400,
+        status,
         ambiente: config.ambiente,
         titular,
       });
