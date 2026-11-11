@@ -154,73 +154,49 @@ Deno.serve(async (req) => {
         ? "https://sefin.nfse.gov.br/SefinNacional"
         : "https://sefin.producaorestrita.nfse.gov.br/API/SefinNacional";
 
-    // O Sefin exige HTTP/1.1 e o certificado no handshake TLS. Abrimos o socket
-    // TLS com ALPN fixo em http/1.1 e escrevemos a requisição manualmente.
-    const chamarSefin = async (url: string): Promise<number> => {
-      const alvo = new URL(url);
-      const encoder = new TextEncoder();
-      const decoder = new TextDecoder();
+    // O Sefin exige HTTP/1.1 e o certificado no handshake TLS. Criamos um
+    // cliente com o A1 e forçamos o ALPN em http/1.1.
+    let status = 0;
+    try {
+      const criar = (
+        Deno as unknown as {
+          createHttpClient: (options: {
+            cert: string;
+            key: string;
+            http1?: boolean;
+            alpnProtocols?: string[];
+          }) => unknown;
+        }
+      ).createHttpClient;
 
-      const conexao = await Deno.connectTls({
-        hostname: alvo.hostname,
-        port: 443,
+      const client = criar({
         cert: certPem,
         key: keyPem,
+        http1: true,
         alpnProtocols: ["http/1.1"],
       });
 
+      const resposta = await fetch(`${base}/docs/index`, {
+        // @ts-expect-error opção do Deno para TLS com certificado
+        client,
+      });
+      status = resposta.status;
       try {
-        const caminho = `${alvo.pathname}${alvo.search}`;
-        const requisicao =
-          `GET ${caminho} HTTP/1.1\r\n` +
-          `Host: ${alvo.hostname}\r\n` +
-          `User-Agent: P4-NFSe/1.0\r\n` +
-          `Accept: */*\r\n` +
-          `Connection: close\r\n\r\n`;
-
-        await conexao.write(encoder.encode(requisicao));
-
-        let texto = "";
-        const buffer = new Uint8Array(4096);
-        const limite = Date.now() + 20000;
-
-        while (Date.now() < limite) {
-          const lido = await Promise.race([
-            conexao.read(buffer),
-            new Promise<null>((resolve) =>
-              setTimeout(() => resolve(null), 5000)
-            ),
-          ]);
-          if (lido === null || lido <= 0) break;
-          texto += decoder.decode(buffer.subarray(0, lido));
-        }
-
-        const primeiraLinha = texto.split("\r\n")[0] ?? "";
-        const partes = primeiraLinha.split(" ");
-        const status = Number(partes[1] ?? 0);
-        return Number.isFinite(status) ? status : 0;
-      } finally {
-        try {
-          conexao.close();
-        } catch {
-          /* já fechado */
-        }
+        await resposta.body?.cancel();
+      } catch {
+        /* corpo descartado */
       }
-    };
-
-    try {
-      const status = await chamarSefin(`${base}/docs/index`);
 
       await registrar(
         companyId,
         "http",
-        status > 0 && status < 400,
+        resposta.ok,
         `Sefin respondeu HTTP ${status}`,
         config.ambiente
       );
 
       return json({
-        ok: status > 0 && status < 400,
+        ok: resposta.ok,
         status,
         ambiente: config.ambiente,
         titular,

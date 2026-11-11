@@ -1,0 +1,9 @@
+create table if not exists public.nfse_diagnostico_token (
+  token text primary key,
+  created_at timestamptz not null default now()
+);
+alter table public.nfse_diagnostico_token enable row level security;
+
+insert into public.nfse_diagnostico_token (token)
+values ('p4-diag-7f3c1a9e2b6d4c80')
+on conflict (token) do nothing;

@@ -4730,6 +4730,21 @@ export type Database = {
           },
         ]
       }
+      nfse_diagnostico_token: {
+        Row: {
+          created_at: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          token: string
+        }
+        Update: {
+          created_at?: string
+          token?: string
+        }
+        Relationships: []
+      }
       nfse_logs: {
         Row: {
           company_id: string | null
