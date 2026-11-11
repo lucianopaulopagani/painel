@@ -29,6 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CertificadoDialog } from "@/components/nfse/certificado-dialog";
+import { supabase } from "@/lib/supabase";
 import { useCompanies } from "@/hooks/use-companies";
 import { useNfseConfiguracoes, useNfseNotas } from "@/hooks/use-nfse";
 
@@ -51,6 +52,7 @@ export function EmissorNfse() {
   const [companyId, setCompanyId] = useState("");
   const [competencia, setCompetencia] = useState(mesAtual());
   const [certificadoOpen, setCertificadoOpen] = useState(false);
+  const [testando, setTestando] = useState(false);
 
   const listaEmpresas = useMemo(
     () => (empresas ?? []).filter((empresa) => empresa.ativa !== false),
@@ -130,6 +132,57 @@ export function EmissorNfse() {
               ))}
             </SelectContent>
           </Select>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              if (!empresaSelecionadaId) return;
+              setTestando(true);
+              try {
+                const { data, error } =
+                  await supabase.functions.invoke<{
+                    ok?: boolean;
+                    status?: number;
+                    ambiente?: string;
+                    error?: string;
+                  }>("nfse-teste", {
+                    body: { company_id: empresaSelecionadaId },
+                  });
+
+                if (error) {
+                  const contexto = (error as { context?: Response }).context;
+                  let mensagem = "Não foi possível testar a conexão.";
+                  if (contexto && typeof contexto.json === "function") {
+                    try {
+                      const corpo = await contexto.json();
+                      mensagem = corpo?.error ?? mensagem;
+                    } catch {
+                      /* mantém a mensagem padrão */
+                    }
+                  }
+                  toast.error(mensagem);
+                } else if (data?.ok) {
+                  toast.success(
+                    `Conectado ao NFS-e Nacional (${data.ambiente}) — HTTP ${data.status}.`
+                  );
+                } else {
+                  toast.error(
+                    data?.error ??
+                      `O NFS-e Nacional respondeu HTTP ${data?.status ?? "?"}.`
+                  );
+                }
+              } finally {
+                setTestando(false);
+              }
+            }}
+            disabled={testando || !config?.certificado_path}
+          >
+            {testando ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ShieldCheck className="h-4 w-4" />
+            )}
+            Testar conexão
+          </Button>
           <Button variant="outline" onClick={() => setCertificadoOpen(true)}>
             <FileKey2 className="h-4 w-4" />
             Certificado
