@@ -4672,6 +4672,116 @@ export type Database = {
           },
         ]
       }
+      nfse_configuracoes: {
+        Row: {
+          aliquota_iss: number
+          ambiente: string
+          certificado_nome: string | null
+          certificado_path: string | null
+          certificado_titular: string | null
+          certificado_validade: string | null
+          codigo_municipio: string | null
+          codigo_servico: string | null
+          company_id: string
+          created_at: string
+          id: string
+          inscricao_municipal: string | null
+          nbs: string | null
+          updated_at: string
+        }
+        Insert: {
+          aliquota_iss?: number
+          ambiente?: string
+          certificado_nome?: string | null
+          certificado_path?: string | null
+          certificado_titular?: string | null
+          certificado_validade?: string | null
+          codigo_municipio?: string | null
+          codigo_servico?: string | null
+          company_id: string
+          created_at?: string
+          id?: string
+          inscricao_municipal?: string | null
+          nbs?: string | null
+          updated_at?: string
+        }
+        Update: {
+          aliquota_iss?: number
+          ambiente?: string
+          certificado_nome?: string | null
+          certificado_path?: string | null
+          certificado_titular?: string | null
+          certificado_validade?: string | null
+          codigo_municipio?: string | null
+          codigo_servico?: string | null
+          company_id?: string
+          created_at?: string
+          id?: string
+          inscricao_municipal?: string | null
+          nbs?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nfse_configuracoes_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nfse_notas: {
+        Row: {
+          chave: string | null
+          company_id: string
+          competencia: string | null
+          created_at: string
+          id: string
+          mensagem: string | null
+          numero: string | null
+          status: string
+          tomador_documento: string | null
+          tomador_nome: string | null
+          valor: number | null
+          xml_path: string | null
+        }
+        Insert: {
+          chave?: string | null
+          company_id: string
+          competencia?: string | null
+          created_at?: string
+          id?: string
+          mensagem?: string | null
+          numero?: string | null
+          status?: string
+          tomador_documento?: string | null
+          tomador_nome?: string | null
+          valor?: number | null
+          xml_path?: string | null
+        }
+        Update: {
+          chave?: string | null
+          company_id?: string
+          competencia?: string | null
+          created_at?: string
+          id?: string
+          mensagem?: string | null
+          numero?: string | null
+          status?: string
+          tomador_documento?: string | null
+          tomador_nome?: string | null
+          valor?: number | null
+          xml_path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nfse_notas_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       parcelamentos: {
         Row: {
           company_id: string
@@ -5189,7 +5299,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_10_09: {
+      messages_2026_11_05: {
         Row: {
           event: string | null
           extension: string
@@ -5222,7 +5332,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_10_10: {
+      messages_2026_11_06: {
         Row: {
           event: string | null
           extension: string
@@ -5255,7 +5365,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_10_11: {
+      messages_2026_11_07: {
         Row: {
           event: string | null
           extension: string
@@ -5288,7 +5398,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_10_12: {
+      messages_2026_11_08: {
         Row: {
           event: string | null
           extension: string
@@ -5321,7 +5431,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_10_13: {
+      messages_2026_11_09: {
         Row: {
           event: string | null
           extension: string
@@ -5354,7 +5464,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_10_14: {
+      messages_2026_11_10: {
         Row: {
           event: string | null
           extension: string
@@ -5387,7 +5497,7 @@ export type Database = {
         }
         Relationships: []
       }
-      messages_2026_10_15: {
+      messages_2026_11_11: {
         Row: {
           event: string | null
           extension: string

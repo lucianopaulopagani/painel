@@ -41,6 +41,7 @@ import Domesticas from "./pessoal/Domesticas";
 import EmpresasFiscal from "./pessoal/EmpresasFiscal";
 import EmpresasFuncionarios from "./pessoal/EmpresasFuncionarios";
 import Ponto from "./pessoal/Ponto";
+import { EmissorNfse } from "./nfse/EmissorNfse";
 
 type AvailablePanelKey =
   | "dashboard"
@@ -144,6 +145,14 @@ export default function DepartmentPanel() {
       ];
     }
     const modules: ModuleDef[] = [];
+    // Emissor de NFS-e fica sempre disponível no painel Nota Fiscal.
+    if (key === "nota-fiscal") {
+      modules.push({
+        key: "emissor-nfse",
+        label: "Emissor NFS-e",
+        render: () => <EmissorNfse />,
+      });
+    }
     const deptName = PANEL_DEPARTMENT_NAME[key];
     const deptId = deptName
       ? (departments ?? []).find(
