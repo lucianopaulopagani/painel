@@ -4730,6 +4730,36 @@ export type Database = {
           },
         ]
       }
+      nfse_logs: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          detalhe: string | null
+          etapa: string
+          id: string
+          mensagem: string | null
+          sucesso: boolean
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          detalhe?: string | null
+          etapa: string
+          id?: string
+          mensagem?: string | null
+          sucesso?: boolean
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          detalhe?: string | null
+          etapa?: string
+          id?: string
+          mensagem?: string | null
+          sucesso?: boolean
+        }
+        Relationships: []
+      }
       nfse_notas: {
         Row: {
           chave: string | null

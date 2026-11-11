@@ -1,7 +1,7 @@
 // =============================================================================
 // Backend Function "nfse-teste" — valida o certificado A1 abrindo uma conexão
-// mTLS com o NFS-e Nacional. Não emite nada: apenas confirma que o certificado
-// é aceito pelo ambiente configurado.
+// mTLS com o NFS-e Nacional. Não emite nada: confirma se o certificado é aceito
+// pelo ambiente configurado e registra cada etapa em nfse_logs.
 // =============================================================================
 
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -45,9 +45,32 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const registrar = async (
+    companyId: string | null,
+    etapa: string,
+    sucesso: boolean,
+    mensagem: string,
+    detalhe?: string
+  ) => {
+    try {
+      await admin.from("nfse_logs").insert({
+        company_id: companyId,
+        etapa,
+        sucesso,
+        mensagem,
+        detalhe: detalhe ?? null,
+      });
+    } catch {
+      /* log é auxiliar: não interrompe o teste */
+    }
+  };
+
   try {
     if (!(await isAdmin(req.headers.get("Authorization")))) {
-      return json({ error: "Somente administradores podem testar a conexão." }, 401);
+      return json(
+        { error: "Somente administradores podem testar a conexão." },
+        401
+      );
     }
 
     const body = await req.json().catch(() => null);
@@ -63,6 +86,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (!config?.certificado_path) {
+      await registrar(companyId, "configuracao", false, "Certificado não configurado");
       return json({ error: "Certificado não configurado para esta empresa." }, 400);
     }
 
@@ -74,74 +98,104 @@ Deno.serve(async (req) => {
       .download(`${companyId}/senha.txt`);
 
     if (pfxError || !pfx || senhaError || !senhaFile) {
+      await registrar(
+        companyId,
+        "download",
+        false,
+        "Falha ao ler o certificado do armazenamento",
+        `${pfxError?.message ?? ""} ${senhaError?.message ?? ""}`.trim()
+      );
       return json({ error: "Não foi possível ler o certificado guardado." }, 500);
     }
 
     const senha = await senhaFile.text();
     const bytes = new Uint8Array(await pfx.arrayBuffer());
     let binario = "";
-    for (let i = 0; i < bytes.length; i += 1) binario += String.fromCharCode(bytes[i]);
-
-    const p12 = forge.pkcs12.pkcs12FromAsn1(
-      forge.asn1.fromDer(forge.util.createBuffer(binario)),
-      senha
-    );
-
-    const certBags =
-      p12.getBags({ bagType: forge.pki.oids.certBag })[forge.pki.oids.certBag] ??
-      [];
-    const keyBags = [
-      ...(p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag })[
-        forge.pki.oids.pkcs8ShroudedKeyBag
-      ] ?? []),
-      ...(p12.getBags({ bagType: forge.pki.oids.keyBag })[
-        forge.pki.oids.keyBag
-      ] ?? []),
-    ];
-
-    if (certBags.length === 0 || keyBags.length === 0) {
-      return json({ error: "Certificado sem chave privada utilizável." }, 400);
+    for (let i = 0; i < bytes.length; i += 1) {
+      binario += String.fromCharCode(bytes[i]);
     }
 
-    const certPem = certBags
-      .map((bag) => forge.pki.certificateToPem(bag.cert))
-      .join("\n");
-    const keyPem = forge.pki.privateKeyToPem(keyBags[0].key!);
+    let certPem = "";
+    let keyPem = "";
+    let titular = "";
+    try {
+      const p12 = forge.pkcs12.pkcs12FromAsn1(
+        forge.asn1.fromDer(forge.util.createBuffer(binario)),
+        senha
+      );
+      const certBags =
+        p12.getBags({ bagType: forge.pki.oids.certBag })[
+          forge.pki.oids.certBag
+        ] ?? [];
+      const keyBags = [
+        ...(p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag })[
+          forge.pki.oids.pkcs8ShroudedKeyBag
+        ] ?? []),
+        ...(p12.getBags({ bagType: forge.pki.oids.keyBag })[
+          forge.pki.oids.keyBag
+        ] ?? []),
+      ];
+      if (certBags.length === 0 || keyBags.length === 0) {
+        throw new Error("certificado sem chave privada");
+      }
+      certPem = certBags.map((bag) => forge.pki.certificateToPem(bag.cert)).join("\n");
+      keyPem = forge.pki.privateKeyToPem(keyBags[0].key!);
+      titular = certBags[0].cert.subject.getField("CN")?.value ?? "";
+      await registrar(companyId, "certificado", true, "Certificado aberto", titular);
+    } catch (erro) {
+      const mensagem = erro instanceof Error ? erro.message : String(erro);
+      await registrar(companyId, "certificado", false, "Falha ao abrir o .pfx", mensagem);
+      return json({ error: `Falha ao abrir o certificado: ${mensagem}` }, 400);
+    }
 
     const base =
       config.ambiente === "producao"
         ? "https://sefin.nfse.gov.br/SefinNacional"
         : "https://sefin.producaorestrita.nfse.gov.br/API/SefinNacional";
 
-    const criarCliente = (
-      Deno as unknown as {
-        createHttpClient: (options: { cert: string; key: string }) => unknown;
-      }
-    ).createHttpClient;
+    let client: unknown;
+    try {
+      const criar = (
+        Deno as unknown as {
+          createHttpClient: (options: { cert: string; key: string }) => unknown;
+        }
+      ).createHttpClient;
+      client = criar({ cert: certPem, key: keyPem });
+      await registrar(companyId, "tls", true, "Cliente TLS criado com o A1");
+    } catch (erro) {
+      const mensagem = erro instanceof Error ? erro.message : String(erro);
+      await registrar(companyId, "tls", false, "Falha ao criar cliente TLS", mensagem);
+      return json({ error: `Falha ao preparar a conexão TLS: ${mensagem}` }, 500);
+    }
 
-    const client = criarCliente({ cert: certPem, key: keyPem });
+    try {
+      const resposta = await fetch(`${base}/docs/index`, {
+        // @ts-expect-error opção específica do Deno para TLS com certificado
+        client,
+      });
 
-    const resposta = await fetch(`${base}/docs/index`, {
-      // @ts-expect-error opção específica do Deno para TLS com certificado
-      client,
-    });
+      await registrar(
+        companyId,
+        "http",
+        resposta.ok,
+        `Sefin respondeu HTTP ${resposta.status}`,
+        config.ambiente
+      );
 
-    return json({
-      ok: resposta.ok,
-      status: resposta.status,
-      ambiente: config.ambiente,
-      titular: certBags[0].cert.subject.getField("CN")?.value ?? null,
-      validade: certBags[0].cert.validity.notAfter.toISOString().slice(0, 10),
-    });
+      return json({
+        ok: resposta.ok,
+        status: resposta.status,
+        ambiente: config.ambiente,
+        titular,
+      });
+    } catch (erro) {
+      const mensagem = erro instanceof Error ? erro.message : String(erro);
+      await registrar(companyId, "http", false, "Falha na requisição ao Sefin", mensagem);
+      return json({ error: `Falha na conexão: ${mensagem}` }, 500);
+    }
   } catch (error) {
-    return json(
-      {
-        error:
-          error instanceof Error
-            ? `Falha na conexão: ${error.message}`
-            : "Falha na conexão com o NFS-e Nacional.",
-      },
-      500
-    );
+    const mensagem = error instanceof Error ? error.message : String(error);
+    await registrar(null, "geral", false, "Erro inesperado", mensagem);
+    return json({ error: `Erro inesperado: ${mensagem}` }, 500);
   }
 });

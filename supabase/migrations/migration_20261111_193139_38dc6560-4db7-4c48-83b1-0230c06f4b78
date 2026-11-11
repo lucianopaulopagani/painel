@@ -1,0 +1,15 @@
+create table if not exists public.nfse_logs (
+  id uuid primary key default gen_random_uuid(),
+  company_id uuid,
+  etapa text not null,
+  sucesso boolean not null default false,
+  mensagem text,
+  detalhe text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.nfse_logs enable row level security;
+create policy nfse_logs_read on public.nfse_logs
+  for select using (auth.uid() is not null);
+
+create index if not exists nfse_logs_created_idx on public.nfse_logs (created_at desc);
